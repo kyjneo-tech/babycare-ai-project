@@ -41,8 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 
+# misc files (수정된 부분)
 /.claude
-
-/*.md
-
-*.xls
+*.md          
+*.xls          
+*.xlsx        
