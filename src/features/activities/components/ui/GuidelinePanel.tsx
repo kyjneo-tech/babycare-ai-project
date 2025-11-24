@@ -1,0 +1,124 @@
+// src/features/activities/components/ui/GuidelinePanel.tsx
+"use client";
+
+import { getFeedingGuideline, getSleepGuideline, getDexibuprofenGuideline } from "@/shared/lib/growthGuidelines";
+
+interface GuidelinePanelProps {
+  type: 'feeding' | 'sleep' | 'medicine';
+  value: number;
+  weight?: number | null;
+  ageInMonths?: number;
+  medicineName?: string;
+}
+
+export function GuidelinePanel({ type, value, weight, ageInMonths, medicineName }: GuidelinePanelProps) {
+  if (type === 'feeding' && weight) {
+    const guide = getFeedingGuideline(weight);
+    const amount = value;
+    const isInRange = amount >= guide.perFeeding.min && amount <= guide.perFeeding.max;
+    const percentage = Math.min((amount / guide.perFeeding.max) * 100, 100);
+
+    return (
+      <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg">💡</span>
+          <span className="text-xs font-medium text-blue-800">
+            권장 1회 수유량 (체중 {weight}kg 기준)
+          </span>
+        </div>
+        <div className="text-sm text-blue-700 mb-2">
+          {guide.perFeeding.min}~{guide.perFeeding.max}ml
+        </div>
+
+        {/* 프로그레스 바 */}
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs text-gray-600">
+            <span>최소: {guide.perFeeding.min}ml</span>
+            <span>최대: {guide.perFeeding.max}ml</span>
+          </div>
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all ${
+                isInRange ? 'bg-green-500' : 'bg-yellow-500'
+              }`}
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+          <p className="text-xs text-center mt-1">
+            {isInRange
+              ? '✅ 적정 범위입니다'
+              : amount < guide.perFeeding.min
+              ? '⚠️ 권장량보다 적습니다'
+              : '⚠️ 권장량보다 많습니다'
+            }
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (type === 'sleep' && typeof ageInMonths === 'number' &&ageInMonths >= 0) {
+    const guide = getSleepGuideline(ageInMonths);
+
+    return (
+      <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg">😴</span>
+          <span className="text-xs font-medium text-purple-800">
+            권장 수면 시간 (생후 {ageInMonths}개월 기준)
+          </span>
+        </div>
+        <div className="text-sm text-purple-700">
+          <p>하루 총 수면: {guide.total}</p>
+          <p className="text-xs mt-1">낮잠: {guide.naps}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (type === 'medicine' && weight && medicineName) {
+    // 해열제인 경우에만 가이드라인 표시
+    if (
+      medicineName.includes('타이레놀') ||
+      medicineName.includes('아세트') ||
+      medicineName.includes('덱시') ||
+      medicineName.includes('맥시') ||
+      medicineName.includes('애니펜')
+    ) {
+      const guide = getDexibuprofenGuideline(weight);
+      const amount = value;
+      const [minDose, maxDose] = guide.dose.split('~').map(d => parseFloat(d));
+      const isInRange = !isNaN(amount) && amount >= minDose && amount <= maxDose;
+
+      return (
+        <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg">💊</span>
+            <span className="text-xs font-medium text-red-800">
+              권장 해열제 용량 (체중 {weight}kg 기준)
+            </span>
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm text-red-700">
+              <p className="font-medium">{guide.dose}</p>
+              <p className="text-xs mt-1 text-red-600">{guide.disclaimer}</p>
+            </div>
+
+            {!isNaN(amount) && amount > 0 && (
+              <p className="text-xs text-center mt-2 font-medium">
+                {isInRange
+                  ? '✅ 적정 용량입니다'
+                  : amount < minDose
+                  ? '⚠️ 권장량보다 적습니다'
+                  : '⚠️ 권장량보다 많습니다'
+                }
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+  }
+
+  return null;
+}
