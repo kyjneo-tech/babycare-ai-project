@@ -13,6 +13,8 @@ import { getPredictedActivityPatternsService } from "./services/getPredictedActi
 import { type PredictedActivityPatterns } from "@/shared/types/schemas";
 import { getActivitiesForDateService } from "./services/getActivitiesForDateService";
 
+import { calculateDailySummaries } from "./lib/summary";
+
 // Consolidated sample data service
 import { 
   getSampleActivities, 
@@ -28,13 +30,45 @@ export async function createActivity(
   input: CreateActivityInput,
   userId: string // User ID passed from an authenticated context
 ): Promise<{ success: boolean; data?: Activity; error?: string }> {
+  // Rate limiting 적용
+  const { activityCreateRateLimit } = await import('@/shared/lib/ratelimit');
+  if (activityCreateRateLimit) {
+    const { success } = await activityCreateRateLimit.limit(userId);
+    if (!success) {
+      const { logger } = await import('@/shared/lib/logger');
+      logger.warn('활동 기록 생성 rate limit 초과', { userId });
+      return {
+        success: false,
+        error: "너무 많은 활동 기록을 생성하고 있습니다. 잠시 후 다시 시도해주세요."
+      };
+    }
+  }
+
+  // 중복 요청 방지 (같은 시간, 같은 타입, 같은 아기 = 중복)
+  const { checkDuplicateRequest, generateRequestKey, clearIdempotencyKey } = await import('@/shared/lib/idempotency');
+  const requestKey = generateRequestKey({
+    babyId: input.babyId,
+    type: input.type,
+    startTime: input.startTime.toISOString(),
+  });
+
+  const isDuplicate = await checkDuplicateRequest(userId, requestKey, 60); // 1분 TTL
+  if (isDuplicate) {
+    const { logger } = await import('@/shared/lib/logger');
+    logger.warn('중복 활동 기록 생성 시도', { userId, requestKey });
+    return {
+      success: false,
+      error: "동일한 활동이 이미 기록되었습니다. 중복 등록을 방지했습니다."
+    };
+  }
+
   try {
     const activity = await createActivityService(repository, userId, input);
 
     if (activity.babyId) {
-      revalidatePath(`/dashboard/babies/${activity.babyId}`);
-      revalidatePath("/dashboard");
-      revalidatePath(`/dashboard/analytics/${activity.babyId}`);
+      revalidatePath(`/babies/${activity.babyId}`);
+      revalidatePath("/");
+      revalidatePath(`/analytics/${activity.babyId}`);
       // Redis 캐시 무효화 (getRecentActivitiesService와 동일한 키 사용)
       // Repository 내부에서 처리하므로 여기서는 제거 가능하지만, 명시적으로 남겨둘 수도 있음.
       // 하지만 Repository에서 invalidateCache를 호출하므로 중복 제거.
@@ -101,9 +135,9 @@ export async function deleteActivity(activityId: string, userId: string) {
     // Redis 캐시 무효화 (getRecentActivitiesService와 동일한 키 사용)
     await redis.del(`baby:${activity.babyId}:recent-activities:7-days`);
 
-    revalidatePath(`/dashboard/babies/${activity.babyId}`);
-    revalidatePath("/dashboard");
-    revalidatePath(`/dashboard/analytics/${activity.babyId}`);
+    revalidatePath(`/babies/${activity.babyId}`);
+    revalidatePath("/");
+    revalidatePath(`/analytics/${activity.babyId}`);
 
     return { success: true, message: "활동 기록이 삭제되었습니다." };
   } catch (error: any) {
@@ -176,44 +210,113 @@ export async function getActivitiesPaginated(
     const nextCursor = hasMore ? paginatedActivities[paginatedActivities.length - 1].id : null;
 
     // 날짜별 요약 계산
-    const dailySummaries: Record<string, any> = {};
-    paginatedActivities.forEach((activity) => {
-      const dateKey = new Date(activity.startTime).toISOString().split('T')[0];
-      
-      if (!dailySummaries[dateKey]) {
-        dailySummaries[dateKey] = {};
+        const dailySummaries = calculateDailySummaries(paginatedActivities);
+    
+        return {
+          success: true,
+          data: {
+            activities: paginatedActivities,
+            nextCursor,
+            hasMore,
+            dailySummaries,
+          },
+        };
+      } catch (error) {
+        console.error("페이지네이션 활동 조회 실패:", error);
+        return { success: false, error: "활동 조회에 실패했습니다" };
       }
-
-      const typeKey = activity.type;
-      if (!dailySummaries[dateKey][typeKey]) {
-        dailySummaries[dateKey][typeKey] = {
-          count: 0,
-          totalAmount: 0,
-          totalDuration: 0,
+    }
+    
+    export async function getBabyQuickStats(babyId: string): Promise<{
+      success: boolean;
+      data?: {
+        lastSleep: Activity | null;
+        lastFeeding: Activity | null;
+      };
+      error?: string;
+    }> {
+      if (babyId === 'guest-baby-id') {
+        const now = new Date();
+        return {
+          success: true,
+          data: {
+            lastSleep: {
+              id: 'guest-sleep-1',
+              babyId: 'guest-baby-id',
+              userId: 'guest-user-id',
+              type: 'SLEEP',
+              startTime: new Date(now.getTime() - 3 * 60 * 60 * 1000),
+              endTime: new Date(now.getTime() - 1 * 60 * 60 * 1000),
+              note: '낮잠',
+              reaction: null,
+              createdAt: now,
+              updatedAt: now,
+              feedingType: null,
+              feedingAmount: null,
+              breastSide: null,
+              sleepType: 'nap',
+              duration: 120,
+              diaperType: null,
+              stoolColor: null,
+              stoolCondition: null,
+              bathType: null,
+              bathTemp: null,
+              playType: null,
+              playLocation: null,
+              playDuration: null,
+              medicineName: null,
+              medicineAmount: null,
+              medicineUnit: null,
+              temperature: null,
+            },
+            lastFeeding: {
+              id: 'guest-feed-1',
+              babyId: 'guest-baby-id',
+              userId: 'guest-user-id',
+              type: 'FEEDING',
+              startTime: new Date(now.getTime() - 2 * 60 * 60 * 1000),
+              endTime: null,
+              note: '분유 150ml',
+              reaction: 'good',
+              createdAt: now,
+              updatedAt: now,
+              feedingType: 'formula',
+              feedingAmount: 150,
+              breastSide: null,
+              sleepType: null,
+              duration: null,
+              diaperType: null,
+              stoolColor: null,
+              stoolCondition: null,
+              bathType: null,
+              bathTemp: null,
+              playType: null,
+              playLocation: null,
+              playDuration: null,
+              medicineName: null,
+              medicineAmount: null,
+              medicineUnit: null,
+              temperature: null,
+            },
+          },
         };
       }
-
-      dailySummaries[dateKey][typeKey].count++;
-
-      if (activity.feedingAmount) {
-        dailySummaries[dateKey][typeKey].totalAmount += activity.feedingAmount;
+    
+      try {
+        const [lastSleep, lastFeeding] = await prisma.$transaction([
+          prisma.activity.findFirst({
+            where: { babyId, type: 'SLEEP' },
+            orderBy: { startTime: 'desc' },
+          }),
+          prisma.activity.findFirst({
+            where: { babyId, type: 'FEEDING' },
+            orderBy: { startTime: 'desc' },
+          }),
+        ]);
+    
+        return { success: true, data: { lastSleep, lastFeeding } };
+      } catch (error) {
+        console.error("아기 빠른 통계 조회 실패:", error);
+        return { success: false, error: "아기 상태 요약 조회에 실패했습니다." };
       }
-      if (activity.duration) {
-        dailySummaries[dateKey][typeKey].totalDuration += activity.duration;
-      }
-    });
-
-    return {
-      success: true,
-      data: {
-        activities: paginatedActivities,
-        nextCursor,
-        hasMore,
-        dailySummaries,
-      },
-    };
-  } catch (error) {
-    console.error("페이지네이션 활동 조회 실패:", error);
-    return { success: false, error: "활동 조회에 실패했습니다" };
-  }
-}
+    }    

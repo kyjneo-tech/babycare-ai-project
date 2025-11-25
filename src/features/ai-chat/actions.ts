@@ -205,6 +205,20 @@ export async function sendChatMessage(
     return { success: false, error: "로그인이 필요합니다" };
   }
 
+  // Rate limiting
+  const { aiChatRateLimit } = await import('@/shared/lib/ratelimit');
+  if (aiChatRateLimit) {
+    const { success } = await aiChatRateLimit.limit(userId);
+    if (!success) {
+      const { logger } = await import('@/shared/lib/logger');
+      logger.warn('AI 채팅 rate limit 초과', { userId });
+      return { 
+        success: false, 
+        error: "너무 많은 요청입니다. 잠시 후 다시 시도해주세요." 
+      };
+    }
+  }
+
   try {
     // 0. AI 설정 조회
     const settingsResult = await getBabyAISettings(babyId);
@@ -273,8 +287,23 @@ export async function sendChatMessage(
       ? `\n[주의: 사용자 설정에 의해 다음 데이터는 분석에서 제외되었습니다: ${excludedCategories.join(", ")}. 해당 항목에 대한 데이터가 없다고 해서 문제가 있는 것으로 간주하지 마세요. 질문이 해당 항목에 관한 것이라면, 기록이 없음을 언급하고 일반적인 조언을 해주세요.]`
       : "";
 
+    // 2.5 사용자 정보(관계) 조회
+    const familyMember = await prisma.familyMember.findFirst({
+      where: {
+        familyId: baby.familyId,
+        userId: userId,
+      },
+      select: { relation: true },
+    });
+    
+    const userRelation = familyMember?.relation || "보호자";
+    const { getRelationLabel } = await import('../families/constants/relationOptions');
+    const userRoleLabel = getRelationLabel(userRelation);
+
     const systemPrompt = `
 당신은 소아청소년과 전문의이자 아동 심리 전문가인 'BabyCare AI'입니다.
+현재 질문한 사용자는 아기의 **${userRoleLabel}**입니다. 답변 시 이 호칭을 자연스럽게 사용하세요 (예: "${userRoleLabel}님, 걱정하지 마세요").
+
 부모의 질문에 대해 제공된 데이터를 바탕으로 의학적 근거가 있는 따뜻하고 구체적인 조언을 해주세요.
 
 [아기 정보]
@@ -294,49 +323,121 @@ ${filteredActivities.length > 0 ? activityLogs : "기간 내 기록 없음"}
 ${exclusionNote}
 
 [답변 가이드라인]
-1. **데이터 기반**: 막연한 조언 대신, 위 로그의 구체적인 시간과 수치를 인용하여 분석하세요.
-2. **설정 존중**: 사용자가 제외한 데이터(위 주의사항 참고)에 대해서는 "기록이 부족합니다"라고 지적하지 마세요.
-3. **대변 분석**: 배변 데이터가 포함된 경우, '물설사', '묽은변', '된변' 등의 상태를 주의 깊게 보세요.
-4. **말투**: 전문적이지만 부모를 안심시키는 따뜻한 말투를 사용하세요.
-5. **주의**: 마크다운 볼드(**)를 절대 사용하지 마세요. 의학적 진단은 피하세요.
+1. **맞춤 호칭**: 질문자를 **'${userRoleLabel}님'**이라고 부르며 공감해주세요.
+2. **데이터 기반**: 막연한 조언 대신, 위 로그의 구체적인 시간과 수치를 인용하여 분석하세요.
+3. **설정 존중**: 사용자가 제외한 데이터(위 주의사항 참고)에 대해서는 "기록이 부족합니다"라고 지적하지 마세요.
+4. **대변 분석**: 배변 데이터가 포함된 경우, '물설사', '묽은변', '된변' 등의 상태를 주의 깊게 보세요.
+5. **말투**: 전문적이지만 부모를 안심시키는 따뜻한 말투를 사용하세요.
+6. **주의**: 마크다운 볼드(**)를 절대 사용하지 마세요. 의학적 진단은 피하세요.
 `;
 
-    // 4. Gemini API 호출
+    // 3. 이전 대화 기록 조회 (최근 5개)
+    const recentMessages = await prisma.chatMessage.findMany({
+      where: { babyId },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    });
+    
+    // 시간순 정렬 (과거 -> 현재)
+    const historyContext = recentMessages
+      .reverse()
+      .map(msg => `User: ${msg.message}\nAI: ${msg.reply}`)
+      .join("\n\n");
+
+    const finalPrompt = `
+${systemPrompt}
+
+[이전 대화 기록]
+${historyContext ? historyContext : "없음"}
+
+[현재 질문]
+User: ${message}
+AI: 
+`;
+
+    // 4. Gemini API 호출 (Retry Logic 적용)
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const result = await model.generateContent([systemPrompt, message]);
-    const response = await result.response;
-    let reply = response.text();
+    
+    let reply = "";
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
+
+    while (retryCount <= MAX_RETRIES) {
+      try {
+        const result = await model.generateContent([finalPrompt]);
+        const response = await result.response;
+        reply = response.text();
+        break; // 성공 시 루프 종료
+      } catch (error) {
+        retryCount++;
+        console.warn(`AI 응답 생성 실패 (시도 ${retryCount}/${MAX_RETRIES + 1}):`, error);
+        
+        if (retryCount > MAX_RETRIES) {
+          throw error; // 최대 재시도 횟수 초과 시 에러 던짐
+        }
+        
+        // 지수 백오프 (1초, 2초, 4초 대기)
+        const delay = Math.pow(2, retryCount - 1) * 1000;
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
 
     // 5. 볼드 표시 제거
     reply = reply.replace(/\*\*(.+?)\*\*/g, "$1");
 
-    // 6. 대화 기록 저장
-    // summary 필드에는 간단한 메타데이터만 저장 (나중에 통계용으로 쓸 수 있게)
+    // 6. 대화 기록 저장 (최신 20개 유지)
+    const CHAT_HISTORY_LIMIT = 20;
+
     const simpleSummary = {
       logCount: filteredActivities.length,
       excluded: excludedCategories,
-      growthDataCount: growthHistory.length
+      growthDataCount: growthHistory.length,
     };
 
-    await prisma.chatMessage.create({
-      data: {
-        babyId,
-        userId: userId,
-        message,
-        reply: reply || "",
-        summary: JSON.stringify(simpleSummary),
-      },
+    // 트랜잭션으로 원자성 보장
+    await prisma.$transaction(async (tx) => {
+      const count = await tx.chatMessage.count({
+        where: { babyId },
+      });
+
+      if (count >= CHAT_HISTORY_LIMIT) {
+        // 가장 오래된 메시지 찾기
+        const oldestMessage = await tx.chatMessage.findFirst({
+          where: { babyId },
+          orderBy: { createdAt: "asc" },
+          select: { id: true },
+        });
+
+        // 삭제
+        if (oldestMessage) {
+          await tx.chatMessage.delete({
+            where: { id: oldestMessage.id },
+          });
+        }
+      }
+
+      // 새 메시지 생성
+      await tx.chatMessage.create({
+        data: {
+          babyId,
+          userId: userId,
+          message,
+          reply: reply || "",
+          summary: JSON.stringify(simpleSummary),
+        },
+      });
     });
 
     return {
       success: true,
       data: {
         reply,
-        summary: simpleSummary as any, // 타입 호환성 위해 any 캐스팅
+        summary: simpleSummary as any,
       },
     };
   } catch (error) {
-    console.error("AI 채팅 실패:", error);
+    const { logger } = await import('@/shared/lib/logger');
+    logger.error("AI 채팅 실패");
     return { success: false, error: "AI 응답 생성에 실패했습니다" };
   }
 }
@@ -376,7 +477,8 @@ export async function getChatHistory(
 
     return { success: true, data: formattedMessages };
   } catch (error) {
-    console.error("대화 기록 조회 실패:", error);
+    const { logger } = await import('@/shared/lib/logger');
+    logger.error("대화 기록 조회 실패");
     return { success: false, error: "대화 기록 조회에 실패했습니다" };
   }
 }

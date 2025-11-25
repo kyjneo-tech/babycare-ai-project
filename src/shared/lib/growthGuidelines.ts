@@ -92,9 +92,73 @@ export function getSleepGuideline(ageInMonths: number) {
 export function getDexibuprofenGuideline(weight: number) {
   const minDose = weight * 0.4;
   const maxDose = weight * 0.6;
-  
+
   return {
     dose: `${minDose.toFixed(1)} ~ ${maxDose.toFixed(1)}ml`,
     disclaimer: "⚠️ 본 계산은 일반 참고용이며, 실제 투약 전 반드시 의사/약사와 상담하세요."
+  };
+}
+
+/**
+ * 이부프로펜 계열 해열제의 권장 복용량을 계산합니다.
+ * @param weight 체중 (kg)
+ * @param syrupConcMgPerMl 시럽 농도 (mg/mL) - 예: 100mg/5mL = 20mg/mL
+ * @returns { singleDoseMl: number, maxDailyMg: number, maxSingleMl: number, disclaimer: string }
+ */
+export function getIbuprofenGuideline(weight: number, syrupConcMgPerMl: number = 20) {
+  // 1회 투약량 (mg): 체중 × 10mg/kg (중간값)
+  const targetPerDoseMgPerKg = 10;
+  const singleDoseMg = weight * targetPerDoseMgPerKg;
+
+  // 1일 최대 용량 (mg): 체중 × 40mg/kg
+  const maxDailyMg = weight * 40;
+
+  // 1회 최대 용량 (mg): 1일 최대 ÷ 4회
+  const maxSingleMg = maxDailyMg / 4;
+
+  // 안전한 1회 용량 (mg): 계산값과 최대값 중 작은 값
+  const safeSingleDoseMg = Math.min(singleDoseMg, maxSingleMg);
+
+  // mL로 변환
+  const safeSingleDoseMl = safeSingleDoseMg / syrupConcMgPerMl;
+  const maxSingleMl = maxSingleMg / syrupConcMgPerMl;
+
+  return {
+    singleDoseMl: parseFloat(safeSingleDoseMl.toFixed(1)),
+    maxDailyMg: Math.round(maxDailyMg),
+    maxSingleMl: parseFloat(maxSingleMl.toFixed(1)),
+    disclaimer: "⚠️ 본 계산은 일반 참고용(10mg/kg 기준)이며, 실제 투약 전 반드시 의사/약사와 제품 설명서를 확인하세요."
+  };
+}
+
+/**
+ * 아세트아미노펜 계열 해열제의 권장 복용량을 계산합니다.
+ * @param weight 체중 (kg)
+ * @param syrupConcMgPerMl 시럽 농도 (mg/mL) - 예: 160mg/5mL = 32mg/mL
+ * @returns { singleDoseMl: number, maxDailyMg: number, maxSingleMl: number, disclaimer: string }
+ */
+export function getAcetaminophenGuideline(weight: number, syrupConcMgPerMl: number = 32) {
+  // 1회 투약량 (mg): 체중 × 10-15mg/kg (중간값 12.5mg/kg)
+  const targetPerDoseMgPerKg = 12.5;
+  const singleDoseMg = weight * targetPerDoseMgPerKg;
+
+  // 1일 최대 용량 (mg): 체중 × 60mg/kg (최대 4g/일)
+  const maxDailyMg = Math.min(weight * 60, 4000);
+
+  // 1회 최대 용량 (mg): 1일 최대 ÷ 4회
+  const maxSingleMg = maxDailyMg / 4;
+
+  // 안전한 1회 용량 (mg): 계산값과 최대값 중 작은 값
+  const safeSingleDoseMg = Math.min(singleDoseMg, maxSingleMg);
+
+  // mL로 변환
+  const safeSingleDoseMl = safeSingleDoseMg / syrupConcMgPerMl;
+  const maxSingleMl = maxSingleMg / syrupConcMgPerMl;
+
+  return {
+    singleDoseMl: parseFloat(safeSingleDoseMl.toFixed(1)),
+    maxDailyMg: Math.round(maxDailyMg),
+    maxSingleMl: parseFloat(maxSingleMl.toFixed(1)),
+    disclaimer: "⚠️ 본 계산은 일반 참고용(12.5mg/kg 기준)이며, 실제 투약 전 반드시 의사/약사와 제품 설명서를 확인하세요."
   };
 }

@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { GuidelinePanel } from "../ui/GuidelinePanel";
+import { SPACING, TYPOGRAPHY } from "@/design-system";
 
 interface FeedingFormSectionProps {
   feedingType: string;
@@ -36,10 +37,10 @@ export function FeedingFormSection({
   disabled = false,
 }: FeedingFormSectionProps) {
   return (
-    <div className="space-y-4">
-      <div>
-        <Label className="mb-2 block">수유 종류</Label>
-        <div className="grid grid-cols-4 gap-2">
+    <div className={SPACING.space.md}>
+      <div className={SPACING.space.sm}>
+        <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>수유 종류</Label>
+        <div className={cn("grid grid-cols-4", SPACING.gap.sm)}>
           {[
             { key: "breast", label: "모유" },
             { key: "formula", label: "분유" },
@@ -49,14 +50,9 @@ export function FeedingFormSection({
             <Button
               key={ft.key}
               type="button"
-              variant="outline"
+              variant={feedingType === ft.key ? "default" : "outline"}
               onClick={() => setFeedingType(ft.key)}
               disabled={disabled}
-              className={cn(
-                feedingType === ft.key
-                  ? "bg-blue-500 text-white hover:bg-blue-600 border-blue-600"
-                  : "hover:bg-blue-50"
-              )}
             >
               {ft.label}
             </Button>
@@ -66,23 +62,18 @@ export function FeedingFormSection({
 
       {feedingType === "breast" && (
         <>
-          <div>
-            <Label className="mb-2 block">수유 시간 (분)</Label>
-            <div className="flex flex-wrap gap-2 mb-2">
+          <div className={SPACING.space.sm}>
+            <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>수유 시간 (분)</Label>
+            <div className={cn("flex flex-wrap mb-2", SPACING.gap.sm)}>
               {[10, 15, 20, 30, 40].map((min) => (
                 <Button
                   key={min}
                   type="button"
-                  variant="outline"
+                  variant={feedingDuration === min.toString() ? "default" : "secondary"}
                   size="sm"
                   onClick={() => setFeedingDuration(min.toString())}
                   disabled={disabled}
-                  className={cn(
-                    "rounded-full",
-                    feedingDuration === min.toString()
-                      ? "bg-blue-500 text-white hover:bg-blue-600 border-blue-600"
-                      : "bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
-                  )}
+                  className="rounded-full"
                 >
                   {min}분
                 </Button>
@@ -93,36 +84,26 @@ export function FeedingFormSection({
               placeholder="분 단위 입력"
               value={feedingDuration}
               onChange={(e) => setFeedingDuration(e.target.value)}
-              className={errors.feedingDuration ? "border-red-500" : ""}
+              className={errors.feedingDuration ? "border-destructive" : ""}
               disabled={disabled}
             />
           </div>
-          <div>
-            <Label className="mb-2 block">수유 방향</Label>
-            <div className="grid grid-cols-2 gap-2">
+          <div className={SPACING.space.sm}>
+            <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>수유 방향</Label>
+            <div className={cn("grid grid-cols-2", SPACING.gap.sm)}>
               <Button
                 type="button"
-                variant="outline"
+                variant={breastSide === "left" ? "default" : "outline"}
                 onClick={() => setBreastSide("left")}
                 disabled={disabled}
-                className={cn(
-                  breastSide === "left"
-                    ? "bg-blue-500 text-white hover:bg-blue-600 border-blue-600"
-                    : "hover:bg-blue-50"
-                )}
               >
                 왼쪽
               </Button>
               <Button
                 type="button"
-                variant="outline"
+                variant={breastSide === "right" ? "default" : "outline"}
                 onClick={() => setBreastSide("right")}
                 disabled={disabled}
-                className={cn(
-                  breastSide === "right"
-                    ? "bg-blue-500 text-white hover:bg-blue-600 border-blue-600"
-                    : "hover:bg-blue-50"
-                )}
               >
                 오른쪽
               </Button>
@@ -134,25 +115,20 @@ export function FeedingFormSection({
       {(feedingType === "formula" ||
         feedingType === "pumped" ||
         feedingType === "baby_food") && (
-        <div>
-          <Label className="mb-2 block">
+        <div className={SPACING.space.sm}>
+          <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>
             {feedingType === "baby_food" ? "섭취량 (ml/g)" : "수유량 (ml)"}
           </Label>
-          <div className="flex flex-wrap gap-2 mb-2">
+          <div className={cn("flex flex-wrap mb-2", SPACING.gap.sm)}>
             {[60, 90, 120, 160, 200, 240].map((amount) => (
               <Button
                 key={amount}
                 type="button"
-                variant="outline"
+                variant={feedingAmount === amount.toString() ? "default" : "secondary"}
                 size="sm"
                 onClick={() => setFeedingAmount(amount.toString())}
                 disabled={disabled}
-                className={cn(
-                  "rounded-full",
-                  feedingAmount === amount.toString()
-                    ? "bg-blue-500 text-white hover:bg-blue-600 border-blue-600"
-                    : "bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
-                )}
+                className="rounded-full"
               >
                 {amount}
               </Button>
@@ -163,7 +139,7 @@ export function FeedingFormSection({
             placeholder="직접 입력"
             value={feedingAmount}
             onChange={(e) => setFeedingAmount(e.target.value)}
-            className={errors.feedingAmount ? "border-red-500" : ""}
+            className={errors.feedingAmount ? "border-destructive" : ""}
             disabled={disabled}
           />
 
@@ -175,30 +151,25 @@ export function FeedingFormSection({
             />
           )}
           {errors.feedingAmount && (
-            <p className="text-xs text-red-500 mt-1">{errors.feedingAmount}</p>
+            <p className={cn(TYPOGRAPHY.caption, "text-destructive mt-1")}>{errors.feedingAmount}</p>
           )}
         </div>
       )}
 
       {feedingType === "baby_food" && (
-        <div>
-          <Label className="mb-2 block">이유식 메뉴</Label>
-          <div className="flex flex-wrap gap-2 mb-2">
+        <div className={SPACING.space.sm}>
+          <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>이유식 메뉴</Label>
+          <div className={cn("flex flex-wrap mb-2", SPACING.gap.sm)}>
             {["쌀미음", "오트밀", "소고기", "닭고기", "야채", "과일", "간식"].map(
               (menu) => (
                 <Button
                   key={menu}
                   type="button"
-                  variant="outline"
+                  variant={babyFoodMenu === menu ? "default" : "secondary"}
                   size="sm"
                   onClick={() => setBabyFoodMenu(menu)}
                   disabled={disabled}
-                  className={cn(
-                    "rounded-full",
-                    babyFoodMenu === menu
-                      ? "bg-green-500 text-white hover:bg-green-600 border-green-600"
-                      : "bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
-                  )}
+                  className="rounded-full"
                 >
                   {menu}
                 </Button>
@@ -210,11 +181,11 @@ export function FeedingFormSection({
             placeholder="메뉴 직접 입력"
             value={babyFoodMenu}
             onChange={(e) => setBabyFoodMenu(e.target.value)}
-            className={errors.babyFoodMenu ? "border-red-500" : ""}
+            className={errors.babyFoodMenu ? "border-destructive" : ""}
             disabled={disabled}
           />
           {errors.babyFoodMenu && (
-            <p className="text-xs text-red-500 mt-1">{errors.babyFoodMenu}</p>
+            <p className={cn(TYPOGRAPHY.caption, "text-destructive mt-1")}>{errors.babyFoodMenu}</p>
           )}
         </div>
       )}

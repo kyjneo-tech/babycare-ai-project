@@ -19,6 +19,7 @@ describe('PrismaFamilyRepository', () => {
     familyId: 'family-id',
     role: 'parent',
     relation: 'parent',
+    permission: 'full',
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -177,7 +178,7 @@ describe('PrismaFamilyRepository', () => {
         Babies: [mockBaby],
       };
 
-      prismaMock.$transaction.mockImplementation(async (callback) => {
+      prismaMock.$transaction.mockImplementation(async (callback: (tx: Prisma.TransactionClient) => Promise<unknown>) => {
         const txMock = {
           family: {
             create: jest.fn().mockResolvedValue(expectedFamily),
@@ -201,7 +202,7 @@ describe('PrismaFamilyRepository', () => {
       // Given
       let capturedInviteCode: string | undefined;
 
-      prismaMock.$transaction.mockImplementation(async (callback) => {
+      prismaMock.$transaction.mockImplementation(async (callback: (tx: Prisma.TransactionClient) => Promise<unknown>) => {
         const txMock = {
           family: {
             create: jest.fn().mockImplementation((data) => {
@@ -237,7 +238,7 @@ describe('PrismaFamilyRepository', () => {
         },
       };
 
-      prismaMock.$transaction.mockImplementation(async (callback) => {
+      prismaMock.$transaction.mockImplementation(async (callback: (tx: Prisma.TransactionClient) => Promise<unknown>) => {
         return await callback(txMock as unknown as Prisma.TransactionClient);
       });
 
@@ -273,7 +274,7 @@ describe('PrismaFamilyRepository', () => {
       // Given
       const testError = new Error('트랜잭션 실패');
 
-      prismaMock.$transaction.mockImplementation(async (callback) => {
+      prismaMock.$transaction.mockImplementation(async (callback: (tx: Prisma.TransactionClient) => Promise<unknown>) => {
         const txMock = {
           family: {
             create: jest.fn().mockRejectedValue(testError),
@@ -302,7 +303,7 @@ describe('PrismaFamilyRepository', () => {
       // Given
       let capturedInviteCode: string | undefined;
 
-      prismaMock.$transaction.mockImplementation(async (callback) => {
+      prismaMock.$transaction.mockImplementation(async (callback: (tx: Prisma.TransactionClient) => Promise<unknown>) => {
         const txMock = {
           family: {
             create: jest.fn().mockImplementation((data) => {
@@ -331,7 +332,7 @@ describe('PrismaFamilyRepository', () => {
       // Given
       let capturedInviteCode: string | undefined;
 
-      prismaMock.$transaction.mockImplementation(async (callback) => {
+      prismaMock.$transaction.mockImplementation(async (callback: (tx: Prisma.TransactionClient) => Promise<unknown>) => {
         const txMock = {
           family: {
             create: jest.fn().mockImplementation((data) => {

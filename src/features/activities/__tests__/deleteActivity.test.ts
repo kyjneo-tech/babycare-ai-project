@@ -33,8 +33,11 @@ describe('deleteActivity', () => {
     id: mockBabyId,
     name: '테스트 아기',
     birthDate: new Date('2024-01-01'),
+    birthTime: '00:00',
     gender: 'male',
     familyId: mockFamilyId,
+    photoUrl: null,
+    aiSettings: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     Family: mockFamily,
@@ -57,7 +60,7 @@ describe('deleteActivity', () => {
     medicineName: null,
     medicineAmount: null,
     medicineUnit: null,
-    notes: null,
+    note: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     userId: mockUserId,
@@ -69,6 +72,7 @@ describe('deleteActivity', () => {
     familyId: mockFamilyId,
     role: 'parent',
     relation: 'mother',
+    permission: 'full',
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -214,9 +218,9 @@ describe('deleteActivity', () => {
       await deleteActivity(mockActivityId, mockUserId);
 
       // Then
-      expect(revalidatePath).toHaveBeenCalledWith(`/dashboard/babies/${mockBabyId}`);
-      expect(revalidatePath).toHaveBeenCalledWith('/dashboard');
-      expect(revalidatePath).toHaveBeenCalledWith(`/dashboard/analytics/${mockBabyId}`);
+      expect(revalidatePath).toHaveBeenCalledWith(`/babies/${mockBabyId}`);
+      expect(revalidatePath).toHaveBeenCalledWith('/');
+      expect(revalidatePath).toHaveBeenCalledWith(`/analytics/${mockBabyId}`);
     });
   });
 

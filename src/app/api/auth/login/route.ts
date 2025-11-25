@@ -1,11 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { loginService } from '@/features/auth/services/loginService';
+import { loginRateLimit } from '@/shared/lib/ratelimit';
+import { logger } from '@/shared/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting check
+    if (loginRateLimit) {
+      const identifier = request.headers.get('x-forwarded-for') || 'anonymous';
+      const { success, limit, remaining, reset } = await loginRateLimit.limit(identifier);
+      
+      if (!success) {
+        logger.warn('로그인 rate limit 초과', { identifier });
+        return NextResponse.json(
+          { error: '너무 많은 로그인 시도입니다. 잠시 후 다시 시도해주세요.' },
+          { 
+            status: 429,
+            headers: {
+              'X-RateLimit-Limit': limit.toString(),
+              'X-RateLimit-Remaining': remaining.toString(),
+              'X-RateLimit-Reset': reset.toString(),
+            }
+          }
+        );
+      }
+    }
+
     const body = await request.json();
-    const { email, password } = body; // Zod 검증은 서비스에서 수행
+    const { email, password } = body;
 
     const userId = await loginService({ email, password });
 
@@ -13,8 +36,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' }, { status: 401 });
     }
 
-    // 로그인 성공 (여기서는 간단히 userId만 반환)
-    // 실제 애플리케이션에서는 JWT 토큰 등을 발급해야 합니다.
     return NextResponse.json(
       {
         message: '로그인 성공',
@@ -26,7 +47,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors }, { status: 400 });
     }
-    console.error('로그인 API 오류:', error);
+    logger.error('로그인 API 오류');
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

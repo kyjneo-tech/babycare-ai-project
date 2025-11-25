@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { SPACING, TYPOGRAPHY } from "@/design-system";
 
 interface PlayFormSectionProps {
   playLocation: string;
@@ -22,10 +23,10 @@ export function PlayFormSection({
   disabled = false,
 }: PlayFormSectionProps) {
   return (
-    <div className="space-y-4">
-      <div>
-        <Label className="mb-2 block">놀이 장소</Label>
-        <div className="grid grid-cols-2 gap-2">
+    <div className={SPACING.space.md}>
+      <div className={SPACING.space.sm}>
+        <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>놀이 장소</Label>
+        <div className={cn("grid grid-cols-2", SPACING.gap.sm)}>
           {[
             { key: "indoor", label: "🏡 실내놀이" },
             { key: "outdoor", label: "🌳 야외활동" },
@@ -33,14 +34,9 @@ export function PlayFormSection({
             <Button
               key={item.key}
               type="button"
-              variant="outline"
+              variant={playLocation === item.key ? "default" : "outline"}
               onClick={() => setPlayLocation(item.key)}
               disabled={disabled}
-              className={cn(
-                playLocation === item.key
-                  ? "bg-blue-500 text-white hover:bg-blue-600 border-blue-600"
-                  : "hover:bg-blue-50"
-              )}
             >
               {item.label}
             </Button>
@@ -48,9 +44,9 @@ export function PlayFormSection({
         </div>
       </div>
 
-      <div>
-        <Label className="mb-2 block">놀이 종류 (중복 선택 가능)</Label>
-        <div className="flex flex-wrap gap-2">
+      <div className={SPACING.space.sm}>
+        <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>놀이 종류 (중복 선택 가능)</Label>
+        <div className={cn("flex flex-wrap", SPACING.gap.sm)}>
           {[
             "#신체활동",
             "#두뇌/감각",
@@ -61,16 +57,11 @@ export function PlayFormSection({
             <Button
               key={tag}
               type="button"
-              variant="outline"
+              variant={playType.includes(tag) ? "default" : "secondary"}
               size="sm"
               onClick={() => togglePlayType(tag)}
               disabled={disabled}
-              className={cn(
-                "rounded-full",
-                playType.includes(tag)
-                  ? "bg-green-500 text-white hover:bg-green-600 border-green-600"
-                  : "bg-gray-100 text-gray-900 hover:bg-gray-200 border-transparent"
-              )}
+              className="rounded-full"
             >
               {tag}
             </Button>
@@ -78,9 +69,9 @@ export function PlayFormSection({
         </div>
       </div>
 
-      <div>
-        <Label className="mb-2 block">아기 반응</Label>
-        <div className="grid grid-cols-3 gap-2">
+      <div className={SPACING.space.sm}>
+        <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>아기 반응</Label>
+        <div className={cn("grid grid-cols-3", SPACING.gap.sm)}>
           {[
             { key: "good", label: "😄 좋음" },
             { key: "neutral", label: "😐 보통" },
@@ -89,14 +80,9 @@ export function PlayFormSection({
             <Button
               key={item.key}
               type="button"
-              variant="outline"
+              variant={reaction === item.key ? "default" : "outline"}
               onClick={() => setReaction(item.key)}
               disabled={disabled}
-              className={cn(
-                reaction === item.key
-                  ? "bg-blue-500 text-white hover:bg-blue-600 border-blue-600"
-                  : "hover:bg-blue-50"
-              )}
             >
               {item.label}
             </Button>

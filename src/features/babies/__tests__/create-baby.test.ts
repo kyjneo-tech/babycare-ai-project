@@ -57,6 +57,7 @@ describe('아기 등록 서비스 (createBabyService)', () => {
       familyId: 'existing-family-id',
       role: 'parent',
       relation: 'father',
+      permission: 'full',
       createdAt: new Date(),
       updatedAt: new Date(),
       Family: {
@@ -74,6 +75,7 @@ describe('아기 등록 서비스 (createBabyService)', () => {
       familyId: 'existing-family-id',
       ...babyData,
       photoUrl: null,
+      aiSettings: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

@@ -28,7 +28,7 @@ export function BabyDetailTabs({ babyId }: BabyDetailTabsProps) {
   ];
 
   const handleTabChange = (tabId: TabType) => {
-    router.push(`/dashboard/babies/${babyId}?tab=${tabId}`);
+    router.push(`/babies/${babyId}?tab=${tabId}`);
   };
 
   return (

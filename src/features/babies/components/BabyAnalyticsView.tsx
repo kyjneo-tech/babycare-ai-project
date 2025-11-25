@@ -5,6 +5,14 @@ import { UnifiedTimeline } from "@/components/features/analytics/UnifiedTimeline
 import { getActivitiesByDateRange } from "@/features/analytics/actions";
 import { Activity } from "@prisma/client";
 import { subDays, startOfDay, endOfDay, format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ChartSkeleton } from "@/components/common/Skeletons";
+import { Card, CardContent } from "@/components/ui/card";
+import { TYPOGRAPHY, SPACING } from "@/design-system";
+import { cn } from "@/lib/utils";
 
 interface BabyAnalyticsViewProps {
   babyId: string;
@@ -61,8 +69,28 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+      <div className="space-y-6">
+        <Card>
+          <CardContent className={cn(SPACING.card.small, "space-y-4")}>
+            <Skeleton className="h-7 w-24" /> {/* Title */}
+            <div className="grid grid-cols-3 gap-2">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-12" /> {/* Label */}
+                <Skeleton className="h-10 w-full" /> {/* Input */}
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-12" /> {/* Label */}
+                <Skeleton className="h-10 w-full" /> {/* Input */}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <ChartSkeleton />
       </div>
     );
   }
@@ -70,71 +98,71 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
   return (
     <div className="space-y-6">
       {/* 기간 선택 */}
-      <div className="bg-white rounded-lg p-4 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">기간 선택</h3>
-        
-        {/* 빠른 선택 버튼 */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          {[7, 14, 30].map((days) => (
-            <button
-              key={days}
-              onClick={() => handlePeriodChange(days)}
-              className={`py-2 px-4 rounded-lg font-medium transition ${
-                selectedDays === days
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              {days}일
-            </button>
-          ))}
-        </div>
+      <Card>
+        <CardContent className={cn(SPACING.card.small, "space-y-4")}>
+          <h3 className={TYPOGRAPHY.h3}>기간 선택</h3>
+          
+          {/* 빠른 선택 버튼 */}
+          <div className="grid grid-cols-3 gap-2">
+            {[7, 14, 30].map((days) => (
+              <Button
+                key={days}
+                variant={selectedDays === days ? "default" : "secondary"}
+                onClick={() => handlePeriodChange(days)}
+              >
+                {days}일
+              </Button>
+            ))}
+          </div>
 
-        {/* 커스텀 날짜 선택 */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              시작일
-            </label>
-            <input
-              type="date"
-              value={format(startDate, "yyyy-MM-dd")}
-              onChange={(e) => handleCustomDateChange("start", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          {/* 커스텀 날짜 선택 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="start-date">시작일</Label>
+              <Input
+                id="start-date"
+                type="date"
+                value={format(startDate, "yyyy-MM-dd")}
+                onChange={(e) =>
+                  handleCustomDateChange("start", e.target.value)
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="end-date">종료일</Label>
+              <Input
+                id="end-date"
+                type="date"
+                value={format(endDate, "yyyy-MM-dd")}
+                onChange={(e) => handleCustomDateChange("end", e.target.value)}
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              종료일
-            </label>
-            <input
-              type="date"
-              value={format(endDate, "yyyy-MM-dd")}
-              onChange={(e) => handleCustomDateChange("end", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* 타임라인 */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-xl font-semibold mb-6 text-gray-800">
-          활동 타임라인
-        </h3>
-        {activities.length > 0 ? (
-          <UnifiedTimeline
-            activities={activities}
-            startDate={startDate}
-            endDate={endDate}
-          />
-        ) : (
-          <div className="py-12 text-center text-gray-500">
-            <p className="text-lg mb-2">이 기간에 기록된 활동이 없습니다.</p>
-            <p className="text-sm">아기의 활동을 기록해보세요!</p>
-          </div>
-        )}
-      </div>
+      <Card>
+        <CardContent className={SPACING.card.medium}>
+          <h3 className={cn(TYPOGRAPHY.h2, "mb-6")}>활동 타임라인</h3>
+          {activities.length > 0 ? (
+            <UnifiedTimeline
+              activities={activities}
+              startDate={startDate}
+              endDate={endDate}
+            />
+          ) : (
+            <div className="py-12 text-center">
+              <p className={cn(TYPOGRAPHY.body.large, "text-muted-foreground", "mb-2")}>
+                이 기간에 기록된 활동이 없습니다.
+              </p>
+              <p className={cn(TYPOGRAPHY.body.default, "text-muted-foreground")}>
+                아기의 활동을 기록해보세요!
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

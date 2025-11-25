@@ -1,154 +1,18 @@
-// src/app/dashboard/babies/[id]/components/ActivityList.tsx
+// src/app/babies/[id]/components/ActivityList.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { createClient } from "@/shared/lib/supabase/client";
 import { Activity } from "@prisma/client";
-import { deleteActivity } from "@/features/activities/actions";
+import { deleteActivity, getActivitiesPaginated } from "@/features/activities/actions";
+import { ActivityCard } from "./ActivityCard";
+import { format, isToday, isYesterday, formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
 
-import { activityTypeLabels, getActivityDescription, formatActivityTime, feedingTypeLabels, diaperTypeLabels, breastSideLabels } from "@/shared/utils/activityLabels";
-
-// ActivityCard는 별도의 컴포넌트로 분리하거나 여기에 간단히 정의할 수 있습니다.
-// 여기서는 간단히 정의합니다.
-function ActivityCard({
-  activity,
-  onDelete,
-}: {
-  activity: Activity;
-  onDelete: (id: string) => void;
-}) {
-  const [deleting, setDeleting] = useState(false);
-
-  const handleDelete = async () => {
-    if (!confirm("이 활동을 정말 삭제하시겠습니까?")) return;
-
-    setDeleting(true);
-    try {
-      const result = await deleteActivity(activity.id, activity.userId);
-      if (result.success) {
-        // 즉시 UI에서 제거
-        onDelete(activity.id);
-      } else {
-        alert(result.error || "삭제에 실패했습니다.");
-      }
-    } catch (error) {
-      alert("삭제 중 오류가 발생했습니다.");
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  const renderActivityDetails = () => {
-    switch (activity.type) {
-      case "FEEDING":
-        return (
-          <>
-            <p className="text-sm text-gray-600">
-              {activity.feedingType && feedingTypeLabels[activity.feedingType as keyof typeof feedingTypeLabels]}
-              {activity.feedingType === "breast" && activity.breastSide && 
-                ` (${breastSideLabels[activity.breastSide as keyof typeof breastSideLabels]})`}
-              {activity.feedingAmount && ` ${activity.feedingAmount}ml`}
-              {activity.feedingType === "breast" && activity.duration && ` ${activity.duration}분`}
-            </p>
-          </>
-        );
-      case "SLEEP":
-        return (
-          <>
-            {activity.duration && (
-              <p className="text-sm text-gray-600">
-                {Math.floor(activity.duration / 60) > 0 && `${Math.floor(activity.duration / 60)}시간 `}
-                {activity.duration % 60 > 0 && `${activity.duration % 60}분`}
-              </p>
-            )}
-          </>
-        );
-      case "DIAPER":
-        return (
-          <>
-            <p className="text-sm text-gray-600">
-              {activity.diaperType && diaperTypeLabels[activity.diaperType as keyof typeof diaperTypeLabels]}
-            </p>
-            {activity.stoolColor && (
-              <p className="text-sm text-gray-500">
-                색상: {activity.stoolColor}
-              </p>
-            )}
-          </>
-        );
-      case "BATH":
-        return (
-          <>
-            {activity.bathTemp && (
-              <p className="text-sm text-gray-600">
-                온도: {activity.bathTemp}°C
-              </p>
-            )}
-          </>
-        );
-      case "PLAY":
-        return (
-          <>
-            {activity.playDuration && (
-              <p className="text-sm text-gray-600">
-                {activity.playDuration}분
-              </p>
-            )}
-          </>
-        );
-      case "MEDICINE":
-        return (
-          <>
-            <p className="text-sm text-gray-600">
-              {activity.medicineName}
-            </p>
-            {activity.medicineAmount && (
-              <p className="text-sm text-gray-500">
-                {activity.medicineAmount} {activity.medicineUnit}
-              </p>
-            )}
-          </>
-        );
-      case "TEMPERATURE":
-        return (
-          <>
-            <p className="text-sm text-gray-600">
-              {activity.temperature}°C
-            </p>
-          </>
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div
-      key={activity.id}
-      className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition border border-gray-100 flex justify-between items-start"
-    >
-      <div className="flex-1">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="font-semibold text-gray-800">
-            {activityTypeLabels[activity.type]}
-          </span>
-          <span className="text-xs text-gray-500">
-            {formatActivityTime(activity.startTime)}
-          </span>
-        </div>
-        {renderActivityDetails()} {/* 상세 정보 렌더링 */}
-        {activity.note && <p className="text-sm mt-2 text-gray-600 italic">{activity.note}</p>}
-      </div>
-      <button
-        onClick={handleDelete}
-        disabled={deleting}
-        className="flex-shrink-0 ml-3 px-3 py-1 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white text-sm rounded transition"
-        title="삭제"
-      >
-        {deleting ? "..." : "삭제"}
-      </button>
-    </div>
-  );
+interface DailySummary {
+  sleepMinutes: number;
+  feedingAmount: number;
+  feedingCount: number;
 }
 
 export function ActivityList({
@@ -160,12 +24,38 @@ export function ActivityList({
   activities: Activity[];
   onActivityDeleted: (id: string) => void;
 }) {
-  const [activities, setActivities] = useState(initialActivities);
+  const [activities, setActivities] = useState(initialActivities.slice(0, 10)); // 초기 10개만 표시
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(initialActivities.length > 10);
+  const [cursor, setCursor] = useState<string | null>(
+    initialActivities.length > 10 ? initialActivities[9].id : null
+  );
+  const observerTarget = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
+  // 오늘의 요약 계산
+  const getDailySummary = (activities: Activity[]): DailySummary => {
+    const todayActivities = activities.filter(a => isToday(new Date(a.startTime)));
+    return todayActivities.reduce((acc, curr) => {
+      if (curr.type === 'SLEEP' && curr.duration) {
+        acc.sleepMinutes += curr.duration;
+      } else if (curr.type === 'FEEDING') {
+        acc.feedingCount += 1;
+        if (curr.feedingAmount) {
+          acc.feedingAmount += curr.feedingAmount;
+        }
+      }
+      return acc;
+    }, { sleepMinutes: 0, feedingAmount: 0, feedingCount: 0 });
+  };
+
+  const dailySummary = getDailySummary(activities);
+
   useEffect(() => {
-    setActivities(initialActivities);
+    setActivities(initialActivities.slice(0, 10));
+    setHasMore(initialActivities.length > 10);
+    setCursor(initialActivities.length > 10 ? initialActivities[9].id : null);
   }, [initialActivities]);
 
   useEffect(() => {
@@ -245,23 +135,144 @@ export function ActivityList({
     onActivityDeleted(activityId); // 부모 컴포넌트의 콜백 호출
   };
 
+  // 무한 스크롤을 위한 추가 활동 로드
+  const loadMoreActivities = useCallback(async () => {
+    if (isLoading || !hasMore || !cursor) return;
+
+    setIsLoading(true);
+    try {
+      const result = await getActivitiesPaginated(babyId, cursor, 10);
+
+      if (result.success && result.data) {
+        setActivities((prev) => [...prev, ...result.data!.activities]);
+        setCursor(result.data.nextCursor);
+        setHasMore(result.data.hasMore);
+      }
+    } catch (error) {
+      console.error("활동 로드 실패:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [babyId, cursor, hasMore, isLoading]);
+
+  // Intersection Observer 설정
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoading) {
+          loadMoreActivities();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [loadMoreActivities, hasMore, isLoading]);
+
+  // 날짜별 그룹화
+  const groupedActivities = activities.reduce((groups, activity) => {
+    const date = new Date(activity.startTime);
+    const dateKey = format(date, 'yyyy-MM-dd');
+    if (!groups[dateKey]) {
+      groups[dateKey] = [];
+    }
+    groups[dateKey].push(activity);
+    return groups;
+  }, {} as Record<string, Activity[]>);
+
+  const renderDateHeader = (dateStr: string) => {
+    const date = new Date(dateStr);
+    let label = format(date, 'M월 d일 EEEE', { locale: ko });
+    if (isToday(date)) label = "오늘";
+    if (isYesterday(date)) label = "어제";
+
+    return (
+      <div className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur py-2 px-1 mb-4 border-b border-gray-100">
+        <h3 className="text-sm font-bold text-gray-600 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+          {label}
+        </h3>
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-[clamp(16px,5vw,24px)]">
+      {/* 오늘의 요약 헤더 */}
+      {activities.length > 0 && (
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-[clamp(12px,4vw,16px)] rounded-xl border border-blue-100 shadow-sm mb-[clamp(16px,5vw,24px)]">
+          <h3 className="text-[clamp(10px,3vw,12px)] font-bold text-blue-800 mb-[clamp(4px,1vw,8px)] uppercase tracking-wide">Today's Summary</h3>
+          <div className="flex gap-[clamp(16px,5vw,24px)]">
+            <div>
+              <p className="text-[clamp(10px,3vw,12px)] text-blue-600 mb-0.5">총 수면</p>
+              <p className="text-[clamp(16px,5vw,18px)] font-bold text-blue-900">
+                {Math.floor(dailySummary.sleepMinutes / 60)}시간 {dailySummary.sleepMinutes % 60}분
+              </p>
+            </div>
+            <div>
+              <p className="text-[clamp(10px,3vw,12px)] text-blue-600 mb-0.5">총 수유량</p>
+              <p className="text-[clamp(16px,5vw,18px)] font-bold text-blue-900">
+                {dailySummary.feedingAmount}ml <span className="text-[clamp(12px,3.5vw,14px)] font-normal text-blue-700">({dailySummary.feedingCount}회)</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {!isSubscribed && (
-        <div className="text-xs text-yellow-600 bg-yellow-50 p-2 rounded border border-yellow-200">
+        <div className="text-[clamp(10px,3vw,12px)] text-yellow-600 bg-yellow-50 p-2 rounded border border-yellow-200">
           실시간 업데이트 연결 중...
         </div>
       )}
+
       {activities.length === 0 ? (
-        <p className="text-gray-500">아직 기록된 활동이 없습니다.</p>
+        <p className="text-gray-500 text-center py-[clamp(24px,8vw,32px)] text-[clamp(14px,4vw,16px)]">아직 기록된 활동이 없습니다.</p>
       ) : (
-        activities.map((activity) => (
-          <ActivityCard
-            key={activity.id}
-            activity={activity}
-            onDelete={handleActivityDelete}
-          />
-        ))
+        <div className="relative pl-4 border-l-2 border-gray-100 ml-2 space-y-[clamp(16px,5vw,32px)]">
+          {Object.entries(groupedActivities).map(([date, dayActivities]) => (
+            <div key={date} className="relative">
+              {/* 날짜 헤더 */}
+              {renderDateHeader(date)}
+              
+              <div className="space-y-[clamp(12px,4vw,16px)]">
+                {dayActivities.map((activity) => (
+                  <div key={activity.id} className="relative group">
+                    {/* 타임라인 점 */}
+                    <div className="absolute -left-[25px] top-[clamp(16px,5vw,24px)] w-[clamp(12px,3.5vw,16px)] h-[clamp(12px,3.5vw,16px)] rounded-full border-[clamp(2px,0.5vw,4px)] border-white bg-blue-400 shadow-sm z-10"></div>
+                    
+                    <ActivityCard
+                      activity={activity}
+                      onDelete={handleActivityDelete}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {/* 무한 스크롤 로딩 인디케이터 */}
+          {hasMore && (
+            <div ref={observerTarget} className="py-[clamp(8px,2vw,16px)] text-center">
+              {isLoading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-[clamp(16px,4vw,20px)] h-[clamp(16px,4vw,20px)] border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-[clamp(12px,3.5vw,14px)] text-gray-600">로딩 중...</span>
+                </div>
+              ) : (
+                <div className="text-gray-400 text-[clamp(12px,3.5vw,14px)]">스크롤하여 더 보기</div>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

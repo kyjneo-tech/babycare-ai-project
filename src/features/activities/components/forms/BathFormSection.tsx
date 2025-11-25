@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
+import { SPACING, TYPOGRAPHY } from "@/design-system";
 
 interface BathFormSectionProps {
   bathType: string;
@@ -23,10 +24,10 @@ export function BathFormSection({
   disabled = false,
 }: BathFormSectionProps) {
   return (
-    <div className="space-y-4">
-      <div>
-        <Label className="mb-2 block">목욕 종류</Label>
-        <div className="grid grid-cols-3 gap-2">
+    <div className={SPACING.space.md}>
+      <div className={SPACING.space.sm}>
+        <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>목욕 종류</Label>
+        <div className={cn("grid grid-cols-3", SPACING.gap.sm)}>
           {[
             { key: "tub", label: "🛁 통목욕" },
             { key: "shower", label: "🚿 샤워" },
@@ -35,14 +36,9 @@ export function BathFormSection({
             <Button
               key={item.key}
               type="button"
-              variant="outline"
+              variant={bathType === item.key ? "default" : "outline"}
               onClick={() => setBathType(item.key)}
               disabled={disabled}
-              className={cn(
-                bathType === item.key
-                  ? "bg-blue-500 text-white hover:bg-blue-600 border-blue-600"
-                  : "hover:bg-blue-50"
-              )}
             >
               {item.label}
             </Button>
@@ -50,9 +46,9 @@ export function BathFormSection({
         </div>
       </div>
 
-      <div>
-        <Label className="mb-2 block">물 온도 (°C)</Label>
-        <div className="flex items-center gap-4">
+      <div className={SPACING.space.sm}>
+        <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>물 온도 (°C)</Label>
+        <div className={cn("flex items-center", SPACING.gap.md)}>
           <Slider
             value={[parseFloat(bathTemp) || 38]}
             min={34}
@@ -62,15 +58,15 @@ export function BathFormSection({
             disabled={disabled}
             className="flex-1"
           />
-          <span className="font-bold text-blue-600 w-12 text-right">
+          <span className={cn(TYPOGRAPHY.h3, "text-primary w-12 text-right")}>
             {bathTemp}°C
           </span>
         </div>
       </div>
 
-      <div>
-        <Label className="mb-2 block">아기 반응</Label>
-        <div className="grid grid-cols-3 gap-2">
+      <div className={SPACING.space.sm}>
+        <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>아기 반응</Label>
+        <div className={cn("grid grid-cols-3", SPACING.gap.sm)}>
           {[
             { key: "good", label: "😄 좋음" },
             { key: "neutral", label: "😐 보통" },
@@ -79,14 +75,9 @@ export function BathFormSection({
             <Button
               key={item.key}
               type="button"
-              variant="outline"
+              variant={reaction === item.key ? "default" : "outline"}
               onClick={() => setReaction(item.key)}
               disabled={disabled}
-              className={cn(
-                reaction === item.key
-                  ? "bg-blue-500 text-white hover:bg-blue-600 border-blue-600"
-                  : "hover:bg-blue-50"
-              )}
             >
               {item.label}
             </Button>

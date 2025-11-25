@@ -12,7 +12,7 @@ export function MeasurementCard({ babyId }: MeasurementCardProps) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
       <h3 className="text-xl font-bold text-gray-800 mb-4">성장 기록</h3>
       <AddMeasurementForm
         babyId={babyId}

@@ -43,7 +43,7 @@ export class PrismaActivityRepository implements IActivityRepository {
         babyId,
         createdAt: { gte: startDate },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { startTime: 'desc' },
       include: {
         User: {
           select: { name: true },

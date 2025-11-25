@@ -1,6 +1,6 @@
 // src/features/auth/repositories/__tests__/PrismaUserRepository.test.ts
 import { PrismaUserRepository } from '../PrismaUserRepository';
-import { prismaMock } from '@/jest.setup';
+import { prismaMock } from '../../../../../jest.setup';
 import { User } from '@prisma/client';
 
 describe('사용자 리포지토리 (PrismaUserRepository)', () => {

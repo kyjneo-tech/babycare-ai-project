@@ -35,6 +35,8 @@ model User {
   ChatMessages  ChatMessage[]
   // 관계: 사용자의 설정
   Settings      UserSettings?
+  // 관계: 사용자는 여러 노트를 작성할 수 있습니다.
+  Notes         Note[]
 }
 
 // UserSettings (사용자 설정) 모델: 사용자의 앱 설정을 저장합니다.
@@ -90,6 +92,8 @@ model Baby {
   ChatMessages ChatMessage[]
   // 관계: 아기는 여러 측정 기록을 가질 수 있습니다.
   Measurements BabyMeasurement[]
+  // 관계: 아기는 여러 노트/일정을 가질 수 있습니다.
+  Notes        Note[]
 
   // familyId 필드에 인덱스를 추가하여 조회 성능을 최적화합니다.
   @@index([familyId])
@@ -98,12 +102,13 @@ model Baby {
 // FamilyMember (가족 구성원) 모델: User와 Family 간의 다대다 관계를 연결합니다.
 // 누가 어떤 가족에 어떤 역할로 속해있는지를 정의합니다.
 model FamilyMember {
-  userId   String // 사용자 ID
-  familyId String // 가족 ID
-  role     String // 가족 내 역할 (예: 'parent', 'grandparent')
-  relation String // 아기와의 관계 (예: '엄마', '아빠')
-  createdAt DateTime @default(now()) // 생성일시
-  updatedAt DateTime @updatedAt // 최종 수정일시
+  userId     String // 사용자 ID
+  familyId   String // 가족 ID
+  permission String   @default("member") // 권한 레벨: 'owner' | 'admin' | 'member' | 'viewer'
+  role       String // 가족 내 역할 (예: 'parent', 'grandparent')
+  relation   String // 아기와의 관계 (예: '엄마', '아빠')
+  createdAt  DateTime @default(now()) // 생성일시
+  updatedAt  DateTime @updatedAt // 최종 수정일시
 
   // 관계: 사용자 모델과 연결됩니다.
   User   User   @relation(fields: [userId], references: [id], onDelete: Cascade) // 사용자가 삭제되면 구성원 정보도 삭제
@@ -217,4 +222,59 @@ model BabyMeasurement {
 
   // babyId와 measuredAt 필드에 인덱스를 추가하여 조회 성능을 최적화합니다.
   @@index([babyId, measuredAt(sort: Desc)])
+}
+
+// Note (노트/일정) 모델: 메모, 투두, 예방접종, 건강검진 등 모든 일정을 통합 관리합니다.
+model Note {
+  id          String    @id @default(cuid()) // 노트 고유 ID
+  babyId      String // 대상 아기 ID
+  userId      String // 작성자 ID
+  
+  type        NoteType // 노트 유형 (메모, 투두, 예방접종 등)
+  title       String // 노트 제목
+  content     String?   @db.Text // 노트 내용 (선택 사항, 긴 텍스트 가능)
+  
+  dueDate     DateTime? // 마감일/일정 날짜 (선택 사항)
+  completed   Boolean   @default(false) // 완료 여부 (투두용)
+  completedAt DateTime? // 완료 일시
+  priority    Priority? // 우선순위 (선택 사항)
+  
+  tags        String[] // 태그 배열 (검색 및 필터링용)
+  metadata    Json? // 타입별 추가 정보 (예: 백신 배치번호, 병원 이름 등)
+  
+  reminderDays Int[] // 알림 설정 (예: [7, 3, 0] = 7일전, 3일전, 당일)
+  
+  createdAt   DateTime  @default(now()) // 생성일시
+  updatedAt   DateTime  @updatedAt // 최종 수정일시
+  
+  // 관계: 노트 대상 아기 모델과 연결됩니다.
+  Baby        Baby      @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  // 관계: 노트 작성자 사용자 모델과 연결됩니다.
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // 인덱스: 조회 성능 최적화
+  @@index([babyId, type])
+  @@index([babyId, dueDate])
+  @@index([babyId, completed])
+}
+
+// NoteType (노트 유형) Enum: Note 모델의 'type' 필드에 사용될 수 있는 값들을 정의합니다.
+enum NoteType {
+  MEMO // 일반 메모
+  TODO // 할 일
+  VACCINATION // 예방접종
+  HEALTH_CHECKUP // 건강검진
+  MILESTONE // 발달 마일스톤
+  WONDER_WEEK // 원더윅스 도약기
+  SLEEP_REGRESSION // 수면 퇴행기
+  FEEDING_STAGE // 이유식 단계
+  APPOINTMENT // 병원 예약
+}
+
+// Priority (우선순위) Enum: Note 모델의 'priority' 필드에 사용될 수 있는 값들을 정의합니다.
+enum Priority {
+  LOW // 낮음
+  MEDIUM // 보통
+  HIGH // 높음
+  URGENT // 긴급
 }

@@ -13,8 +13,12 @@ export async function middleware(req: NextRequest) {
 
   // 게스트 모드 허용 경로 (인증 불필요)
   const guestAllowedPaths = [
-    '/dashboard/analytics/guest-baby-id',
+    '/analytics/guest-baby-id', // Updated path
   ];
+
+  // 인증이 필요 없는 공개 경로 정의
+  const publicPaths = ['/login', '/signup', '/join']; // Root path '/' will be handled by config.matcher for protection
+  const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(`${path}/`));
 
   // 게스트 모드 체크
   if (guestAllowedPaths.some(path => pathname.startsWith(path))) {
@@ -22,8 +26,10 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // 보호된 경로 체크 (/dashboard로 시작하는 모든 경로)
-  if (pathname.startsWith('/dashboard')) {
+  // 보호된 경로 체크 (공개 경로가 아니면 보호)
+  // `config.matcher`에서 `/`를 포함한 모든 경로를 보호하도록 설정되어 있으므로,
+  // 여기서는 `publicPaths`에 명시된 경로만 보호하지 않습니다.
+  if (!isPublicPath) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     
     if (!token) {
@@ -46,8 +52,10 @@ export async function middleware(req: NextRequest) {
 // 미들웨어 실행 범위 지정
 export const config = {
   matcher: [
-    '/dashboard/:path*',  // 모든 dashboard 경로 보호
-    '/api/auth/:path*',   // NextAuth API 경로
+    // Protect all routes except API routes, _next/*, static files, and explicit public paths (login, signup, join)
+    // The middleware function itself will handle redirection for unauthenticated users
+    // on paths covered by this matcher.
+    '/((?!api|_next/static|_next/image|favicon.ico|login|signup|join).*)',
   ],
 };
 

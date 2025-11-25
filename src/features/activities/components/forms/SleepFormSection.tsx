@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GuidelinePanel } from "../ui/GuidelinePanel";
+import { SPACING, TYPOGRAPHY } from "@/design-system";
+import { cn } from "@/lib/utils";
 
 interface SleepFormSectionProps {
   endTimeHours: string;
@@ -29,23 +31,22 @@ export function SleepFormSection({
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <Label className="mb-2 block">종료 시간</Label>
-        <div className="flex items-center gap-2 mb-2">
+    <div className={SPACING.space.md}>
+      <div className={SPACING.space.sm}>
+        <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>종료 시간</Label>
+        <div className={cn("flex items-center mb-2", SPACING.gap.sm)}>
           <Button
             type="button"
             variant="secondary"
             size="sm"
             onClick={setNow}
             disabled={disabled}
-            className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-indigo-200"
           >
             지금 일어남
           </Button>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
+        <div className={cn("grid grid-cols-2", SPACING.gap.sm)}>
+          <div className={SPACING.space.xs}>
             <Input
               type="number"
               min="0"
@@ -53,11 +54,11 @@ export function SleepFormSection({
               placeholder="시"
               value={endTimeHours}
               onChange={(e) => setEndTimeHours(e.target.value)}
-              className={errors.endTime ? "border-red-500" : ""}
+              className={errors.endTime ? "border-destructive" : ""}
               disabled={disabled}
             />
           </div>
-          <div className="space-y-1">
+          <div className={SPACING.space.xs}>
             <Input
               type="number"
               min="0"
@@ -65,13 +66,13 @@ export function SleepFormSection({
               placeholder="분"
               value={endTimeMinutes}
               onChange={(e) => setEndTimeMinutes(e.target.value)}
-              className={errors.endTime ? "border-red-500" : ""}
+              className={errors.endTime ? "border-destructive" : ""}
               disabled={disabled}
             />
           </div>
         </div>
         {errors.endTime && (
-          <p className="text-xs text-red-500 mt-1">{errors.endTime}</p>
+          <p className={cn(TYPOGRAPHY.caption, "text-destructive mt-1")}>{errors.endTime}</p>
         )}
 
         {ageInMonths >= 0 && (

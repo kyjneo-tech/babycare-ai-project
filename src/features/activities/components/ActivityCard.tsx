@@ -10,6 +10,13 @@ import {
   diaperTypeLabels,
   breastSideLabels,
 } from "@/shared/utils/activityLabels";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { SPACING, TYPOGRAPHY } from "@/design-system";
+import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
 
 interface ActivityCardProps {
   activity: Activity;
@@ -38,10 +45,12 @@ export function ActivityCard({ activity, onDelete }: ActivityCardProps) {
   };
 
   const renderActivityDetails = () => {
+    const textClass = cn(TYPOGRAPHY.body.small, "text-muted-foreground");
+
     switch (activity.type) {
       case "FEEDING":
         return (
-          <p className="text-sm text-gray-600">
+          <p className={textClass}>
             {activity.feedingType &&
               feedingTypeLabels[
                 activity.feedingType as keyof typeof feedingTypeLabels
@@ -57,27 +66,31 @@ export function ActivityCard({ activity, onDelete }: ActivityCardProps) {
         );
       case "SLEEP":
         return (
-          <>
+          <p className={textClass}>
+            {formatActivityTime(activity.startTime)}
+            {activity.endTime ? ` - ${formatActivityTime(activity.endTime)}` : " ~"}
             {activity.duration && (
-              <p className="text-sm text-gray-600">
+              <span className="ml-1">
+                (
                 {Math.floor(activity.duration / 60) > 0 &&
                   `${Math.floor(activity.duration / 60)}시간 `}
                 {activity.duration % 60 > 0 && `${activity.duration % 60}분`}
-              </p>
+                )
+              </span>
             )}
-          </>
+          </p>
         );
       case "DIAPER":
         return (
           <>
-            <p className="text-sm text-gray-600">
+            <p className={textClass}>
               {activity.diaperType &&
                 diaperTypeLabels[
                   activity.diaperType as keyof typeof diaperTypeLabels
                 ]}
             </p>
             {activity.stoolColor && (
-              <p className="text-sm text-gray-500">
+              <p className={cn(TYPOGRAPHY.caption, "mt-1")}>
                 색상: {activity.stoolColor}
               </p>
             )}
@@ -87,7 +100,7 @@ export function ActivityCard({ activity, onDelete }: ActivityCardProps) {
         return (
           <>
             {activity.bathTemp && (
-              <p className="text-sm text-gray-600">
+              <p className={textClass}>
                 온도: {activity.bathTemp}°C
               </p>
             )}
@@ -97,16 +110,16 @@ export function ActivityCard({ activity, onDelete }: ActivityCardProps) {
         return (
           <>
             {activity.playDuration && (
-              <p className="text-sm text-gray-600">{activity.playDuration}분</p>
+              <p className={textClass}>{activity.playDuration}분</p>
             )}
           </>
         );
       case "MEDICINE":
         return (
           <>
-            <p className="text-sm text-gray-600">{activity.medicineName}</p>
+            <p className={textClass}>{activity.medicineName}</p>
             {activity.medicineAmount && (
-              <p className="text-sm text-gray-500">
+              <p className={cn(TYPOGRAPHY.caption, "mt-1")}>
                 {activity.medicineAmount} {activity.medicineUnit}
               </p>
             )}
@@ -116,7 +129,7 @@ export function ActivityCard({ activity, onDelete }: ActivityCardProps) {
         return (
           <>
             {activity.temperature && (
-              <p className="text-sm text-gray-600">{activity.temperature}°C</p>
+              <p className={textClass}>{activity.temperature}°C</p>
             )}
           </>
         );
@@ -126,31 +139,40 @@ export function ActivityCard({ activity, onDelete }: ActivityCardProps) {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition border border-gray-100 flex justify-between items-start">
-      <div className="flex-1">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="font-semibold text-gray-800">
-            {activityTypeLabels[activity.type]}
-          </span>
-          <span className="text-xs text-gray-500">
-            {formatActivityTime(activity.startTime)}
-          </span>
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className={cn("flex justify-between items-start", SPACING.card.small)}>
+        <div className="flex-1 min-w-0">
+          <div className={cn("flex items-center flex-wrap", SPACING.gap.xs, "mb-2")}>
+            <span className={cn(TYPOGRAPHY.h3, "text-card-foreground")}>
+              {activityTypeLabels[activity.type]}
+            </span>
+            <span className={TYPOGRAPHY.caption}>
+              {formatActivityTime(activity.startTime)}
+            </span>
+            <Badge variant="outline" className="text-[10px] font-normal">
+              {formatDistanceToNow(new Date(activity.startTime), { addSuffix: true, locale: ko })}
+            </Badge>
+          </div>
+          {renderActivityDetails()}
+          {activity.note && (
+            <p className={cn(TYPOGRAPHY.body.small, "mt-2 text-muted-foreground italic")}>
+              {activity.note}
+            </p>
+          )}
         </div>
-        {renderActivityDetails()}
-        {activity.note && (
-          <p className="text-sm mt-2 text-gray-600 italic">{activity.note}</p>
+        {onDelete && (
+          <Button
+            onClick={handleDelete}
+            disabled={deleting}
+            variant="destructive"
+            size="sm"
+            className="flex-shrink-0 ml-3"
+            title="삭제"
+          >
+            {deleting ? "..." : "삭제"}
+          </Button>
         )}
-      </div>
-      {onDelete && (
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          className="flex-shrink-0 ml-3 px-3 py-1 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white text-sm rounded transition"
-          title="삭제"
-        >
-          {deleting ? "..." : "삭제"}
-        </button>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

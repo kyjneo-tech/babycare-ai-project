@@ -5,8 +5,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-nunito), var(--font-geist-sans), sans-serif;
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-jua), cursive;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -40,6 +41,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
 }
 
 /* 스크롤바 숨기기 */
@@ -52,73 +55,135 @@
   display: none;  /* Chrome, Safari and Opera */
 }
 
+/* Safe Area Insets for Mobile */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Prevent text selection on UI elements for app-like feel */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  /* Rounded Aesthetics: 더 둥글게 */
+  --radius: 1rem; /* 16px base radius */
+
+  /* Warm & Soft Color Palette */
+  /* Background: Cream White (#FFFDF5) */
+  --background: oklch(0.99 0.01 95); 
+  --foreground: oklch(0.25 0.02 260); /* Soft Black */
+
+  /* Surface: Pure White */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.25 0.02 260);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.25 0.02 260);
+
+  /* Primary: Soft Blue (#B8D4F0) -> OKLCH approx */
+  --primary: oklch(0.85 0.08 250); 
+  --primary-foreground: oklch(0.25 0.05 260); /* Dark text on light blue */
+
+  /* Secondary: Baby Pink (#F4C2C2) -> OKLCH approx */
+  --secondary: oklch(0.88 0.08 20); 
+  --secondary-foreground: oklch(0.3 0.05 20);
+
+  /* Muted: Lavender (#E6E6FA) -> OKLCH approx */
+  --muted: oklch(0.94 0.03 280);
+  --muted-foreground: oklch(0.5 0.05 260);
+
+  /* Accent: Warm Orange (#FFD4B8) -> OKLCH approx */
+  --accent: oklch(0.88 0.08 60);
+  --accent-foreground: oklch(0.3 0.05 50);
+
+  /* Destructive: Soft Red */
+  --destructive: oklch(0.7 0.15 20);
+  --destructive-foreground: oklch(0.98 0 0);
+
+  /* Borders & Inputs */
+  --border: oklch(0.92 0.02 260);
+  --input: oklch(0.92 0.02 260);
+  --ring: oklch(0.85 0.08 250); /* Same as Primary */
+
+  /* Charts (Pastel Tones) */
+  --chart-1: oklch(0.85 0.08 250); /* Soft Blue */
+  --chart-2: oklch(0.88 0.08 20);  /* Baby Pink */
+  --chart-3: oklch(0.90 0.08 150); /* Mint Green */
+  --chart-4: oklch(0.88 0.08 60);  /* Warm Orange */
+  --chart-5: oklch(0.94 0.03 280); /* Lavender */
+
+  /* Sidebar */
+  --sidebar: oklch(0.99 0.01 95); /* Cream White */
+  --sidebar-foreground: oklch(0.25 0.02 260);
+  --sidebar-primary: oklch(0.85 0.08 250);
+  --sidebar-primary-foreground: oklch(0.25 0.05 260);
+  --sidebar-accent: oklch(0.94 0.03 280); /* Lavender */
+  --sidebar-accent-foreground: oklch(0.25 0.05 260);
+  --sidebar-border: oklch(0.92 0.02 260);
+  --sidebar-ring: oklch(0.85 0.08 250);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Dark Mode: Deep Warm Grey & Muted Pastels */
+  --background: oklch(0.20 0.02 260);
+  --foreground: oklch(0.95 0.01 95);
+  
+  --card: oklch(0.25 0.02 260);
+  --card-foreground: oklch(0.95 0.01 95);
+  
+  --popover: oklch(0.25 0.02 260);
+  --popover-foreground: oklch(0.95 0.01 95);
+  
+  /* Primary: Slightly deeper Soft Blue */
+  --primary: oklch(0.75 0.1 250);
+  --primary-foreground: oklch(0.15 0.05 260);
+  
+  /* Secondary: Slightly deeper Baby Pink */
+  --secondary: oklch(0.75 0.1 20);
+  --secondary-foreground: oklch(0.2 0.05 20);
+  
+  --muted: oklch(0.3 0.03 260);
+  --muted-foreground: oklch(0.7 0.05 260);
+  
+  --accent: oklch(0.3 0.03 260);
+  --accent-foreground: oklch(0.95 0.01 95);
+  
+  --destructive: oklch(0.6 0.15 20);
+  --destructive-foreground: oklch(0.95 0.01 95);
+  
+  --border: oklch(0.3 0.03 260);
+  --input: oklch(0.3 0.03 260);
+  --ring: oklch(0.75 0.1 250);
+  
+  --chart-1: oklch(0.75 0.1 250);
+  --chart-2: oklch(0.75 0.1 20);
+  --chart-3: oklch(0.8 0.1 150);
+  --chart-4: oklch(0.75 0.1 60);
+  --chart-5: oklch(0.7 0.05 280);
+  
+  --sidebar: oklch(0.20 0.02 260);
+  --sidebar-foreground: oklch(0.95 0.01 95);
+  --sidebar-primary: oklch(0.75 0.1 250);
+  --sidebar-primary-foreground: oklch(0.15 0.05 260);
+  --sidebar-accent: oklch(0.3 0.03 260);
+  --sidebar-accent-foreground: oklch(0.95 0.01 95);
+  --sidebar-border: oklch(0.3 0.03 260);
+  --sidebar-ring: oklch(0.75 0.1 250);
 }
 
 @layer base {
@@ -127,5 +192,74 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* 애니메이션 */
+  @keyframes slide-up-fade-in {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-up-fade-in {
+    animation: slide-up-fade-in 0.4s ease-out forwards;
+  }
+
+  /* Staggered animation delay utilities */
+  .stagger-animation {
+    opacity: 0; /* 기본적으로 안보이게 */
+    animation-fill-mode: forwards;
+  }
+  .stagger-delay-1 { animation-delay: 0.1s; }
+  .stagger-delay-2 { animation-delay: 0.2s; }
+  .stagger-delay-3 { animation-delay: 0.3s; }
+  .stagger-delay-4 { animation-delay: 0.4s; }
+
+  /* 모달 애니메이션 */
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out;
+  }
+
+  /* Bottom Sheet 애니메이션 */
+  @keyframes slide-in-from-bottom {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-out-to-bottom {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  .slide-in-from-bottom {
+    animation: slide-in-from-bottom 0.3s ease-out;
+  }
+
+  .slide-out-to-bottom {
+    animation: slide-out-to-bottom 0.3s ease-in;
   }
 }

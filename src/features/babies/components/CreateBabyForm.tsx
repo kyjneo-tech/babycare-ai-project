@@ -4,6 +4,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBaby } from '@/features/babies/actions';
+import { FormField, FormInput, FormSelect } from '@/components/form';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { SPACING, TYPOGRAPHY } from '@/design-system';
+import { cn } from '@/lib/utils';
 
 export function CreateBabyForm() {
   const router = useRouter();
@@ -33,84 +38,72 @@ export function CreateBabyForm() {
     const result = await createBaby(input);
 
     if (result.success) {
-      // 성공 시 페이지를 새로고침하여 아기 목록을 갱신합니다.
-      router.refresh();
-      // 폼 초기화 (선택 사항)
-      (e.target as HTMLFormElement).reset();
+      // 성공 시 대시보드로 이동
+      router.push('/');
     } else {
       setError(result.error || '아기 등록에 실패했습니다.');
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className={SPACING.space.md}>
       {error && (
-        <div className="bg-red-100 text-red-700 p-3 rounded-md text-sm">
-          {error}
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-          아기 이름
-        </label>
-        <input
+
+      <FormField label="아기 이름" htmlFor="name" required>
+        <FormInput
           id="name"
           name="name"
           type="text"
+          placeholder="예: 김철수"
           required
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
         />
-      </div>
-      <div>
-        <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
-          성별
-        </label>
-        <select
+      </FormField>
+
+      <FormField label="성별" htmlFor="gender" required>
+        <FormSelect
           id="gender"
           name="gender"
           required
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">선택하세요</option>
-          <option value="male">남아</option>
-          <option value="female">여아</option>
-        </select>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700">
-            생년월일
-          </label>
-          <input
+          options={[
+            { value: 'male', label: '남아' },
+            { value: 'female', label: '여아' },
+          ]}
+        />
+      </FormField>
+
+      <div className={cn("grid grid-cols-2", SPACING.gap.md)}>
+        <FormField label="생년월일" htmlFor="birthDate" required>
+          <FormInput
             id="birthDate"
             name="birthDate"
             type="date"
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
-        </div>
-        <div>
-          <label htmlFor="birthTime" className="block text-sm font-medium text-gray-700">
-            태어난 시간
-          </label>
-          <input
+        </FormField>
+
+        <FormField label="태어난 시간" htmlFor="birthTime" required>
+          <FormInput
             id="birthTime"
             name="birthTime"
             type="time"
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
-        </div>
+        </FormField>
       </div>
-      <button
+
+      <Button
         type="submit"
         disabled={loading}
-        className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:opacity-50"
+        className="w-full"
+        size="lg"
       >
         {loading ? '등록 중...' : '등록하기'}
-      </button>
+      </Button>
     </form>
   );
 }

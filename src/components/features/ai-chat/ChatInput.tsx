@@ -2,6 +2,8 @@
 
 import { useState, FormEvent, KeyboardEvent } from "react";
 import { Send } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -28,23 +30,23 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex gap-2">
-      <textarea
+      <Textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="메시지를 입력하세요..."
         disabled={disabled}
         rows={1}
-        className="flex-1 px-4 py-3 border border-gray-300 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-        style={{ maxHeight: "120px" }}
+        className="flex-1 resize-none rounded-full max-h-[120px]"
       />
-      <button
+      <Button
         type="submit"
         disabled={!message.trim() || disabled}
-        className="flex-shrink-0 w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+        size="icon"
+        className="flex-shrink-0 rounded-full"
       >
         <Send className="w-5 h-5" />
-      </button>
+      </Button>
     </form>
   );
 }

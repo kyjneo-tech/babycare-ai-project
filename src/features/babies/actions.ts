@@ -25,7 +25,7 @@ export async function createBaby(input: CreateBabyInput) {
     const result = await createBabyService(userId, validatedInput);
 
     // 4. 대시보드 페이지 캐시 무효화
-    revalidatePath("/dashboard");
+    revalidatePath("/");
 
     return { success: true, data: result };
   } catch (error: any) {
@@ -79,8 +79,8 @@ export async function deleteBaby(babyId: string) {
       where: { id: babyId },
     });
 
-    revalidatePath("/dashboard");
-    revalidatePath(`/dashboard/babies/${babyId}`);
+    revalidatePath("/");
+    revalidatePath(`/babies/${babyId}`);
 
     return { success: true, message: "아기가 삭제되었습니다." };
   } catch (error: any) {

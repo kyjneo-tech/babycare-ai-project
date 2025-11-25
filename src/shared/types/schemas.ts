@@ -49,7 +49,7 @@ export type CreateBabyInput = z.infer<typeof CreateBabySchema>;
 
 // Activity 스키마 (활동 생성 시 유효성 검사)
 export const CreateActivitySchema = z.object({
-  babyId: z.string().min(1, '아기 ID는 필수입니다.'),
+  babyId: z.string().min(1, '아기 ID는 필수입니다.').max(100, '아기 ID가 너무 깁니다.'),
   type: ActivityTypeEnum,
   startTime: z.preprocess((arg) => {
     if (typeof arg == 'string' || arg instanceof Date) return new Date(arg);
@@ -57,30 +57,49 @@ export const CreateActivitySchema = z.object({
   endTime: z.preprocess((arg) => {
     if (typeof arg == 'string' || arg instanceof Date) return new Date(arg);
   }, z.date()).optional(),
-  note: z.string().optional(),
+  note: z.string().max(1000, '메모는 1000자 이내로 작성해주세요.').optional(),
 
   // 수유 관련 필드
-  feedingType: z.string().optional(),
-  feedingAmount: z.number().int().positive('수유량은 양수여야 합니다.').optional(),
-  breastSide: z.string().optional(),
+  feedingType: z.string().max(50, '수유 유형이 너무 깁니다.').optional(),
+  feedingAmount: z.number().int().positive('수유량은 양수여야 합니다.').max(500, '수유량이 비정상적으로 큽니다.').optional(),
+  breastSide: z.string().max(20, '수유 위치 정보가 너무 깁니다.').optional(),
 
   // 수면 관련 필드
-  sleepType: z.string().optional(),
-  duration: z.number().int().positive('수면 시간은 양수여야 합니다.').optional(),
+  sleepType: z.string().max(50, '수면 유형이 너무 깁니다.').optional(),
+  duration: z.number().int().positive('수면 시간은 양수여야 합니다.').max(86400, '수면 시간이 24시간을 초과할 수 없습니다.').optional(),
 
   // 배변 관련 필드
-  diaperType: z.string().optional(),
-  stoolColor: z.string().optional(),
-  stoolCondition: z.string().optional(),
+  diaperType: z.string().max(50, '배변 유형이 너무 깁니다.').optional(),
+  stoolColor: z.string().max(50, '대변 색상 정보가 너무 깁니다.').optional(),
+  stoolCondition: z.string().max(50, '대변 상태 정보가 너무 깁니다.').optional(),
 
   // 약 복용 관련 필드
-  medicineName: z.string().optional(),
-  medicineAmount: z.string().optional(),
-  medicineUnit: z.string().optional(),
+  medicineName: z.string().max(200, '약 이름이 너무 깁니다.').optional(),
+  medicineAmount: z.string().max(100, '약 복용량 정보가 너무 깁니다.').optional(),
+  medicineUnit: z.string().max(20, '약 단위 정보가 너무 깁니다.').optional(),
 
   // 체온 관련 필드
-  temperature: z.number().positive('체온은 양수여야 합니다.').optional(),
+  temperature: z.number().positive('체온은 양수여야 합니다.').min(30, '체온이 너무 낮습니다.').max(45, '체온이 너무 높습니다.').optional(),
 }).superRefine((data, ctx) => {
+  // 시간 검증: startTime이 미래 날짜가 아닌지 확인
+  const now = new Date();
+  if (data.startTime > now) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: '활동 시작 시간은 미래일 수 없습니다.',
+      path: ['startTime'],
+    });
+  }
+
+  // endTime이 startTime보다 빠른지 확인
+  if (data.endTime && data.endTime < data.startTime) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: '종료 시간은 시작 시간보다 빨라야 합니다.',
+      path: ['endTime'],
+    });
+  }
+
   // 활동 유형에 따른 필수 필드 검증
   if (data.type === 'FEEDING') {
     if (!data.feedingType) {

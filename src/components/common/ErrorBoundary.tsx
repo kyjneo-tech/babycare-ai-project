@@ -1,6 +1,10 @@
 "use client";
 
 import { Component, ReactNode } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertCircle } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -31,21 +35,23 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         this.props.fallback || (
           <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-              <div className="text-6xl mb-4">⚠️</div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                문제가 발생했습니다
-              </h2>
-              <p className="text-gray-600 mb-6">
-                페이지를 불러오는 중 오류가 발생했습니다.
-              </p>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-              >
-                페이지 새로고침
-              </button>
-            </div>
+            <Card className="max-w-md w-full">
+              <CardContent className="pt-6">
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>문제가 발생했습니다</AlertTitle>
+                  <AlertDescription>
+                    페이지를 불러오는 중 오류가 발생했습니다.
+                  </AlertDescription>
+                </Alert>
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="w-full mt-4"
+                >
+                  페이지 새로고침
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         )
       );

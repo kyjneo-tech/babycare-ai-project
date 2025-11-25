@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { SPACING, TYPOGRAPHY } from "@/design-system";
 
 interface DiaperFormSectionProps {
   diaperType: string;
@@ -20,47 +21,37 @@ export function DiaperFormSection({
   disabled = false,
 }: DiaperFormSectionProps) {
   return (
-    <div className="space-y-4">
-      <div>
-        <Label className="mb-2 block">배변 종류</Label>
-        <div className="grid grid-cols-2 gap-2">
+    <div className={SPACING.space.md}>
+      <div className={SPACING.space.sm}>
+        <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>배변 종류</Label>
+        <div className={cn("grid grid-cols-2", SPACING.gap.sm)}>
           <Button
             type="button"
-            variant="outline"
+            variant={diaperType === "urine" ? "default" : "outline"}
             onClick={() => setDiaperType("urine")}
             disabled={disabled}
-            className={cn(
-              "h-auto py-3 flex flex-col gap-1",
-              diaperType === "urine"
-                ? "bg-yellow-100 border-yellow-400 ring-2 ring-yellow-400 text-yellow-900 hover:bg-yellow-200"
-                : "hover:bg-yellow-50"
-            )}
+            className="h-auto py-3 flex flex-col gap-1"
           >
             <span className="text-xl">💧</span>
-            <span className="text-sm font-medium">소변</span>
+            <span className={TYPOGRAPHY.body.small}>소변</span>
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant={diaperType === "stool" ? "default" : "outline"}
             onClick={() => setDiaperType("stool")}
             disabled={disabled}
-            className={cn(
-              "h-auto py-3 flex flex-col gap-1",
-              diaperType === "stool"
-                ? "bg-yellow-100 border-yellow-400 ring-2 ring-yellow-400 text-yellow-900 hover:bg-yellow-200"
-                : "hover:bg-yellow-50"
-            )}
+            className="h-auto py-3 flex flex-col gap-1"
           >
             <span className="text-xl">💩</span>
-            <span className="text-sm font-medium">대변</span>
+            <span className={TYPOGRAPHY.body.small}>대변</span>
           </Button>
         </div>
       </div>
 
       {diaperType === "stool" && (
-        <div>
-          <Label className="mb-2 block">대변 상태 (필수)</Label>
-          <div className="grid grid-cols-2 gap-2">
+        <div className={SPACING.space.sm}>
+          <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>대변 상태 (필수)</Label>
+          <div className={cn("grid grid-cols-2", SPACING.gap.sm)}>
             {[
               { label: "물설사", value: "watery", icon: "🌊" },
               { label: "묽은변", value: "loose", icon: "🫠" },
@@ -70,15 +61,10 @@ export function DiaperFormSection({
               <Button
                 key={cond.value}
                 type="button"
-                variant="outline"
+                variant={stoolCondition === cond.value ? "default" : "outline"}
                 onClick={() => setStoolCondition(cond.value)}
                 disabled={disabled}
-                className={cn(
-                  "justify-start gap-2",
-                  stoolCondition === cond.value
-                    ? "bg-yellow-100 border-yellow-400 ring-1 ring-yellow-400 text-yellow-900 hover:bg-yellow-200"
-                    : "hover:bg-yellow-50"
-                )}
+                className="justify-start gap-2"
               >
                 <span>{cond.icon}</span>
                 <span>{cond.label}</span>
@@ -86,7 +72,7 @@ export function DiaperFormSection({
             ))}
           </div>
           {errors.stoolCondition && (
-            <p className="text-xs text-red-500 mt-1">{errors.stoolCondition}</p>
+            <p className={cn(TYPOGRAPHY.caption, "text-destructive mt-1")}>{errors.stoolCondition}</p>
           )}
         </div>
       )}

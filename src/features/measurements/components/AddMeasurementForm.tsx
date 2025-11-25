@@ -5,6 +5,10 @@ import { createMeasurement } from "@/features/measurements/actions";
 import { CreateMeasurementSchema } from "@/shared/types/schemas";
 import { getWeightPercentile, getFeedingGuideline, getSleepGuideline, getDexibuprofenGuideline } from "@/shared/lib/growthGuidelines";
 import { differenceInMonths } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SPACING, TYPOGRAPHY } from "@/design-system";
+import { cn } from "@/lib/utils";
 
 interface AddMeasurementFormProps {
   babyId: string;
@@ -264,16 +268,17 @@ export function AddMeasurementForm({
           </div>
 
           {/* 버튼 */}
-          <div className="p-4 bg-gray-50 border-t border-gray-100">
-            <button
+          <div className={cn("p-4 bg-muted border-t", SPACING.card.small)}>
+            <Button
               onClick={() => {
                 setShowResult(false);
                 onSuccess();
               }}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-sm transition-colors"
+              className="w-full"
+              size="lg"
             >
               확인
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
@@ -285,13 +290,13 @@ export function AddMeasurementForm({
           </p>
           <div className="flex justify-center items-center gap-4">
             <div className="flex flex-col">
-              <span className="text-xs text-gray-400">체중</span>
-              <span className="text-lg font-bold text-blue-600">{latestMeasurement.weight}kg</span>
+              <span className="text-[10px] sm:text-xs text-gray-400">체중</span>
+              <span className="text-base sm:text-lg font-bold text-blue-600">{latestMeasurement.weight}kg</span>
             </div>
             <div className="w-px h-8 bg-gray-200"></div>
             <div className="flex flex-col">
-              <span className="text-xs text-gray-400">키</span>
-              <span className="text-lg font-bold text-green-600">{latestMeasurement.height}cm</span>
+              <span className="text-[10px] sm:text-xs text-gray-400">키</span>
+              <span className="text-base sm:text-lg font-bold text-green-600">{latestMeasurement.height}cm</span>
             </div>
           </div>
         </div>
@@ -407,13 +412,14 @@ export function AddMeasurementForm({
         </div>
       </div>
 
-      <button
+      <Button
         onClick={handleSave}
         disabled={isSaving}
-        className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full"
+        size="lg"
       >
         {isSaving ? "저장 중..." : "기록하기"}
-      </button>
+      </Button>
       </>
       )}
     </div>

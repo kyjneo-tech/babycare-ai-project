@@ -46,3 +46,4 @@ next-env.d.ts
 *.md          
 *.xls          
 *.xlsx        
+/docs

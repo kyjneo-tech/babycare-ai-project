@@ -30,6 +30,7 @@ export function useActivityFormState() {
   const [medicineName, setMedicineName] = useState("");
   const [medicineAmount, setMedicineAmount] = useState("");
   const [medicineUnit, setMedicineUnit] = useState("ml");
+  const [syrupConc, setSyrupConc] = useState("");
   const [endTimeHours, setEndTimeHours] = useState("");
   const [endTimeMinutes, setEndTimeMinutes] = useState("");
   const [feedingDuration, setFeedingDuration] = useState("");
@@ -105,6 +106,7 @@ export function useActivityFormState() {
     medicineName, setMedicineName,
     medicineAmount, setMedicineAmount,
     medicineUnit, setMedicineUnit,
+    syrupConc, setSyrupConc,
     endTimeHours, setEndTimeHours,
     endTimeMinutes, setEndTimeMinutes,
     feedingDuration, setFeedingDuration,

@@ -98,7 +98,7 @@ function JoinPageContent() {
       if (!response.ok) {
         setError(data.error || "가족 참여에 실패했습니다.");
       } else {
-        router.push(`/dashboard`);
+        router.push(`/`);
       }
     } catch (err) {
       setError("가족 참여 중 오류가 발생했습니다.");

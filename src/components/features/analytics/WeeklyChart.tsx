@@ -1,4 +1,4 @@
-// src/app/dashboard/analytics/[babyId]/components/WeeklyChart.tsx
+// src/app/analytics/[babyId]/components/WeeklyChart.tsx
 'use client';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';

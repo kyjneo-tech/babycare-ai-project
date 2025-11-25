@@ -49,6 +49,7 @@ describe("AI 채팅 (AI Chat)", () => {
     birthTime: "00:00",
     familyId: "test-family-id",
     photoUrl: null,
+    aiSettings: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -171,6 +172,10 @@ const mockActivity: Activity & { baby?: Baby } = {
   medicineName: null,
   medicineAmount: null,
   medicineUnit: null,
+  reaction: null,
+  stoolCondition: null,
+  playLocation: null,
+  temperature: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

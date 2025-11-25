@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SPACING, TYPOGRAPHY } from "@/design-system";
+import { cn } from "@/lib/utils";
 
 interface TemperatureFormSectionProps {
   temperature: string;
@@ -21,26 +23,30 @@ export function TemperatureFormSection({
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <Label className="mb-2 block">체온 (°C)</Label>
-        <div className="flex items-center gap-4">
+    <div className={SPACING.space.md}>
+      <div className={SPACING.space.sm}>
+        <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>체온 (°C)</Label>
+        <div className={cn("flex items-center", SPACING.gap.md)}>
           <Button
             type="button"
             variant="outline"
             size="icon"
             onClick={() => adjustTemperature(-0.1)}
             disabled={disabled}
-            className="w-12 h-12 rounded-full bg-red-50 text-red-600 hover:bg-red-100 border-red-200"
+            className="w-12 h-12 rounded-full"
           >
             <span className="text-2xl font-bold">-</span>
           </Button>
           <Input
             type="number"
             step="0.1"
+            inputMode="decimal"
             value={temperature}
             onChange={(e) => setTemperature(e.target.value)}
-            className="flex-1 text-center text-2xl font-bold h-12 border-red-200 focus-visible:ring-red-500"
+            className={cn(
+              "flex-1 text-center text-2xl font-bold h-12",
+              errors.temperature && "border-destructive"
+            )}
             disabled={disabled}
           />
           <Button
@@ -49,13 +55,13 @@ export function TemperatureFormSection({
             size="icon"
             onClick={() => adjustTemperature(0.1)}
             disabled={disabled}
-            className="w-12 h-12 rounded-full bg-red-50 text-red-600 hover:bg-red-100 border-red-200"
+            className="w-12 h-12 rounded-full"
           >
             <span className="text-2xl font-bold">+</span>
           </Button>
         </div>
         {errors.temperature && (
-          <p className="text-xs text-center text-red-500 mt-2">
+          <p className={cn(TYPOGRAPHY.caption, "text-center text-destructive mt-2")}>
             {errors.temperature}
           </p>
         )}

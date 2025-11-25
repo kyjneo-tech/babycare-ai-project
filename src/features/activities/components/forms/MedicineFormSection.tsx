@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { GuidelinePanel } from "../ui/GuidelinePanel";
+import { SPACING, TYPOGRAPHY } from "@/design-system";
 
 interface MedicineFormSectionProps {
   medicineName: string;
@@ -18,6 +19,8 @@ interface MedicineFormSectionProps {
   setMedicineAmount: (value: string) => void;
   medicineUnit: string;
   setMedicineUnit: (value: string) => void;
+  syrupConc: string;
+  setSyrupConc: (value: string) => void;
   latestWeight: number | null;
   errors: Record<string, string>;
   disabled?: boolean;
@@ -30,61 +33,57 @@ export function MedicineFormSection({
   setMedicineAmount,
   medicineUnit,
   setMedicineUnit,
+  syrupConc,
+  setSyrupConc,
   latestWeight,
   errors,
   disabled = false,
 }: MedicineFormSectionProps) {
+  // 이부프로펜 또는 아세트아미노펜인지 확인
+  const needsSyrupConc =
+    medicineName.includes('이부프로펜') ||
+    medicineName.includes('부루펜') ||
+    medicineName.includes('챔프 파랑') ||
+    medicineName.includes('아세트아미노펜') ||
+    medicineName.includes('타이레놀') ||
+    medicineName.includes('챔프 빨강') ||
+    medicineName.includes('세토펜');
   return (
-    <div className="space-y-4">
-      <div>
-        <Label className="mb-2 block">약 종류 (해열제 교차 복용)</Label>
-        <div className="grid grid-cols-1 gap-2 mb-2">
-          <div className="grid grid-cols-2 gap-2">
+    <div className={SPACING.space.md}>
+      <div className={SPACING.space.sm}>
+        <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>약 종류 (해열제 교차 복용)</Label>
+        <div className={cn("grid grid-cols-1 mb-2", SPACING.gap.sm)}>
+          <div className={cn("grid grid-cols-2", SPACING.gap.sm)}>
             <Button
               type="button"
-              variant="outline"
+              variant={medicineName.includes("아세트아미노펜") ? "default" : "outline"}
               onClick={() => setMedicineName("아세트아미노펜")}
               disabled={disabled}
-              className={cn(
-                "h-auto py-2 flex flex-col gap-1",
-                medicineName.includes("아세트아미노펜")
-                  ? "bg-red-100 border-red-400 text-red-700 ring-1 ring-red-400 hover:bg-red-200"
-                  : "hover:bg-red-50"
-              )}
+              className="h-auto py-2 flex flex-col gap-1"
             >
               <span className="font-bold">🔴 아세트아미노펜</span>
-              <span className="text-xs text-gray-500">(챔프 빨강, 세토펜)</span>
+              <span className={cn(TYPOGRAPHY.caption, "text-muted-foreground")}>(챔프 빨강, 세토펜)</span>
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant={medicineName.includes("이부프로펜") ? "default" : "outline"}
               onClick={() => setMedicineName("이부프로펜")}
               disabled={disabled}
-              className={cn(
-                "h-auto py-2 flex flex-col gap-1",
-                medicineName.includes("이부프로펜")
-                  ? "bg-blue-100 border-blue-400 text-blue-700 ring-1 ring-blue-400 hover:bg-blue-200"
-                  : "hover:bg-blue-50"
-              )}
+              className="h-auto py-2 flex flex-col gap-1"
             >
               <span className="font-bold">🔵 이부프로펜</span>
-              <span className="text-xs text-gray-500">(챔프 파랑, 부루펜)</span>
+              <span className={cn(TYPOGRAPHY.caption, "text-muted-foreground")}>(챔프 파랑, 부루펜)</span>
             </Button>
           </div>
           <Button
             type="button"
-            variant="outline"
+            variant={medicineName.includes("덱시부프로펜") ? "default" : "outline"}
             onClick={() => setMedicineName("덱시부프로펜")}
             disabled={disabled}
-            className={cn(
-              "h-auto py-2 flex flex-col gap-1",
-              medicineName.includes("덱시부프로펜")
-                ? "bg-purple-100 border-purple-400 text-purple-700 ring-1 ring-purple-400 hover:bg-purple-200"
-                : "hover:bg-purple-50"
-            )}
+            className="h-auto py-2 flex flex-col gap-1"
           >
             <span className="font-bold">🟣 덱시부프로펜</span>
-            <span className="text-xs text-gray-500">(맥시부펜, 애니펜)</span>
+            <span className={cn(TYPOGRAPHY.caption, "text-muted-foreground")}>(맥시부펜, 애니펜)</span>
           </Button>
         </div>
         <Input
@@ -92,35 +91,35 @@ export function MedicineFormSection({
           placeholder="예: 챔프시럽, 부루펜"
           value={medicineName}
           onChange={(e) => setMedicineName(e.target.value)}
-          className={errors.medicineName ? "border-red-500" : ""}
+          className={errors.medicineName ? "border-destructive" : ""}
           disabled={disabled}
         />
         {errors.medicineName && (
-          <p className="text-xs text-red-500 mt-1">{errors.medicineName}</p>
+          <p className={cn(TYPOGRAPHY.caption, "text-destructive mt-1")}>{errors.medicineName}</p>
         )}
-        <p className="text-xs text-gray-500 mt-1">
+        <p className={cn(TYPOGRAPHY.caption, "text-muted-foreground mt-1")}>
           💡 해열제는 보통 4~6시간 간격, 교차 복용(다른 계열) 시 2~3시간 간격으로
           복용합니다.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <Label className="mb-2 block">용량</Label>
+      <div className={cn("grid grid-cols-2", SPACING.gap.sm)}>
+        <div className={SPACING.space.sm}>
+          <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>용량</Label>
           <Input
             type="text"
             placeholder="5"
             value={medicineAmount}
             onChange={(e) => setMedicineAmount(e.target.value)}
-            className={errors.medicineAmount ? "border-red-500" : ""}
+            className={errors.medicineAmount ? "border-destructive" : ""}
             disabled={disabled}
           />
           {errors.medicineAmount && (
-            <p className="text-xs text-red-500 mt-1">{errors.medicineAmount}</p>
+            <p className={cn(TYPOGRAPHY.caption, "text-destructive mt-1")}>{errors.medicineAmount}</p>
           )}
         </div>
-        <div>
-          <Label className="mb-2 block">단위</Label>
+        <div className={SPACING.space.sm}>
+          <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>단위</Label>
           <Select
             value={medicineUnit}
             onValueChange={setMedicineUnit}
@@ -140,13 +139,50 @@ export function MedicineFormSection({
         </div>
       </div>
 
-      {latestWeight && medicineName && medicineAmount && (
-        <GuidelinePanel
-          type="medicine"
-          value={parseFloat(medicineAmount)}
-          weight={latestWeight}
-          medicineName={medicineName}
-        />
+      {/* 시럽 농도 입력 (이부프로펜/아세트아미노펜만) */}
+      {needsSyrupConc && (
+        <div className={SPACING.space.sm}>
+          <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>
+            시럽 농도 (mg/mL)
+          </Label>
+          <Input
+            type="text"
+            placeholder="예: 20 (부루펜 100mg/5mL)"
+            value={syrupConc}
+            onChange={(e) => setSyrupConc(e.target.value)}
+            disabled={disabled}
+          />
+          <p className={cn(TYPOGRAPHY.caption, "text-muted-foreground mt-1")}>
+            💡 제품 라벨에서 확인: 예) 부루펜 100mg/5mL = 20mg/mL, 챔프 빨강 160mg/5mL = 32mg/mL
+          </p>
+        </div>
+      )}
+
+      {/* 권장 용량 안내 */}
+      {medicineName && (
+        <>
+          {latestWeight && medicineAmount ? (
+            <GuidelinePanel
+              type="medicine"
+              value={parseFloat(medicineAmount)}
+              weight={latestWeight}
+              medicineName={medicineName}
+              syrupConc={syrupConc ? parseFloat(syrupConc) : undefined}
+            />
+          ) : !latestWeight ? (
+            <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">⚠️</span>
+                <div className="text-sm text-yellow-800">
+                  <p className="font-medium">권장 용량을 표시하려면 체중 기록이 필요합니다.</p>
+                  <p className="text-xs mt-1">
+                    상단의 &apos;성장 기록&apos; 카드에서 체중을 먼저 입력해주세요.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </>
       )}
     </div>
   );

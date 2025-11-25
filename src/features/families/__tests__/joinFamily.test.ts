@@ -72,6 +72,7 @@ describe('가족 초대 서비스 (joinFamilyService)', () => {
       familyId: 'another-family-id',
       role: 'parent',
       relation: 'father',
+      permission: 'full',
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -100,6 +101,7 @@ describe('가족 초대 서비스 (joinFamilyService)', () => {
         familyId: mockFamily.id,
         role: 'caregiver',
         relation: 'grandmother',
+        permission: 'full',
         createdAt: new Date(),
         updatedAt: new Date(),
       };

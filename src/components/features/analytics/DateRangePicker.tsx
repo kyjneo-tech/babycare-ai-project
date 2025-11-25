@@ -41,10 +41,9 @@ export function DateRangePicker({
       start.setHours(0, 0, 0, 0);
     }
 
-    router.push(
-      `/dashboard/analytics/${babyId}?start=${start.toISOString().split("T")[0]}&end=${end.toISOString().split("T")[0]}`
-    );
-  };
+          router.push(
+            `/analytics/${babyId}?start=${start.toISOString().split("T")[0]}&end=${end.toISOString().split("T")[0]}`
+          );  };
 
   const applyCustomRange = () => {
     const start = new Date(customStart);
@@ -63,10 +62,9 @@ export function DateRangePicker({
       return;
     }
 
-    router.push(
-      `/dashboard/analytics/${babyId}?start=${customStart}&end=${customEnd}`
-    );
-    setShowCustomPicker(false);
+          router.push(
+            `/analytics/${babyId}?start=${customStart}&end=${customEnd}`
+          );    setShowCustomPicker(false);
   };
 
   const getDaysDiff = () => {

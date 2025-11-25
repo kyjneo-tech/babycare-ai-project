@@ -1,0 +1,104 @@
+// src/components/ui/fab-menu.tsx
+"use client";
+
+import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { BarChart2, MessageCircle, Users, Plus, Menu, X, PenLine } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface FABMenuProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  pathname: string;
+}
+
+export function FABMenu({ isOpen, onOpenChange, pathname }: FABMenuProps) {
+  const [currentBabyId, setCurrentBabyId] = useState<string | null>(null);
+  const router = useRouter(); // Use useRouter for redirects if babyId is null
+
+  useEffect(() => {
+    const lastBabyId = localStorage.getItem("lastBabyId");
+    // Only update if the current state is not already the stored value
+    if (currentBabyId !== lastBabyId) {
+      setCurrentBabyId(lastBabyId || null); // Ensure null if not found
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount
+
+  const menuItems = useMemo(() => {
+    const items: Array<{
+      label: string;
+      icon: typeof BarChart2;
+      href: string;
+    }> = [];
+
+    // 홈이 아닌 경우에만 "기록하기" 추가
+    if (pathname !== "/") {
+      items.push({
+        label: "기록하기",
+        icon: PenLine,
+        href: "/",
+      });
+    }
+
+    // 통계 페이지가 아니면 통계 메뉴 추가
+    if (!pathname.includes("/analytics")) {
+      items.push({
+        label: "통계",
+        icon: BarChart2,
+        href: currentBabyId ? `/analytics/${currentBabyId}` : "/add-baby",
+      });
+    }
+
+    // 가족 페이지가 아니면 가족 설정 메뉴 추가
+    if (pathname !== "/family") {
+      items.push({
+        label: "가족 설정",
+        icon: Users,
+        href: "/family",
+      });
+    }
+
+    return items;
+  }, [pathname, currentBabyId]);
+
+  return (
+    <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="default"
+          size="icon"
+          className={cn(
+            "h-14 w-14 rounded-full shadow-lg transition-all duration-200 ease-in-out backdrop-blur-sm",
+            isOpen ? 'bg-primary/90' : 'bg-primary/80'
+          )}
+          aria-label="메뉴 열기"
+        >
+          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="top" align="end" className="w-56 p-2">
+        {menuItems.map((item, index) => (
+          <React.Fragment key={item.label}>
+            {index > 0 && <DropdownMenuSeparator />}
+            <DropdownMenuItem asChild>
+              <Link href={item.href} className="flex items-center">
+                <item.icon className="mr-2 h-4 w-4" />
+                <span>{item.label}</span>
+              </Link>
+            </DropdownMenuItem>
+          </React.Fragment>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

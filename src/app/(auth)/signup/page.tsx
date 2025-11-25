@@ -45,35 +45,25 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 relative overflow-hidden p-4">
-      {/* 배경 장식 요소들 */}
-      <div className="absolute top-10 left-10 text-6xl opacity-20 animate-bounce">
-        🎈
-      </div>
-      <div className="absolute top-20 right-20 text-5xl opacity-20 animate-pulse">
-        🌟
-      </div>
-      <div className="absolute bottom-20 left-20 text-5xl opacity-20 animate-bounce">
-        🎨
-      </div>
-      <div className="absolute bottom-10 right-10 text-6xl opacity-20 animate-pulse">
-        🌈
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden p-4">
+      {/* 배경 장식 요소들 (Soft & Warm) */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-3xl animate-pulse" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/10 blur-3xl animate-pulse delay-1000" />
 
       {/* 메인 컨텐츠 */}
       <div className="max-w-md w-full z-10">
-        <Card className="shadow-2xl hover:shadow-3xl transition-shadow duration-300">
+        <Card className="shadow-lg border-none bg-white/90 backdrop-blur-sm">
           <CardHeader className="text-center">
-            <CardTitle className="text-4xl font-extrabold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
-              🍼 Babycare AI
+            <CardTitle className="text-4xl font-extrabold text-primary font-heading mb-2">
+              <span className="text-secondary">Babycare AI</span>
             </CardTitle>
-            <CardDescription className="text-lg">
+            <CardDescription className="text-lg text-muted-foreground">
               새로운 육아 여정을 시작하세요 ✨
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {error && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="rounded-2xl">
                 <AlertDescription className="flex items-center gap-2">
                   <span className="text-xl">⚠️</span>
                   <span>{error}</span>
@@ -91,6 +81,7 @@ export default function SignupPage() {
                   placeholder="홍길동"
                   required
                   disabled={loading}
+                  className="rounded-xl"
                 />
               </div>
 
@@ -100,9 +91,12 @@ export default function SignupPage() {
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="example@email.com"
+                  inputMode="email"
+                  enterKeyHint="next"
+                  placeholder="your@email.com"
                   required
                   disabled={loading}
+                  className="rounded-xl"
                 />
               </div>
 
@@ -116,6 +110,7 @@ export default function SignupPage() {
                   required
                   disabled={loading}
                   minLength={6}
+                  className="rounded-xl"
                 />
                 <p className="text-xs text-muted-foreground">
                   최소 6자 이상 입력해주세요
@@ -132,12 +127,13 @@ export default function SignupPage() {
                   required
                   disabled={loading}
                   minLength={6}
+                  className="rounded-xl"
                 />
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                className="w-full h-12 rounded-2xl font-bold text-lg shadow-sm"
                 disabled={loading}
               >
                 {loading ? (
@@ -156,7 +152,7 @@ export default function SignupPage() {
                 이미 계정이 있으신가요?{" "}
                 <Link
                   href="/login"
-                  className="font-bold text-purple-600 hover:text-purple-700 hover:underline transition-colors"
+                  className="font-bold text-primary hover:text-primary/80 hover:underline transition-colors"
                 >
                   로그인 하기 →
                 </Link>
@@ -167,12 +163,11 @@ export default function SignupPage() {
       </div>
 
       {/* 푸터 */}
-      <footer className="absolute bottom-4 w-full text-center text-gray-500 text-sm">
+      <footer className="absolute bottom-4 w-full text-center text-muted-foreground text-sm">
         <p className="flex items-center justify-center space-x-2">
           <span>© 2025 Babycare AI</span>
           <span>•</span>
-          <span>모든 권리 보유</span>
-          <span className="text-lg">💝</span>
+          <span>All rights reserved</span>
         </p>
       </footer>
     </div>

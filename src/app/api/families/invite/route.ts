@@ -2,10 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { PrismaClient } from "@prisma/client";
-import { canInviteMembers, type Role } from "@/lib/permissions";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/shared/lib/prisma";
+import { isAdminOrOwner } from "@/features/families/utils/permissions";
 
 // 6자리 랜덤 초대 코드 생성
 function generateInviteCode(): string {
@@ -22,11 +20,24 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: "인증되지 않은 사용자입니다." },
         { status: 401 }
       );
+    }
+    const userId = session.user.id;
+
+    // Rate limiting 적용 (스팸 방지)
+    const { inviteCodeRateLimit } = await import('@/shared/lib/ratelimit');
+    if (inviteCodeRateLimit) {
+      const { success } = await inviteCodeRateLimit.limit(userId);
+      if (!success) {
+        return NextResponse.json(
+          { error: "초대 코드 생성 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+          { status: 429 }
+        );
+      }
     }
 
     const { familyId } = await request.json();
@@ -38,47 +49,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 해당 가족에 대한 권한 확인 (Owner 또는 Admin만 초대 코드 생성 가능)
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "사용자를 찾을 수 없습니다." },
-        { status: 404 }
-      );
-    }
-
-    const familyMember = await prisma.familyMember.findUnique({
-      where: {
-        userId_familyId: {
-          userId: user.id,
-          familyId,
-        },
-      },
-    });
-
-    if (!familyMember) {
-      return NextResponse.json(
-        { error: "해당 가족에 속해 있지 않습니다." },
-        { status: 403 }
-      );
-    }
-
-    // Owner 또는 Admin 권한 체크
-    if (!canInviteMembers(familyMember.role as Role)) {
+    // 권한 체크: Admin 또는 Owner만 초대 코드 재생성 가능
+    const hasPermission = await isAdminOrOwner(userId, familyId);
+    if (!hasPermission) {
       return NextResponse.json(
         { error: "초대 코드를 생성할 권한이 없습니다." },
         { status: 403 }
       );
     }
 
-    // 고유한 초대 코드 생성
+    // 고유한 초대 코드 생성 (재시도 횟수 제한 추가)
     let inviteCode = generateInviteCode();
     let isUnique = false;
+    let attempts = 0;
+    const maxAttempts = 10;
 
-    while (!isUnique) {
+    while (!isUnique && attempts < maxAttempts) {
       const existingFamily = await prisma.family.findUnique({
         where: { inviteCode },
       });
@@ -87,7 +73,15 @@ export async function POST(request: NextRequest) {
         isUnique = true;
       } else {
         inviteCode = generateInviteCode();
+        attempts++;
       }
+    }
+
+    if (!isUnique) {
+      return NextResponse.json(
+        { error: "초대 코드 생성에 실패했습니다. 다시 시도해주세요." },
+        { status: 500 }
+      );
     }
 
     // 가족 초대 코드 업데이트

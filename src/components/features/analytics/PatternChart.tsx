@@ -1,4 +1,4 @@
-// src/app/dashboard/analytics/[babyId]/components/PatternChart.tsx
+// src/app/analytics/[babyId]/components/PatternChart.tsx
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';

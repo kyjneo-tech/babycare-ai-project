@@ -12,6 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { SPACING, TYPOGRAPHY } from "@/design-system";
+import { cn } from "@/lib/utils";
 
 import { TimeSelector } from "@/features/activities/components/ui/TimeSelector";
 import { ActivitySuggestions } from "@/features/activities/components/ui/ActivitySuggestions";
@@ -94,10 +96,10 @@ export function ActivityForm({
   }, [babyId, setBabyInfo, setAgeInMonths, setLatestWeight]);
 
   return (
-    <div className="space-y-6">
+    <div className={SPACING.space.lg}>
       {/* Quick Record Panel */}
       <Card className="border-none shadow-sm bg-white/50 backdrop-blur-sm">
-        <CardContent className="p-4 space-y-6">
+        <CardContent className={cn(SPACING.card.medium, SPACING.space.lg)}>
           <TimeSelector
             hours={hours}
             minutes={minutes}
@@ -108,7 +110,7 @@ export function ActivityForm({
             disabled={isGuestMode}
           />
 
-          <div className="grid grid-cols-4 gap-2">
+          <div className={cn("grid grid-cols-4", SPACING.gap.xs)}>
             {[
               { type: "FEEDING", icon: "🍼", label: "수유" },
               { type: "SLEEP", icon: "😴", label: "수면" },
@@ -122,17 +124,18 @@ export function ActivityForm({
                 key={item.type}
                 type="button"
                 variant={type === item.type ? "default" : "outline"}
-                className={`h-auto py-3 flex flex-col gap-1 ${
-                  type === item.type ? "ring-2 ring-offset-2 ring-blue-500" : ""
-                }`}
+                className={cn(
+                  "h-auto py-2 sm:py-3 flex flex-col gap-1",
+                  type === item.type && "ring-2 ring-offset-2 ring-primary"
+                )}
                 onClick={() => {
                   setType(item.type as any);
                   setShowDetail(true);
                 }}
                 disabled={isGuestMode}
               >
-                <span className="text-2xl">{item.icon}</span>
-                <span className="text-xs font-medium">{item.label}</span>
+                <span className="text-xl sm:text-2xl">{item.icon}</span>
+                <span className={cn(TYPOGRAPHY.body.small, "font-medium")}>{item.label}</span>
               </Button>
             ))}
           </div>
@@ -141,9 +144,9 @@ export function ActivityForm({
 
       {/* Detail Input Panel */}
       {showDetail && (
-        <Card className="border-blue-100 shadow-md animate-in slide-in-from-bottom-4 duration-300">
-          <CardHeader className="pb-4 border-b bg-blue-50/50">
-            <CardTitle className="text-lg flex items-center gap-2">
+        <Card className="border-primary/20 shadow-md animate-in slide-in-from-bottom-4 duration-300">
+          <CardHeader className={cn(SPACING.card.medium, "border-b bg-primary/5")}>
+            <CardTitle className={cn(TYPOGRAPHY.h3, "flex items-center gap-2")}>
               <span>
                 {type === "FEEDING" && "🍼 수유 기록"}
                 {type === "SLEEP" && "😴 수면 기록"}
@@ -155,8 +158,8 @@ export function ActivityForm({
               </span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <CardContent className={SPACING.card.medium}>
+            <form onSubmit={handleSubmit} className={SPACING.space.lg}>
               {type === "FEEDING" && (
                 <FeedingFormSection
                   feedingType={state.feedingType}
@@ -206,6 +209,8 @@ export function ActivityForm({
                   setMedicineAmount={state.setMedicineAmount}
                   medicineUnit={state.medicineUnit}
                   setMedicineUnit={state.setMedicineUnit}
+                  syrupConc={state.syrupConc}
+                  setSyrupConc={state.setSyrupConc}
                   latestWeight={latestWeight}
                   errors={errors}
                   disabled={isGuestMode}
@@ -248,30 +253,31 @@ export function ActivityForm({
               {/* SuggestionsPanel */}
               <ActivitySuggestions type={type} />
 
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <Label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className={cn("p-3 bg-muted rounded-lg", SPACING.space.sm)}>
+                <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>
                   💬 메모 (선택)
                 </Label>
                 <Textarea
                   name="note"
                   placeholder="특별한 사항..."
                   rows={2}
-                  className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                  className={TYPOGRAPHY.body.small}
                   disabled={isGuestMode}
                 />
               </div>
 
               {error && (
-                <div className="p-3 bg-red-50 text-red-600 text-sm rounded-md">
+                <div className={cn("p-3 bg-destructive/10 text-destructive rounded-md", TYPOGRAPHY.body.small)}>
                   {error}
                 </div>
               )}
 
-              <div className="flex gap-2">
+              <div className={cn("flex", SPACING.gap.sm)}>
                 <Button
                   type="submit"
                   disabled={loading || isGuestMode}
-                  className="flex-1 py-6 text-lg font-semibold bg-blue-600 hover:bg-blue-700"
+                  className="flex-1"
+                  size="lg"
                 >
                   {loading ? "저장 중..." : "✅ 저장"}
                 </Button>
@@ -279,7 +285,7 @@ export function ActivityForm({
                   type="button"
                   variant="secondary"
                   onClick={() => setShowDetail(false)}
-                  className="px-6 py-6 text-lg font-semibold"
+                  size="lg"
                   disabled={isGuestMode}
                 >
                   취소

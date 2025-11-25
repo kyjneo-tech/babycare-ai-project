@@ -2,6 +2,9 @@
 
 import { format } from "date-fns";
 import { Bot, User } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { TYPOGRAPHY } from "@/design-system";
 
 interface ChatMessageBubbleProps {
   message: {
@@ -15,34 +18,40 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
   const isUser = message.role === "user";
 
   return (
-    <div className={`flex gap-3 mb-4 ${isUser ? "flex-row-reverse" : ""}`}>
+    <div
+      className={cn(
+        "flex items-end gap-3",
+        isUser ? "flex-row-reverse" : "flex-row"
+      )}
+    >
       {/* Avatar */}
-      <div
-        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-          isUser ? "bg-blue-500" : "bg-gray-200"
-        }`}
-      >
-        {isUser ? (
-          <User className="w-5 h-5 text-white" />
-        ) : (
-          <Bot className="w-5 h-5 text-gray-700" />
-        )}
-      </div>
+      <Avatar className={cn(isUser ? "bg-primary" : "bg-muted")}>
+        <AvatarFallback>
+          {isUser ? (
+            <User className="w-5 h-5 text-primary-foreground" />
+          ) : (
+            <Bot className="w-5 h-5 text-muted-foreground" />
+          )}
+        </AvatarFallback>
+      </Avatar>
 
       {/* Message Content */}
-      <div className={`flex-1 max-w-[75%] ${isUser ? "items-end" : ""}`}>
+      <div className={cn("flex-1 max-w-[75%]", isUser && "items-end")}>
         <div
-          className={`rounded-2xl px-4 py-3 ${
+          className={cn(
+            "rounded-2xl px-4 py-3",
             isUser
-              ? "bg-blue-500 text-white rounded-tr-sm"
-              : "bg-gray-100 text-gray-900 rounded-tl-sm"
-          }`}
+              ? "bg-primary text-primary-foreground rounded-tr-sm"
+              : "bg-muted text-muted-foreground rounded-tl-sm"
+          )}
         >
-          <p className="text-sm whitespace-pre-wrap break-words">
+          <p className={cn(TYPOGRAPHY.body.default, "whitespace-pre-wrap break-words")}>
             {message.content}
           </p>
         </div>
-        <span className="text-xs text-gray-400 mt-1 px-2 inline-block">
+        <span
+          className={cn(TYPOGRAPHY.caption, "mt-1 px-2 inline-block")}
+        >
           {format(message.createdAt, "HH:mm")}
         </span>
       </div>

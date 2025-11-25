@@ -1,6 +1,6 @@
 // src/features/babies/repositories/__tests__/PrismaBabyRepository.test.ts
 import { PrismaBabyRepository } from '../PrismaBabyRepository';
-import { prismaMock } from '@/jest.setup';
+import { prismaMock } from '../../../../../jest.setup';
 import { Baby } from '@prisma/client';
 import { CreateBabyData } from '../IBabyRepository';
 
@@ -24,15 +24,16 @@ describe('아기 리포지토리 (PrismaBabyRepository)', () => {
       };
 
       const mockBaby: Baby = {
-        id: 'test-baby-id',
-        name: '김아기',
-        gender: 'male',
+        id: 'baby-id',
+        name: '지우',
+        gender: 'female',
         birthDate: new Date('2024-01-15'),
         birthTime: '14:30',
         photoUrl: null,
-        familyId: 'test-family-id',
-        createdAt: new Date('2024-01-15'),
-        updatedAt: new Date('2024-01-15'),
+        familyId: 'family-id',
+        aiSettings: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       prismaMock.baby.create.mockResolvedValue(mockBaby);
@@ -42,11 +43,12 @@ describe('아기 리포지토리 (PrismaBabyRepository)', () => {
 
       // Then: 생성된 아기 객체가 반환되고, 모든 필수 필드가 포함되어 있는지 확인
       expect(result).toEqual(mockBaby);
-      expect(result.name).toBe('김아기');
-      expect(result.gender).toBe('male');
+      expect(result.name).toBe('지우');
+      expect(result.gender).toBe('female');
       expect(result.birthDate).toEqual(new Date('2024-01-15'));
       expect(result.birthTime).toBe('14:30');
-      expect(result.familyId).toBe('test-family-id');
+      expect(result.familyId).toBe('family-id');
+      expect(result.aiSettings).toBeNull();
 
       expect(prismaMock.baby.create).toHaveBeenCalledWith({
         data: {
@@ -69,15 +71,16 @@ describe('아기 리포지토리 (PrismaBabyRepository)', () => {
       };
 
       const mockBaby: Baby = {
-        id: 'test-baby-id-2',
-        name: '이아기',
+        id: 'baby-id',
+        name: '지우',
         gender: 'female',
-        birthDate: new Date('2024-02-20'),
-        birthTime: '09:15',
+        birthDate: new Date('2024-01-15'),
+        birthTime: '14:30',
         photoUrl: 'https://example.com/photo.jpg',
-        familyId: 'specific-family-id',
-        createdAt: new Date('2024-02-20'),
-        updatedAt: new Date('2024-02-20'),
+        familyId: 'family-id',
+        aiSettings: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       prismaMock.baby.create.mockResolvedValue(mockBaby);
