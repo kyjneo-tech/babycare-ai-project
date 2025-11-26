@@ -26,20 +26,27 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // 토큰 가져오기 (공개 경로와 보호된 경로 모두 체크)
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+  // 이미 로그인한 사용자가 로그인/회원가입 페이지에 접근하면 홈으로 리다이렉트
+  if (isPublicPath && token) {
+    console.log("🔄 Already authenticated, redirecting to home:", pathname);
+    return NextResponse.redirect(new URL('/', req.url));
+  }
+
   // 보호된 경로 체크 (공개 경로가 아니면 보호)
   // `config.matcher`에서 `/`를 포함한 모든 경로를 보호하도록 설정되어 있으므로,
   // 여기서는 `publicPaths`에 명시된 경로만 보호하지 않습니다.
   if (!isPublicPath) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    
     if (!token) {
       console.log("🚫 Protected path without authentication:", pathname);
       console.log("   Redirecting to login...");
-      
+
       // 로그인 페이지로 리다이렉트 (callbackUrl 포함)
       const loginUrl = new URL('/login', req.url);
       loginUrl.searchParams.set('callbackUrl', pathname);
-      
+
       return NextResponse.redirect(loginUrl);
     }
 
