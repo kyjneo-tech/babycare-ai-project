@@ -38,11 +38,15 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
     setLoading(false);
   }, [babyId]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    loadActivities(startDate, endDate);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [babyId]);
+  useEffect(() =>{
+    // babyId가 변경되면 날짜 범위를 초기화하고 데이터를 다시 로드
+    const newStartDate = startOfDay(subDays(new Date(), 6));
+    const newEndDate = endOfDay(new Date());
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
+    setSelectedDays(7);
+    loadActivities(newStartDate, newEndDate);
+  }, [babyId, loadActivities]);
 
   const handlePeriodChange = (days: number) => {
     setSelectedDays(days);
