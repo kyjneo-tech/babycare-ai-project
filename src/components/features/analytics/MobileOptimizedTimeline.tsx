@@ -258,14 +258,52 @@ export function MobileOptimizedTimeline({
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      {/* 범례 - 상단으로 이동 */}
+      <div className="border-b border-gray-200 bg-gray-50 p-3">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center text-xs">
+          <div className="flex items-center gap-1.5">
+            <div className="w-4 h-4 bg-indigo-600 rounded"></div>
+            <span className="text-gray-700">밤잠</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-4 h-4 bg-indigo-300 rounded"></div>
+            <span className="text-gray-700">낮잠</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-4 h-4 bg-blue-500 rounded"></div>
+            <span className="text-gray-700">수유</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-4 h-4 bg-yellow-400 rounded"></div>
+            <span className="text-gray-700">기저귀</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-4 h-4 bg-purple-500 rounded"></div>
+            <span className="text-gray-700">약</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-4 h-4 bg-red-500 rounded"></div>
+            <span className="text-gray-700">체온</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-4 h-4 bg-cyan-500 rounded"></div>
+            <span className="text-gray-700">목욕</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-4 h-4 bg-pink-500 rounded"></div>
+            <span className="text-gray-700">놀이</span>
+          </div>
+        </div>
+      </div>
+
       {/* 전체 스크롤 컨테이너 */}
       <div className="overflow-x-auto">
-        <div className="min-w-[700px]">
+        <div className="min-w-[376px]">
           {/* 헤더: 날짜들 */}
           <div className="sticky top-0 bg-white z-20 border-b-2 border-gray-300 shadow-sm">
             <div className="flex">
               {/* 시간 레이블 공간 */}
-              <div className="w-14 flex-shrink-0 border-r-2 border-gray-300"></div>
+              <div className="w-10 flex-shrink-0 border-r-2 border-gray-300"></div>
 
               {/* 날짜 헤더 */}
               <div className="flex flex-1">
@@ -274,7 +312,7 @@ export function MobileOptimizedTimeline({
                   return (
                     <div
                       key={date.toISOString()}
-                      className={`flex-1 min-w-[90px] p-2 text-center border-r border-gray-200 ${
+                      className={`flex-1 min-w-[48px] p-2 text-center border-r border-gray-200 ${
                         isToday ? "bg-blue-50" : ""
                       }`}
                     >
@@ -297,10 +335,10 @@ export function MobileOptimizedTimeline({
           {/* 타임라인 바디 */}
           <div className="flex">
             {/* 시간 레이블 컬럼 */}
-            <div className="w-14 flex-shrink-0 border-r-2 border-gray-200 bg-white">
+            <div className="w-10 flex-shrink-0 border-r-2 border-gray-200 bg-white">
               {hours.map((hour) => (
                 <div key={hour} className="min-h-[40px] py-1 text-center flex items-center justify-center">
-                  <span className="text-[10px] font-medium text-gray-500">
+                  <span className="text-[9px] font-medium text-gray-500">
                     {hour.toString().padStart(2, "0")}
                   </span>
                 </div>
@@ -316,7 +354,7 @@ export function MobileOptimizedTimeline({
                 return (
                   <div
                     key={date.toISOString()}
-                    className="flex-1 min-w-[90px] border-r border-gray-200 relative"
+                    className="flex-1 min-w-[48px] border-r border-gray-200 relative"
                   >
                 {/* 지속 활동 바들 (absolute positioning) */}
                 {ongoingActivities.map((activity) => {
@@ -378,43 +416,6 @@ export function MobileOptimizedTimeline({
         </div>
       </div>
 
-      {/* 범례 */}
-      <div className="border-t border-gray-200 bg-gray-50 p-4">
-        <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center text-xs">
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-4 bg-indigo-600 rounded"></div>
-            <span className="text-gray-700">밤잠</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-4 bg-indigo-300 rounded"></div>
-            <span className="text-gray-700">낮잠</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-4 bg-blue-500 rounded"></div>
-            <span className="text-gray-700">수유</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-4 bg-yellow-400 rounded"></div>
-            <span className="text-gray-700">기저귀</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-4 bg-purple-500 rounded"></div>
-            <span className="text-gray-700">약</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-4 bg-red-500 rounded"></div>
-            <span className="text-gray-700">체온</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-4 bg-cyan-500 rounded"></div>
-            <span className="text-gray-700">목욕</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-4 bg-pink-500 rounded"></div>
-            <span className="text-gray-700">놀이</span>
-          </div>
-        </div>
-      </div>
 
       {/* 상세 정보 모달 */}
       {selectedCell && (

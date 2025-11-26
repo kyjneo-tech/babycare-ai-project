@@ -301,11 +301,69 @@ export function AddMeasurementForm({
           </div>
         </div>
       )}
+      {/* 직접 입력 칸 */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            체중 (kg)
+          </label>
+          <input
+            type="number"
+            step="0.1"
+            min="1"
+            max="20"
+            value={selectedWeight}
+            onChange={(e) => {
+              const value = parseFloat(e.target.value);
+              if (!isNaN(value) && value >= 1 && value <= 20) {
+                setSelectedWeight(value);
+                // 스크롤 위치도 동기화
+                if (weightRef.current) {
+                  const index = weightOptions.findIndex(w => Math.abs(parseFloat(w) - value) < 0.05);
+                  if (index !== -1) {
+                    weightRef.current.scrollTop = index * 50;
+                  }
+                }
+              }
+            }}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="3.3"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            키 (cm)
+          </label>
+          <input
+            type="number"
+            step="0.5"
+            min="30"
+            max="120"
+            value={selectedHeight}
+            onChange={(e) => {
+              const value = parseFloat(e.target.value);
+              if (!isNaN(value) && value >= 30 && value <= 120) {
+                setSelectedHeight(value);
+                // 스크롤 위치도 동기화
+                if (heightRef.current) {
+                  const index = heightOptions.findIndex(h => Math.abs(parseFloat(h) - value) < 0.25);
+                  if (index !== -1) {
+                    heightRef.current.scrollTop = index * 50;
+                  }
+                }
+              }
+            }}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+            placeholder="50"
+          />
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         {/* 체중 스크롤 */}
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1 text-center">
-            체중
+            스크롤로 선택
           </label>
           <div className="relative h-[150px] overflow-hidden rounded-lg border border-gray-200 bg-white">
             {/* 선택 표시 영역 (배경) */}
@@ -343,7 +401,7 @@ export function AddMeasurementForm({
         {/* 키 스크롤 */}
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1 text-center">
-            키
+            스크롤로 선택
           </label>
           <div className="relative h-[150px] overflow-hidden rounded-lg border border-gray-200 bg-white">
             {/* 선택 표시 영역 (배경) */}
