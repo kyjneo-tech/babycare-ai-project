@@ -34,7 +34,13 @@ export function BabySwitcher({ babies }: { babies: Baby[] }) {
       // this means we're probably on /add-baby or /family, so push to babies page.
       newPath = `/babies/${newBabyId}`;
     }
-    router.push(newPath);
+    
+    // Preserve query parameters (e.g., ?tab=analytics)
+    const searchParams = new URLSearchParams(window.location.search);
+    const queryString = searchParams.toString();
+    const fullPath = queryString ? `${newPath}?${queryString}` : newPath;
+    
+    router.push(fullPath);
   };
 
   if (babies.length === 0) {
