@@ -8,6 +8,7 @@ import Link from 'next/link';
 import AppHeader from '@/widgets/app-header/AppHeader';
 import { QuickRecordModal } from '@/components/features/activities/QuickRecordModal';
 import { FABMenu } from '@/components/ui/fab-menu';
+import { AIConsultMenu } from '@/components/ui/ai-consult-menu';
 import { Button } from '@/components/ui/button';
 import { MessageCircle } from 'lucide-react';
 
@@ -58,16 +59,11 @@ function AppShell({ children }: { children: React.ReactNode }) {
       {/* 하단 네비게이션 바 (AI 상담 + 메뉴 통합) */}
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-purple-500 to-blue-500 shadow-lg border-t border-purple-600/20">
         <div className="flex h-14">
-          {/* AI 상담 버튼 (60%) */}
-          <Button
-            className="flex-1 h-full rounded-none bg-transparent hover:bg-white/10 text-white font-semibold text-base border-r border-white/20"
-            asChild
-          >
-            <Link href={currentBabyId ? `/ai-chat/${currentBabyId}` : '/add-baby'}>
-              <MessageCircle className="mr-2 h-5 w-5" />
-              🤖 AI 육아 상담
-            </Link>
-          </Button>
+          {/* AI 상담 드롭다운 (60%) */}
+          <AIConsultMenu
+            currentBabyId={currentBabyId}
+            pathname={pathname}
+          />
 
           {/* 메뉴 버튼 (40%) */}
           <div className="w-[40%] relative">
