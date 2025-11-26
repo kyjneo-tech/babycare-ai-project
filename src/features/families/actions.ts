@@ -87,6 +87,7 @@ export async function getFamilyInfo() {
         id: family.id,
         name: family.name,
         inviteCode: family.inviteCode,
+        inviteCodeExpiry: family.inviteCodeExpiry,
         members: members.map((m) => ({
           userId: m.userId,
           name: m.User.name,
@@ -265,6 +266,67 @@ export async function updateMemberPermission(
     };
   }
 }
+
+/**
+ * 초대 코드를 재생성합니다. (Admin 이상)
+ */
+export const regenerateInviteCode = withFamilyPermission(
+  isAdminOrOwner,
+  async ({ family }) => {
+    // 6자리 랜덤 초대 코드 생성
+    function generateInviteCode(): string {
+      const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let code = "";
+      for (let i = 0; i < 6; i++) {
+        code += characters.charAt(Math.floor(Math.random() * characters.length));
+      }
+      return code;
+    }
+
+    // 고유한 초대 코드 생성
+    let inviteCode = generateInviteCode();
+    let isUnique = false;
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    while (!isUnique && attempts < maxAttempts) {
+      const existingFamily = await prisma.family.findUnique({
+        where: { inviteCode },
+      });
+
+      if (!existingFamily) {
+        isUnique = true;
+      } else {
+        inviteCode = generateInviteCode();
+        attempts++;
+      }
+    }
+
+    if (!isUnique) {
+      throw new Error("초대 코드 생성에 실패했습니다. 다시 시도해주세요.");
+    }
+
+    // 초대 코드 만료 시간 설정 (7일 후)
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 7);
+
+    // 가족 초대 코드 업데이트
+    await prisma.family.update({
+      where: { id: family.id },
+      data: {
+        inviteCode,
+        inviteCodeExpiry: expiryDate,
+      },
+    });
+
+    revalidatePath("/family");
+
+    return {
+      inviteCode,
+      expiresAt: expiryDate,
+    };
+  }
+);
 
 /**
  * 내 프로필(relation)을 업데이트합니다.

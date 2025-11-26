@@ -57,11 +57,12 @@ model UserSettings {
 // Family (가족) 모델: 아기를 공유하는 가족 그룹의 정보를 저장합니다.
 // 각 가족은 고유한 ID와 초대 코드를 가집니다.
 model Family {
-  id         String         @id @default(cuid()) // 가족 고유 ID
-  name       String // 가족 이름 (예: '지우네 가족')
-  inviteCode String         @unique // 가족 초대 코드, 중복 불가
-  createdAt  DateTime       @default(now()) // 생성일시
-  updatedAt  DateTime       @updatedAt // 최종 수정일시
+  id                String         @id @default(cuid()) // 가족 고유 ID
+  name              String // 가족 이름 (예: '지우네 가족')
+  inviteCode        String         @unique // 가족 초대 코드, 중복 불가
+  inviteCodeExpiry  DateTime? // 초대 코드 만료 시간 (선택 사항, 7일 기본)
+  createdAt         DateTime       @default(now()) // 생성일시
+  updatedAt         DateTime       @updatedAt // 최종 수정일시
 
   // 관계: 가족은 여러 아기를 가질 수 있습니다.
   Babies       Baby[]

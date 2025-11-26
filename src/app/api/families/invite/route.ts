@@ -84,10 +84,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 초대 코드 만료 시간 설정 (7일 후)
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 7);
+
     // 가족 초대 코드 업데이트
     const updatedFamily = await prisma.family.update({
       where: { id: familyId },
-      data: { inviteCode },
+      data: {
+        inviteCode,
+        inviteCodeExpiry: expiryDate,
+      },
     });
 
     const inviteUrl = `${process.env.NEXTAUTH_URL}/join?code=${inviteCode}`;
@@ -95,6 +102,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       inviteCode,
       inviteUrl,
+      expiresAt: expiryDate,
       familyName: updatedFamily.name,
       message: "초대 코드가 생성되었습니다.",
     });
@@ -150,11 +158,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // 초대 코드 만료 확인
+    if (family.inviteCodeExpiry && new Date() > family.inviteCodeExpiry) {
+      return NextResponse.json(
+        { error: "만료된 초대 코드입니다. 가족 관리자에게 새 코드 발급을 요청해주세요." },
+        { status: 410 }
+      );
+    }
+
     return NextResponse.json({
       familyId: family.id,
       familyName: family.name,
       memberCount: family.FamilyMembers.length,
       babyCount: family.Babies.length,
+      expiresAt: family.inviteCodeExpiry,
       members: family.FamilyMembers.map((fm) => ({
         name: fm.User.name,
         role: fm.role,

@@ -39,6 +39,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 초대 코드 만료 확인
+    if (family.inviteCodeExpiry && new Date() > family.inviteCodeExpiry) {
+      return NextResponse.json(
+        { error: "만료된 초대 코드입니다. 가족 관리자에게 새 코드 발급을 요청해주세요." },
+        { status: 410 }
+      );
+    }
+
     // 현재 사용자 찾기
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },

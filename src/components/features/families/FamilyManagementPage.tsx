@@ -180,6 +180,9 @@ export function FamilyManagementPage() {
               <InviteCodeCard
                 familyName={familyData.name}
                 inviteCode={familyData.inviteCode}
+                inviteCodeExpiry={familyData.inviteCodeExpiry}
+                canRegenerate={currentUserPermission === "owner" || currentUserPermission === "admin"}
+                onCodeRegenerated={() => setRefreshKey((prev) => prev + 1)}
               />
 
               {/* 가족원 목록 */}
