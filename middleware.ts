@@ -55,7 +55,7 @@ export const config = {
     // Protect all routes except API routes, _next/*, static files, and explicit public paths (login, signup, join)
     // The middleware function itself will handle redirection for unauthenticated users
     // on paths covered by this matcher.
-    '/((?!api|_next/static|_next/image|favicon.ico|login|signup|join).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|login|signup|join).*)',
   ],
 };
 
