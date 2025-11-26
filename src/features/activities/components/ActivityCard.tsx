@@ -17,14 +17,18 @@ import { SPACING, TYPOGRAPHY } from "@/design-system";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
+import { Pencil } from "lucide-react";
+import { EditActivityDialog } from "./EditActivityDialog";
 
 interface ActivityCardProps {
   activity: Activity;
   onDelete?: (id: string) => void;
+  onUpdate?: (updatedActivity: Activity) => void;
 }
 
-export function ActivityCard({ activity, onDelete }: ActivityCardProps) {
+export function ActivityCard({ activity, onDelete, onUpdate }: ActivityCardProps) {
   const [deleting, setDeleting] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleDelete = async () => {
     if (!confirm("이 활동을 정말 삭제하시겠습니까?")) return;
@@ -42,6 +46,11 @@ export function ActivityCard({ activity, onDelete }: ActivityCardProps) {
     } finally {
       setDeleting(false);
     }
+  };
+
+  const handleUpdate = (updatedActivity: Activity) => {
+    onUpdate?.(updatedActivity);
+    setIsEditDialogOpen(false);
   };
 
   const renderActivityDetails = () => {
@@ -139,40 +148,62 @@ export function ActivityCard({ activity, onDelete }: ActivityCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className={cn("flex justify-between items-start", SPACING.card.small)}>
-        <div className="flex-1 min-w-0">
-          <div className={cn("flex items-center flex-wrap", SPACING.gap.xs, "mb-2")}>
-            <span className={cn(TYPOGRAPHY.h3, "text-card-foreground")}>
-              {activityTypeLabels[activity.type]}
-            </span>
-            <span className={TYPOGRAPHY.caption}>
-              {formatActivityTime(activity.startTime)}
-            </span>
-            <Badge variant="outline" className="text-[10px] font-normal">
-              {formatDistanceToNow(new Date(activity.startTime), { addSuffix: true, locale: ko })}
-            </Badge>
+    <>
+      <Card className="hover:shadow-md transition-shadow">
+        <CardContent className={cn("flex justify-between items-start", SPACING.card.small)}>
+          <div className="flex-1 min-w-0">
+            <div className={cn("flex items-center flex-wrap", SPACING.gap.xs, "mb-2")}>
+              <span className={cn(TYPOGRAPHY.h3, "text-card-foreground")}>
+                {activityTypeLabels[activity.type]}
+              </span>
+              <span className={TYPOGRAPHY.caption}>
+                {formatActivityTime(activity.startTime)}
+              </span>
+              <Badge variant="outline" className="text-[10px] font-normal">
+                {formatDistanceToNow(new Date(activity.startTime), { addSuffix: true, locale: ko })}
+              </Badge>
+            </div>
+            {renderActivityDetails()}
+            {activity.note && (
+              <p className={cn(TYPOGRAPHY.body.small, "mt-2 text-muted-foreground italic")}>
+                {activity.note}
+              </p>
+            )}
           </div>
-          {renderActivityDetails()}
-          {activity.note && (
-            <p className={cn(TYPOGRAPHY.body.small, "mt-2 text-muted-foreground italic")}>
-              {activity.note}
-            </p>
-          )}
-        </div>
-        {onDelete && (
-          <Button
-            onClick={handleDelete}
-            disabled={deleting}
-            variant="destructive"
-            size="sm"
-            className="flex-shrink-0 ml-3"
-            title="삭제"
-          >
-            {deleting ? "..." : "삭제"}
-          </Button>
-        )}
-      </CardContent>
-    </Card>
+          <div className="flex gap-2 flex-shrink-0 ml-3">
+            {onUpdate && (
+              <Button
+                onClick={() => setIsEditDialogOpen(true)}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1"
+                title="수정"
+              >
+                <Pencil className="h-3 w-3" />
+                수정
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                onClick={handleDelete}
+                disabled={deleting}
+                variant="destructive"
+                size="sm"
+                title="삭제"
+              >
+                {deleting ? "..." : "삭제"}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <EditActivityDialog
+        activity={activity}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        onUpdate={handleUpdate}
+      />
+    </>
   );
 }

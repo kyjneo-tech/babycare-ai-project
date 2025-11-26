@@ -106,6 +106,57 @@ export async function getRecentActivities(
   }
 }
 
+export async function updateActivity(
+  activityId: string,
+  userId: string,
+  data: Partial<CreateActivityInput>
+): Promise<{ success: boolean; data?: Activity; error?: string }> {
+  try {
+    const activity = await prisma.activity.findUnique({
+      where: { id: activityId },
+      include: { Baby: { include: { Family: true } } },
+    });
+
+    if (!activity) {
+      return { success: false, error: "활동 기록을 찾을 수 없습니다." };
+    }
+
+    const isFamilyMember = await prisma.familyMember.findFirst({
+      where: {
+        familyId: activity.Baby.familyId,
+        userId: userId,
+      },
+    });
+
+    if (!isFamilyMember) {
+      return { success: false, error: "이 활동을 수정할 권한이 없습니다." };
+    }
+
+    const updatedActivity = await prisma.activity.update({
+      where: { id: activityId },
+      data: {
+        ...data,
+        updatedAt: new Date(),
+      },
+    });
+
+    // Redis 캐시 무효화
+    await redis.del(`baby:${activity.babyId}:recent-activities:7-days`);
+
+    revalidatePath(`/babies/${activity.babyId}`);
+    revalidatePath("/");
+    revalidatePath(`/analytics/${activity.babyId}`);
+
+    return { success: true, data: updatedActivity };
+  } catch (error: any) {
+    console.error("활동 수정 실패:", error);
+    return {
+      success: false,
+      error: error.message || "활동 기록 수정에 실패했습니다.",
+    };
+  }
+}
+
 export async function deleteActivity(activityId: string, userId: string) {
   try {
     const activity = await prisma.activity.findUnique({

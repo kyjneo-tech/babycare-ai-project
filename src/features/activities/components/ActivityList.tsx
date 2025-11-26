@@ -135,6 +135,12 @@ export function ActivityList({
     onActivityDeleted(activityId); // 부모 컴포넌트의 콜백 호출
   };
 
+  const handleActivityUpdate = (updatedActivity: Activity) => {
+    setActivities((prev) =>
+      prev.map((a) => (a.id === updatedActivity.id ? updatedActivity : a))
+    );
+  };
+
   // 무한 스크롤을 위한 추가 활동 로드
   const loadMoreActivities = useCallback(async () => {
     if (isLoading || !hasMore || !cursor) return;
@@ -252,6 +258,7 @@ export function ActivityList({
                     <ActivityCard
                       activity={activity}
                       onDelete={handleActivityDelete}
+                      onUpdate={handleActivityUpdate}
                     />
                   </div>
                 ))}
