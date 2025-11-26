@@ -19,9 +19,10 @@ interface FABMenuProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   pathname: string;
+  isBottomBar?: boolean;
 }
 
-export function FABMenu({ isOpen, onOpenChange, pathname }: FABMenuProps) {
+export function FABMenu({ isOpen, onOpenChange, pathname, isBottomBar = false }: FABMenuProps) {
   const [currentBabyId, setCurrentBabyId] = useState<string | null>(null);
   const router = useRouter(); // Use useRouter for redirects if babyId is null
 
@@ -70,6 +71,35 @@ export function FABMenu({ isOpen, onOpenChange, pathname }: FABMenuProps) {
 
     return items;
   }, [pathname, currentBabyId]);
+
+  if (isBottomBar) {
+    return (
+      <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            className="w-full h-full rounded-none bg-transparent hover:bg-white/10 text-white font-semibold text-base"
+            aria-label="메뉴"
+          >
+            <Menu className="mr-2 h-5 w-5" />
+            메뉴
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="top" align="end" className="w-56 p-2 mb-2">
+          {menuItems.map((item, index) => (
+            <React.Fragment key={item.label}>
+              {index > 0 && <DropdownMenuSeparator />}
+              <DropdownMenuItem asChild>
+                <Link href={item.href} className="flex items-center">
+                  <item.icon className="mr-2 h-4 w-4" />
+                  <span>{item.label}</span>
+                </Link>
+              </DropdownMenuItem>
+            </React.Fragment>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>

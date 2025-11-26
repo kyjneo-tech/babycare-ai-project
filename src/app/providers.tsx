@@ -51,31 +51,34 @@ function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-[100dvh] flex flex-col">
       <AppHeader />
-      <main className="flex-1 pb-20">
+      <main className="flex-1 pb-14">
         {children}
       </main>
 
-      {/* FAB Menu (우측 하단, 네비바 위) */}
-      <div className="fixed bottom-20 right-4 z-50">
-        <FABMenu
-          isOpen={isFABMenuOpen}
-          onOpenChange={setIsFABMenuOpen}
-          pathname={pathname}
-        />
-      </div>
-
-      {/* AI Chat Bottom Navigation Bar */}
+      {/* 하단 네비게이션 바 (AI 상담 + 메뉴 통합) */}
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-purple-500 to-blue-500 shadow-lg border-t border-purple-600/20">
-        <Button
-          size="lg"
-          className="w-full h-16 rounded-none bg-transparent hover:bg-white/10 text-white font-semibold text-lg"
-          asChild
-        >
-          <Link href={currentBabyId ? `/ai-chat/${currentBabyId}` : '/add-baby'}>
-            <MessageCircle className="mr-2 h-6 w-6" />
-            🤖 AI에게 육아 상담받기
-          </Link>
-        </Button>
+        <div className="flex h-14">
+          {/* AI 상담 버튼 (60%) */}
+          <Button
+            className="flex-1 h-full rounded-none bg-transparent hover:bg-white/10 text-white font-semibold text-base border-r border-white/20"
+            asChild
+          >
+            <Link href={currentBabyId ? `/ai-chat/${currentBabyId}` : '/add-baby'}>
+              <MessageCircle className="mr-2 h-5 w-5" />
+              🤖 AI 육아 상담
+            </Link>
+          </Button>
+
+          {/* 메뉴 버튼 (40%) */}
+          <div className="w-[40%] relative">
+            <FABMenu
+              isOpen={isFABMenuOpen}
+              onOpenChange={setIsFABMenuOpen}
+              pathname={pathname}
+              isBottomBar={true}
+            />
+          </div>
+        </div>
       </div>
 
       <QuickRecordModal

@@ -22,13 +22,14 @@ export function MobileOptimizedTimeline({
 }: MobileOptimizedTimelineProps) {
   const [selectedCell, setSelectedCell] = useState<ActivityDetail | null>(null);
 
-  // 날짜 배열 생성
+  // 날짜 배열 생성 (최신순으로 정렬)
   const dates: Date[] = [];
   const currentDate = new Date(startDate);
   while (currentDate <= endDate) {
     dates.push(new Date(currentDate));
     currentDate.setDate(currentDate.getDate() + 1);
   }
+  dates.reverse(); // 최신 날짜가 왼쪽에 오도록
 
   // 24시간 배열
   const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -257,63 +258,66 @@ export function MobileOptimizedTimeline({
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      {/* 헤더: 날짜들 */}
-      <div className="sticky top-0 bg-white z-20 border-b-2 border-gray-300 shadow-sm">
-        <div className="flex">
-          {/* 시간 레이블 공간 */}
-          <div className="w-14 flex-shrink-0 border-r-2 border-gray-300"></div>
+      {/* 전체 스크롤 컨테이너 */}
+      <div className="overflow-x-auto">
+        <div className="min-w-[700px]">
+          {/* 헤더: 날짜들 */}
+          <div className="sticky top-0 bg-white z-20 border-b-2 border-gray-300 shadow-sm">
+            <div className="flex">
+              {/* 시간 레이블 공간 */}
+              <div className="w-14 flex-shrink-0 border-r-2 border-gray-300"></div>
 
-          {/* 날짜 헤더 */}
-          <div className="flex flex-1 overflow-x-auto">
-            {dates.map((date) => {
-              const isToday = date.getTime() === today.getTime();
-              return (
-                <div
-                  key={date.toISOString()}
-                  className={`flex-1 min-w-[60px] sm:min-w-[80px] p-2 text-center border-r border-gray-200 ${
-                    isToday ? "bg-blue-50" : ""
-                  }`}
-                >
-                  <div className={`text-xs font-bold ${isToday ? "text-blue-600" : "text-gray-700"}`}>
-                    {date.getDate()}일
-                  </div>
-                  <div className={`text-[10px] ${isToday ? "text-blue-500" : "text-gray-500"}`}>
-                    ({date.toLocaleDateString("ko-KR", { weekday: "short" })})
-                  </div>
-                  {isToday && (
-                    <div className="text-[9px] text-blue-600 font-semibold mt-0.5">오늘</div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* 타임라인 바디 */}
-      <div className="overflow-x-auto flex">
-        {/* 시간 레이블 컬럼 */}
-        <div className="w-14 flex-shrink-0 border-r-2 border-gray-200 sticky left-0 bg-white z-10">
-          {hours.map((hour) => (
-            <div key={hour} className="min-h-[40px] py-1 text-center flex items-center justify-center">
-              <span className="text-[10px] font-medium text-gray-500">
-                {hour.toString().padStart(2, "0")}
-              </span>
+              {/* 날짜 헤더 */}
+              <div className="flex flex-1">
+                {dates.map((date) => {
+                  const isToday = date.getTime() === today.getTime();
+                  return (
+                    <div
+                      key={date.toISOString()}
+                      className={`flex-1 min-w-[90px] p-2 text-center border-r border-gray-200 ${
+                        isToday ? "bg-blue-50" : ""
+                      }`}
+                    >
+                      <div className={`text-xs font-bold ${isToday ? "text-blue-600" : "text-gray-700"}`}>
+                        {date.getDate()}일
+                      </div>
+                      <div className={`text-[10px] ${isToday ? "text-blue-500" : "text-gray-500"}`}>
+                        ({date.toLocaleDateString("ko-KR", { weekday: "short" })})
+                      </div>
+                      {isToday && (
+                        <div className="text-[9px] text-blue-600 font-semibold mt-0.5">오늘</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* 날짜별 컬럼 */}
-        <div className="flex flex-1">
-          {dates.map((date) => {
-            const isToday = date.getTime() === today.getTime();
-            const ongoingActivities = getOngoingActivitiesForDate(date);
+          {/* 타임라인 바디 */}
+          <div className="flex">
+            {/* 시간 레이블 컬럼 */}
+            <div className="w-14 flex-shrink-0 border-r-2 border-gray-200 bg-white">
+              {hours.map((hour) => (
+                <div key={hour} className="min-h-[40px] py-1 text-center flex items-center justify-center">
+                  <span className="text-[10px] font-medium text-gray-500">
+                    {hour.toString().padStart(2, "0")}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-            return (
-              <div
-                key={date.toISOString()}
-                className="flex-1 min-w-[60px] sm:min-w-[80px] border-r border-gray-200 relative"
-              >
+            {/* 날짜별 컬럼 */}
+            <div className="flex flex-1">
+              {dates.map((date) => {
+                const isToday = date.getTime() === today.getTime();
+                const ongoingActivities = getOngoingActivitiesForDate(date);
+
+                return (
+                  <div
+                    key={date.toISOString()}
+                    className="flex-1 min-w-[90px] border-r border-gray-200 relative"
+                  >
                 {/* 지속 활동 바들 (absolute positioning) */}
                 {ongoingActivities.map((activity) => {
                   const { top, height } = getActivityPosition(activity, date);
@@ -366,9 +370,11 @@ export function MobileOptimizedTimeline({
                     </div>
                   );
                 })}
-              </div>
-            );
-          })}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
