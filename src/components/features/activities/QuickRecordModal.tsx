@@ -273,6 +273,8 @@ export function QuickRecordModal({
                     setMedicineAmount={state.setMedicineAmount}
                     medicineUnit={state.medicineUnit}
                     setMedicineUnit={state.setMedicineUnit}
+                    syrupConc={state.syrupConc}
+                    setSyrupConc={state.setSyrupConc}
                     latestWeight={state.latestWeight}
                     errors={errors}
                     disabled={isGuestMode}
