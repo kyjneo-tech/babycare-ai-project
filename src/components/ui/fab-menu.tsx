@@ -27,13 +27,20 @@ export function FABMenu({ isOpen, onOpenChange, pathname, isBottomBar = false }:
   const router = useRouter(); // Use useRouter for redirects if babyId is null
 
   useEffect(() => {
-    const lastBabyId = localStorage.getItem("lastBabyId");
-    // Only update if the current state is not already the stored value
-    if (currentBabyId !== lastBabyId) {
-      setCurrentBabyId(lastBabyId || null); // Ensure null if not found
+    // URL에서 babyId 추출
+    const match = pathname.match(/\/babies\/([^/?]+)/);
+    if (match) {
+      const babyIdFromUrl = match[1];
+      setCurrentBabyId(babyIdFromUrl);
+      // localStorage도 업데이트
+      if (babyIdFromUrl !== 'guest-baby-id') {
+        localStorage.setItem('lastBabyId', babyIdFromUrl);
+      }
+    } else {
+      const lastBabyId = localStorage.getItem("lastBabyId");
+      setCurrentBabyId(lastBabyId || null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount
+  }, [pathname]);
 
   const menuItems = useMemo(() => {
     const items: Array<{
@@ -47,7 +54,7 @@ export function FABMenu({ isOpen, onOpenChange, pathname, isBottomBar = false }:
       items.push({
         label: "기록하기",
         icon: PenLine,
-        href: "/",
+        href: currentBabyId ? `/babies/${currentBabyId}` : "/",
       });
     }
 

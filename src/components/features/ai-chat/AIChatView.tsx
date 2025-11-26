@@ -15,9 +15,9 @@ export function AIChatView({ babyId }: { babyId: string }) {
   const { messages, isLoading, handleSend, isGuestMode } = useChat(babyId);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-300px)] max-w-3xl mx-auto">
+    <div className="flex flex-col h-[calc(100vh-200px)] max-w-3xl mx-auto">
       {/* Header with Settings */}
-      <div className="border-b bg-muted sticky top-0 z-10">
+      <div className="border-b bg-muted sticky top-0 z-10 rounded-t-lg overflow-hidden">
         <AIChatSettings babyId={babyId} />
       </div>
 
