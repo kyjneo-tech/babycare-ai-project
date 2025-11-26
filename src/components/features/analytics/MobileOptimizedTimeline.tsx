@@ -303,7 +303,7 @@ export function MobileOptimizedTimeline({
           <div className="sticky top-0 bg-white z-20 border-b-2 border-gray-300 shadow-sm">
             <div className="flex">
               {/* 시간 레이블 공간 */}
-              <div className="w-10 flex-shrink-0 border-r-2 border-gray-300"></div>
+              <div className="w-10 flex-shrink-0 border-r-2 border-gray-300 sticky left-0 bg-white z-30"></div>
 
               {/* 날짜 헤더 */}
               <div className="flex flex-1">
@@ -333,9 +333,9 @@ export function MobileOptimizedTimeline({
           </div>
 
           {/* 타임라인 바디 */}
-          <div className="flex">
+          <div className="flex relative">
             {/* 시간 레이블 컬럼 */}
-            <div className="w-10 flex-shrink-0 border-r-2 border-gray-200 bg-white">
+            <div className="w-10 flex-shrink-0 border-r-2 border-gray-200 bg-white sticky left-0 z-10">
               {hours.map((hour) => (
                 <div key={hour} className="min-h-[40px] py-1 text-center flex items-center justify-center">
                   <span className="text-[9px] font-medium text-gray-500">

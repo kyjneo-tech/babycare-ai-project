@@ -1,13 +1,15 @@
-// src/app/babies/[id]/components/ActivityList.tsx
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { createClient } from "@/shared/lib/supabase/client";
 import { Activity } from "@prisma/client";
-import { deleteActivity, getActivitiesPaginated } from "@/features/activities/actions";
+import { deleteActivity, getActivitiesPaginated, bulkDeleteActivities } from "@/features/activities/actions";
 import { ActivityCard } from "./ActivityCard";
 import { format, isToday, isYesterday, formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useSelection } from "@/shared/hooks/useSelection";
 
 interface DailySummary {
   sleepMinutes: number;
@@ -24,13 +26,23 @@ export function ActivityList({
   activities: Activity[];
   onActivityDeleted: (id: string) => void;
 }) {
-  const [activities, setActivities] = useState(initialActivities.slice(0, 10)); // 초기 10개만 표시
+  const [activities, setActivities] = useState(initialActivities.slice(0, 10));
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(initialActivities.length > 10);
   const [cursor, setCursor] = useState<string | null>(
     initialActivities.length > 10 ? initialActivities[9].id : null
   );
+  
+  // 일괄 선택 모드 상태
+  const {
+    selectedIds,
+    isSelectionMode: selectionMode,
+    toggleSelection,
+    setSelectionMode,
+    clearSelection,
+  } = useSelection();
+
   const observerTarget = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
@@ -64,60 +76,47 @@ export function ActivityList({
 
     const setupSubscription = async () => {
       try {
-        // Realtime 구독
         channel = supabase
           .channel(`activities-${babyId}`, {
-            config: {
-              broadcast: { self: true },
-            },
+            config: { broadcast: { self: true } },
           })
-
           .on(
             "postgres_changes",
-            {
-              event: "UPDATE",
-              schema: "public",
-              table: "Activity",
-              filter: `babyId=eq.${babyId}`,
-            },
+            { event: "UPDATE", schema: "public", table: "Activity", filter: `babyId=eq.${babyId}` },
             (payload) => {
               if (isActive) {
-                console.log("✏️ 활동 수정 감지:", payload.new);
                 setActivities((prev) =>
-                  prev.map((a) =>
-                    a.id === payload.new.id ? (payload.new as Activity) : a
-                  )
+                  prev.map((a) => a.id === payload.new.id ? (payload.new as Activity) : a)
                 );
               }
             }
           )
           .on(
             "postgres_changes",
-            {
-              event: "DELETE",
-              schema: "public",
-              table: "Activity",
-              filter: `babyId=eq.${babyId}`,
-            },
+            { event: "DELETE", schema: "public", table: "Activity", filter: `babyId=eq.${babyId}` },
             (payload) => {
               if (isActive) {
-                console.log("🗑️ 활동 삭제 감지:", payload.old);
-                setActivities((prev) =>
-                  prev.filter((a) => a.id !== payload.old.id)
-                );
+                setActivities((prev) => prev.filter((a) => a.id !== payload.old.id));
+              }
+            }
+          )
+          .on(
+            "postgres_changes",
+            { event: "INSERT", schema: "public", table: "Activity", filter: `babyId=eq.${babyId}` },
+            (payload) => {
+              if (isActive) {
+                setActivities((prev) => {
+                  if (prev.some((a) => a.id === payload.new.id)) return prev;
+                  return [payload.new as Activity, ...prev];
+                });
               }
             }
           )
           .subscribe((status) => {
-            if (status === "SUBSCRIBED") {
-              console.log("✅ Supabase 구독 성공");
-              setIsSubscribed(true);
-            } else if (status === "CHANNEL_ERROR") {
-              // console.error("❌ Supabase 구독 실패");
-            }
+            if (status === "SUBSCRIBED") setIsSubscribed(true);
           });
       } catch (error) {
-        // console.error("구독 설정 오류:", error);
+        console.error("Realtime 설정 오류:", error);
       }
     };
 
@@ -125,73 +124,65 @@ export function ActivityList({
 
     return () => {
       isActive = false;
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      if (channel) supabase.removeChannel(channel);
     };
-  }, [babyId, supabase, onActivityDeleted]); // onActivityDeleted 의존성 추가
+  }, [babyId, supabase]);
 
-  const handleActivityDelete = (activityId: string) => {
-    onActivityDeleted(activityId); // 부모 컴포넌트의 콜백 호출
-  };
-
-  const handleActivityUpdate = (updatedActivity: Activity) => {
-    setActivities((prev) =>
-      prev.map((a) => (a.id === updatedActivity.id ? updatedActivity : a))
-    );
-  };
-
-  // 무한 스크롤을 위한 추가 활동 로드
   const loadMoreActivities = useCallback(async () => {
     if (isLoading || !hasMore || !cursor) return;
 
     setIsLoading(true);
     try {
       const result = await getActivitiesPaginated(babyId, cursor, 10);
-
       if (result.success && result.data) {
-        setActivities((prev) => [...prev, ...result.data!.activities]);
-        setCursor(result.data.nextCursor);
+        const newActivities = result.data.activities;
         setHasMore(result.data.hasMore);
+        setActivities((prev) => [...prev, ...newActivities]);
+        setCursor(result.data.nextCursor);
+      } else {
+        setHasMore(false);
       }
     } catch (error) {
-      console.error("활동 로드 실패:", error);
+      console.error("활동 더 불러오기 실패:", error);
     } finally {
       setIsLoading(false);
     }
   }, [babyId, cursor, hasMore, isLoading]);
 
-  // Intersection Observer 설정
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
-          loadMoreActivities();
-        }
+        if (entries[0].isIntersecting && hasMore) loadMoreActivities();
       },
-      { threshold: 0.1 }
+      { threshold: 1.0 }
     );
 
-    const currentTarget = observerTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
+    if (observerTarget.current) observer.observe(observerTarget.current);
+    return () => observer.disconnect();
+  }, [loadMoreActivities, hasMore]);
+
+  const handleActivityUpdated = (updatedActivity: Activity) => {
+    setActivities(prev => prev.map(a => a.id === updatedActivity.id ? updatedActivity : a));
+  };
+
+
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`${selectedIds.size}개 활동을 삭제하시겠습니까?`)) return;
+    
+    const result = await bulkDeleteActivities(Array.from(selectedIds));
+    if (result.success) {
+      setActivities(prev => prev.filter(a => !selectedIds.has(a.id)));
+      setSelectionMode(false);
+    } else {
+      alert(result.error || "일괄 삭제 실패");
     }
+  };
 
-    return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget);
-      }
-    };
-  }, [loadMoreActivities, hasMore, isLoading]);
-
-  // 날짜별 그룹화
   const groupedActivities = activities.reduce((groups, activity) => {
-    const date = new Date(activity.startTime);
-    const dateKey = format(date, 'yyyy-MM-dd');
-    if (!groups[dateKey]) {
-      groups[dateKey] = [];
-    }
-    groups[dateKey].push(activity);
+    const date = format(new Date(activity.startTime), "yyyy-MM-dd");
+    if (!groups[date]) groups[date] = [];
+    groups[date].push(activity);
     return groups;
   }, {} as Record<string, Activity[]>);
 
@@ -216,7 +207,29 @@ export function ActivityList({
       {/* 오늘의 요약 헤더 */}
       {activities.length > 0 && (
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-[clamp(12px,4vw,16px)] rounded-xl border border-blue-100 shadow-sm mb-[clamp(16px,5vw,24px)]">
-          <h3 className="text-[clamp(10px,3vw,12px)] font-bold text-blue-800 mb-[clamp(4px,1vw,8px)] uppercase tracking-wide">Today's Summary</h3>
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-[clamp(10px,3vw,12px)] font-bold text-blue-800 uppercase tracking-wide">Today's Summary</h3>
+            
+            {/* 일괄 작업 컨트롤 */}
+            <div className="flex gap-2">
+              {selectionMode && selectedIds.size > 0 && (
+                <Button variant="destructive" size="sm" className="h-7 text-xs" onClick={handleBulkDelete}>
+                  {selectedIds.size}개 삭제
+                </Button>
+              )}
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="h-7 text-xs bg-white/50 hover:bg-white"
+                onClick={() => {
+                  setSelectionMode(!selectionMode);
+                }}
+              >
+                {selectionMode ? '취소' : '선택'}
+              </Button>
+            </div>
+          </div>
+          
           <div className="flex gap-[clamp(16px,5vw,24px)]">
             <div>
               <p className="text-[clamp(10px,3vw,12px)] text-blue-600 mb-0.5">총 수면</p>
@@ -246,27 +259,38 @@ export function ActivityList({
         <div className="relative pl-4 border-l-2 border-gray-100 ml-2 space-y-[clamp(16px,5vw,32px)]">
           {Object.entries(groupedActivities).map(([date, dayActivities]) => (
             <div key={date} className="relative">
-              {/* 날짜 헤더 */}
               {renderDateHeader(date)}
               
               <div className="space-y-[clamp(12px,4vw,16px)]">
                 {dayActivities.map((activity) => (
-                  <div key={activity.id} className="relative group">
+                  <div key={activity.id} className="relative group flex items-start gap-3">
                     {/* 타임라인 점 */}
-                    <div className="absolute -left-[25px] top-[clamp(16px,5vw,24px)] w-[clamp(12px,3.5vw,16px)] h-[clamp(12px,3.5vw,16px)] rounded-full border-[clamp(2px,0.5vw,4px)] border-white bg-blue-400 shadow-sm z-10"></div>
+                    {!selectionMode && (
+                      <div className="absolute -left-[25px] top-[clamp(16px,5vw,24px)] w-[clamp(12px,3.5vw,16px)] h-[clamp(12px,3.5vw,16px)] rounded-full border-[clamp(2px,0.5vw,4px)] border-white bg-blue-400 shadow-sm z-10"></div>
+                    )}
                     
-                    <ActivityCard
-                      activity={activity}
-                      onDelete={handleActivityDelete}
-                      onUpdate={handleActivityUpdate}
-                    />
+                    {selectionMode && (
+                      <div className="pt-4 pl-1">
+                        <Checkbox
+                          checked={selectedIds.has(activity.id)}
+                          onCheckedChange={() => toggleSelection(activity.id)}
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex-1 min-w-0">
+                      <ActivityCard
+                        activity={activity}
+                        onDelete={!selectionMode ? onActivityDeleted : undefined}
+                        onUpdate={!selectionMode ? handleActivityUpdated : undefined}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           ))}
 
-          {/* 무한 스크롤 로딩 인디케이터 */}
           {hasMore && (
             <div ref={observerTarget} className="py-[clamp(8px,2vw,16px)] text-center">
               {isLoading ? (

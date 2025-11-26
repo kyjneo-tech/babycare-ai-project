@@ -370,4 +370,34 @@ export async function getActivitiesPaginated(
         console.error("아기 빠른 통계 조회 실패:", error);
         return { success: false, error: "아기 상태 요약 조회에 실패했습니다." };
       }
-    }    
+    }
+
+export async function bulkDeleteActivities(
+  activityIds: string[]
+): Promise<{ success: boolean; data?: { count: number }; error?: string }> {
+  try {
+    if (!activityIds.length) {
+      return { success: false, error: "삭제할 활동이 선택되지 않았습니다." };
+    }
+
+    const firstActivity = await prisma.activity.findUnique({
+      where: { id: activityIds[0] },
+      select: { babyId: true }
+    });
+
+    const result = await prisma.activity.deleteMany({
+      where: {
+        id: { in: activityIds }
+      }
+    });
+
+    if (firstActivity) {
+      revalidatePath(`/babies/${firstActivity.babyId}`);
+    }
+
+    return { success: true, data: { count: result.count } };
+  } catch (error) {
+    console.error("활동 일괄 삭제 실패:", error);
+    return { success: false, error: "활동 삭제 중 오류가 발생했습니다." };
+  }
+}

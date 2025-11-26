@@ -6,6 +6,7 @@ import { updateActivity } from "@/features/activities/actions";
 import { getBabyById } from "@/features/babies/actions";
 import { getLatestMeasurement } from "@/features/measurements/actions";
 import { differenceInMonths } from "date-fns";
+import { useSession } from "next-auth/react";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +42,7 @@ export function EditActivityDialog({
   onOpenChange,
   onUpdate,
 }: EditActivityDialogProps) {
+  const { data: session } = useSession();
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -153,6 +155,12 @@ export function EditActivityDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!session?.user?.id) {
+        alert("로그인이 필요합니다.");
+        return;
+    }
+
     setIsSaving(true);
     setErrors({});
 
@@ -200,7 +208,7 @@ export function EditActivityDialog({
         updateData.reaction = playReaction || null;
       }
 
-      const result = await updateActivity(activity.id, activity.userId, updateData);
+      const result = await updateActivity(activity.id, session.user.id, updateData);
 
       if (result.success && result.data) {
         onUpdate(result.data);

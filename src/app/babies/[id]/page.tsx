@@ -7,6 +7,7 @@ import { ActivityManagementClient } from "@/features/activities/components/Activ
 import { BabyAnalyticsView } from "@/features/babies/components/BabyAnalyticsView";
 import { AIChatView } from "@/components/features/ai-chat/AIChatView";
 import { MeasurementCard } from "@/features/measurements/components/MeasurementCard";
+import { MilestoneCard } from "@/features/milestones/components/MilestoneCard";
 import { getRecentActivities } from "@/features/activities/actions";
 import { Container } from "@/components/layout/Container";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -134,8 +135,9 @@ export default async function BabyDetailPage({
       <div className="mt-6">
         {currentTab === "activities" && (
           <div className="space-y-6">
-            <div className="max-w-md">
+            <div className="max-w-md space-y-6">
               <MeasurementCard babyId={baby.id} />
+              <MilestoneCard babyId={baby.id} birthDate={baby.birthDate} />
             </div>
             <Card>
               <CardContent className="p-6">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { UnifiedTimeline } from "@/components/features/analytics/UnifiedTimeline";
+import { calculateActivityStats, formatDuration } from "@/features/analytics/utils/statsCalculator";
 import { getActivitiesByDateRange } from "@/features/analytics/actions";
 import { Activity } from "@prisma/client";
 import { subDays, startOfDay, endOfDay, format } from "date-fns";
@@ -37,6 +38,8 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
     }
     setLoading(false);
   }, [babyId]);
+
+  const stats = calculateActivityStats(activities);
 
   useEffect(() =>{
     // babyId가 변경되면 날짜 범위를 초기화하고 데이터를 다시 로드
@@ -144,6 +147,48 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* 요약 통계 */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">총 수면</p>
+            <p className="text-2xl font-bold">{formatDuration(stats.sleep.totalDuration)}</p>
+            <p className="text-xs text-muted-foreground">
+              낮잠 {stats.sleep.napCount}회 / 밤잠 {formatDuration(stats.sleep.nightSleepDuration)}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">총 수유</p>
+            <p className="text-2xl font-bold">{stats.feeding.totalAmount}ml</p>
+            <p className="text-xs text-muted-foreground">
+              {stats.feeding.count}회 (평균 {stats.feeding.avgAmount}ml)
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">기저귀</p>
+            <p className="text-2xl font-bold">{stats.diaper.count}회</p>
+            <p className="text-xs text-muted-foreground">
+              소변 {stats.diaper.urine} / 대변 {stats.diaper.stool}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">체온 평균</p>
+            <p className="text-2xl font-bold">
+              {stats.temperature.count > 0 ? `${stats.temperature.avg}°C` : "-"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              측정 {stats.temperature.count}회
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* 타임라인 */}
       <Card>
