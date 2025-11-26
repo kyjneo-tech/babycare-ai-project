@@ -55,7 +55,7 @@ export function AIChatSettings({ babyId }: { babyId: string }) {
     { key: "temperature", label: "체온", icon: "🌡️" },
     { key: "bath", label: "목욕", icon: "🛁" },
     { key: "play", label: "놀이", icon: "🧸" },
-    { key: "other", label: "기타 상담 (이름&개월수)", icon: "💬" },
+    { key: "other", label: "이름 & 개월수", icon: "💬" },
   ] as const;
 
   const checkboxItems: CheckboxItem[] = SETTING_ITEMS.map((item) => ({
@@ -92,10 +92,10 @@ export function AIChatSettings({ babyId }: { babyId: string }) {
     <div className="w-full px-4 py-2 bg-white border-b">
       <div className="flex items-center justify-center gap-2">
         <p className="text-xs text-gray-500">
-          상담 주제 선택
+          상담에 쓰일 기록 선택
         </p>
         <CheckboxListDialog
-          title="상담 주제 선택"
+          title="상담에 쓰일 기록 선택"
           description="AI가 참고할 기록을 선택하세요"
           items={checkboxItems}
           onSave={handleSave}

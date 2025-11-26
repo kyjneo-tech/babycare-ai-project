@@ -17,7 +17,7 @@ export function AIChatView({ babyId }: { babyId: string }) {
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] max-w-3xl mx-auto">
       {/* Header with Settings */}
-      <div className="border-b bg-muted sticky top-0 z-10 rounded-t-lg overflow-hidden">
+      <div className="border-b bg-muted sticky top-0 z-10 rounded-t-lg">
         <AIChatSettings babyId={babyId} />
       </div>
 
