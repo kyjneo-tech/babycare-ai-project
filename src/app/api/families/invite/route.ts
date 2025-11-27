@@ -40,7 +40,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { familyId } = await request.json();
+    const { familyId } = await request.json() as {
+      familyId: string;
+    };
 
     if (!familyId) {
       return NextResponse.json(

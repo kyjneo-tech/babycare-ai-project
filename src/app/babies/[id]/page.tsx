@@ -3,19 +3,64 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/shared/lib/prisma";
 import { redirect } from "next/navigation";
+import dynamic from "next/dynamic";
 import { ActivityManagementClient } from "@/features/activities/components/ActivityManagementClient";
-import { BabyAnalyticsView } from "@/features/babies/components/BabyAnalyticsView";
 // import { BabyDetailTabs } from "@/features/babies/components/BabyDetailTabs"; // 사용 안 함
-import { AIChatView } from "@/components/features/ai-chat/AIChatView";
 import { MeasurementCard } from "@/features/measurements/components/MeasurementCard";
 import { CompactScheduleCarousel } from "@/features/schedules/components/CompactScheduleCarousel";
-import { InteractiveScheduleTimeline } from "@/features/schedules/components/InteractiveScheduleTimeline";
 import { getRecentActivities } from "@/features/activities/actions";
 import { Container } from "@/components/layout/Container";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+
+// 동적 import로 변경하여 초기 번들 크기 최적화
+const BabyAnalyticsView = dynamic(
+  () => import("@/features/babies/components/BabyAnalyticsView").then(mod => ({ default: mod.BabyAnalyticsView })),
+  {
+    loading: () => (
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-sm text-gray-500">통계를 불러오는 중...</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    ),
+  }
+);
+
+const AIChatView = dynamic(
+  () => import("@/components/features/ai-chat/AIChatView").then(mod => ({ default: mod.AIChatView })),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-gray-500">AI 채팅을 불러오는 중...</p>
+        </div>
+      </div>
+    ),
+  }
+);
+
+const InteractiveScheduleTimeline = dynamic(
+  () => import("@/features/schedules/components/InteractiveScheduleTimeline").then(mod => ({ default: mod.InteractiveScheduleTimeline })),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-gray-500">일정을 불러오는 중...</p>
+        </div>
+      </div>
+    ),
+  }
+);
 
 // 페이지 캐시 설정: 3초마다 재검증 (ISR)
 export const revalidate = 3;
@@ -72,9 +117,21 @@ export default async function BabyDetailPage({
   if (isGuestMode) {
     baby = guestBaby;
   } else {
-    // 아기 정보 가져오기
+    // 아기 정보 가져오기 (필요한 필드만 select)
     baby = await prisma.baby.findUnique({
       where: { id: babyId },
+      select: {
+        id: true,
+        name: true,
+        birthDate: true,
+        birthTime: true,
+        gender: true,
+        familyId: true,
+        photoUrl: true,
+        createdAt: true,
+        updatedAt: true,
+        aiSettings: true,
+      },
     });
 
     if (!baby) {

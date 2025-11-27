@@ -10,6 +10,18 @@ export class PrismaBabyRepository implements IBabyRepository {
         ...data,
         familyId,
       },
+      select: {
+        id: true,
+        name: true,
+        birthDate: true,
+        birthTime: true,
+        gender: true,
+        familyId: true,
+        photoUrl: true,
+        createdAt: true,
+        updatedAt: true,
+        aiSettings: true,
+      },
     });
   }
 }

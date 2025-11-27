@@ -256,9 +256,16 @@ export async function sendChatMessage(
     // 2. 데이터 준비
     // 활동 기록이 없더라도 아기 정보는 필요하므로 activities[0] 대신 DB에서 직접 조회하거나 해야 함.
     // 하지만 여기서는 activities가 있을 때만 Baby 정보를 가져오는 구조였음.
-    // 안전하게 Baby 정보 별도 조회
+    // 안전하게 Baby 정보 별도 조회 (필요한 필드만 select)
     const baby = await prisma.baby.findUnique({
       where: { id: babyId },
+      select: {
+        id: true,
+        name: true,
+        birthDate: true,
+        gender: true,
+        familyId: true,
+      },
     });
 
     if (!baby) return { success: false, error: "아기 정보를 찾을 수 없습니다." };

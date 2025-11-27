@@ -76,7 +76,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const body = await request.json();
+    const body = await request.json() as {
+      babyId: string;
+      userId: string;
+      type: string;
+      title: string;
+      content?: string;
+      dueDate?: string;
+      priority?: string;
+      tags?: string[];
+      metadata?: Record<string, unknown>;
+      reminderDays?: number[];
+    };
     const {
       babyId,
       userId,

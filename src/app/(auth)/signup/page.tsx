@@ -22,11 +22,17 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    const formData = new FormData(e.currentTarget);
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
+    const target = e.target as typeof e.target & {
+      name: { value: string };
+      email: { value: string };
+      password: { value: string };
+      confirmPassword: { value: string };
+    };
+
+    const name = target.name.value;
+    const email = target.email.value;
+    const password = target.password.value;
+    const confirmPassword = target.confirmPassword.value;
 
     if (password !== confirmPassword) {
       setError("비밀번호가 일치하지 않습니다.");

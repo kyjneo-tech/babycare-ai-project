@@ -20,7 +20,14 @@ export async function POST(
     }
 
     const { babyId } = await params;
-    const body = await request.json();
+    const body = await request.json() as {
+      includeVaccination?: boolean;
+      includeHealthCheck?: boolean;
+      includeMilestone?: boolean;
+      includeWonderWeeks?: boolean;
+      includeSleepRegression?: boolean;
+      includeFeedingStage?: boolean;
+    };
     const {
       includeVaccination = true,
       includeHealthCheck = true,
@@ -30,18 +37,25 @@ export async function POST(
       includeFeedingStage = true,
     } = body;
 
-    // 아기 정보 조회
+    // 아기 정보 조회 (필요한 필드만 select)
     const baby = await prisma.baby.findUnique({
       where: { id: babyId },
+      select: {
+        id: true,
+        birthDate: true,
+      },
     });
 
     if (!baby) {
       return NextResponse.json({ error: 'Baby not found' }, { status: 404 });
     }
 
-    // 세션에서 userId 가져오기
+    // 세션에서 userId 가져오기 (필요한 필드만 select)
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
+      select: {
+        id: true,
+      },
     });
 
     if (!user) {

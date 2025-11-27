@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { mockDeep, mockReset } from 'jest-mock-extended';
+import { getServerSession } from 'next-auth';
 
 /** @type {import('jest-mock-extended').DeepMockProxy<import('@prisma/client').PrismaClient>} */
 export const prismaMock = mockDeep<PrismaClient>();
@@ -22,5 +23,4 @@ beforeEach(() => {
 });
 
 // getServerSession 모킹을 위한 헬퍼 함수 (테스트에서 import하여 사용)
-import { getServerSession } from 'next-auth';
 export const mockGetServerSession = getServerSession as jest.Mock;

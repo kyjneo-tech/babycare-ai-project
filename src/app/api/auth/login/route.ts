@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const body = await request.json();
+    const body = await request.json() as { email: string; password: string };
     const { email, password } = body;
 
     const userId = await loginService({ email, password });

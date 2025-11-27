@@ -88,7 +88,16 @@ export async function PATCH(
       );
     }
 
-    const body = await request.json();
+    const body = await request.json() as {
+      title?: string;
+      content?: string;
+      dueDate?: string;
+      completed?: boolean;
+      priority?: string;
+      tags?: string[];
+      metadata?: Record<string, unknown>;
+      reminderDays?: number[];
+    };
     const {
       title,
       content,

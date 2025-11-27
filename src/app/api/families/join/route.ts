@@ -18,7 +18,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { inviteCode, role, relation } = await request.json();
+    const { inviteCode, role, relation } = await request.json() as {
+      inviteCode: string;
+      role?: string;
+      relation?: string;
+    };
 
     if (!inviteCode) {
       return NextResponse.json(

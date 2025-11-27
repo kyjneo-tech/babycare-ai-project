@@ -1,28 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Nunito, Jua } from "next/font/google";
+import { Nunito, Jua } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const nunito = Nunito({
   variable: "--font-nunito",
   subsets: ["latin"],
   display: "swap",
+  fallback: ["system-ui", "sans-serif"],
 });
 
 const jua = Jua({
   weight: "400",
   variable: "--font-jua",
-  subsets: ["latin"], // Jua in Google Fonts might strictly be Latin subset in next/font? usually it supports Korean but next/font might need 'latin' specified or just work. Jua is a Korean font.
+  subsets: ["latin"],
   display: "swap",
+  fallback: ["system-ui", "sans-serif"],
 });
 
 
@@ -58,7 +50,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${nunito.variable} ${jua.variable} antialiased font-sans`}
+        className={`${nunito.variable} ${jua.variable} antialiased font-sans`}
       >
         <Providers>{children}</Providers>
       </body>

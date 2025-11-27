@@ -22,7 +22,9 @@ export async function DELETE(
     }
     const userId = session.user.id;
 
-    const { familyId } = await request.json();
+    const { familyId } = await request.json() as {
+      familyId: string;
+    };
 
     if (!familyId) {
       return NextResponse.json(
@@ -87,7 +89,10 @@ export async function PATCH(
   try {
     const { memberId } = await params;
     const session = await getServerSession(authOptions);
-    const { familyId, newPermission } = await request.json();
+    const { familyId, newPermission } = await request.json() as {
+      familyId: string;
+      newPermission: string;
+    };
 
     if (!session?.user?.id) {
       return NextResponse.json(

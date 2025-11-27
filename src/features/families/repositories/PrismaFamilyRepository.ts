@@ -12,7 +12,25 @@ export class PrismaFamilyRepository implements IFamilyRepository {
   async findMemberByUserId(userId: string): Promise<(FamilyMember & { Family: Family }) | null> {
     return prisma.familyMember.findFirst({
       where: { userId },
-      include: { Family: true },
+      select: {
+        userId: true,
+        familyId: true,
+        permission: true,
+        role: true,
+        relation: true,
+        createdAt: true,
+        updatedAt: true,
+        Family: {
+          select: {
+            id: true,
+            name: true,
+            inviteCode: true,
+            inviteCodeExpiry: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
     });
   }
 
@@ -20,10 +38,29 @@ export class PrismaFamilyRepository implements IFamilyRepository {
     try {
       const member = await prisma.familyMember.findFirst({
         where: { userId },
-        include: {
+        select: {
           Family: {
-            include: {
-              Babies: true,
+            select: {
+              id: true,
+              name: true,
+              inviteCode: true,
+              inviteCodeExpiry: true,
+              createdAt: true,
+              updatedAt: true,
+              Babies: {
+                select: {
+                  id: true,
+                  name: true,
+                  birthDate: true,
+                  birthTime: true,
+                  gender: true,
+                  familyId: true,
+                  photoUrl: true,
+                  createdAt: true,
+                  updatedAt: true,
+                  aiSettings: true,
+                },
+              },
             },
           },
         },
@@ -59,8 +96,27 @@ export class PrismaFamilyRepository implements IFamilyRepository {
             },
           },
         },
-        include: {
-          Babies: true,
+        select: {
+          id: true,
+          name: true,
+          inviteCode: true,
+          inviteCodeExpiry: true,
+          createdAt: true,
+          updatedAt: true,
+          Babies: {
+            select: {
+              id: true,
+              name: true,
+              birthDate: true,
+              birthTime: true,
+              gender: true,
+              familyId: true,
+              photoUrl: true,
+              createdAt: true,
+              updatedAt: true,
+              aiSettings: true,
+            },
+          },
         },
       });
       return family;

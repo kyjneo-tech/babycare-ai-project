@@ -59,10 +59,18 @@ export async function deleteBaby(babyId: string) {
       throw new Error("로그인이 필요합니다.");
     }
 
-    // 아기가 현재 사용자의 가족에 속하는지 확인
+    // 아기가 현재 사용자의 가족에 속하는지 확인 (필요한 필드만 select)
     const baby = await prisma.baby.findUnique({
       where: { id: babyId },
-      include: { Family: true },
+      select: {
+        id: true,
+        familyId: true,
+        Family: {
+          select: {
+            id: true,
+          },
+        },
+      },
     });
 
     if (!baby) {

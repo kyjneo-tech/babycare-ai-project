@@ -1,7 +1,7 @@
 // src/app/join/page.tsx
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,15 @@ function JoinPageContent() {
 
     try {
       const response = await fetch(`/api/families/invite?code=${inviteCode}`);
-      const data = await response.json();
+      const data = await response.json() as {
+        familyId?: string;
+        familyName?: string;
+        memberCount?: number;
+        babyCount?: number;
+        expiresAt?: string;
+        members?: Array<{ name: string; role: string; relation: string }>;
+        error?: string;
+      };
 
       if (!response.ok) {
         setError(data.error || "초대 코드 확인에 실패했습니다.");
@@ -93,7 +101,14 @@ function JoinPageContent() {
         }),
       });
 
-      const data = await response.json();
+      const data = await response.json() as {
+        error?: string;
+        message?: string;
+        familyId?: string;
+        familyName?: string;
+        role?: string;
+        relation?: string;
+      };
 
       if (!response.ok) {
         setError(data.error || "가족 참여에 실패했습니다.");
@@ -141,7 +156,10 @@ function JoinPageContent() {
                 <Input
                   id="inviteCode"
                   value={inviteCode}
-                  onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                  onChange={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    setInviteCode(target.value.toUpperCase());
+                  }}
                   placeholder="ABC123"
                   maxLength={6}
                   className="text-center text-lg font-mono"

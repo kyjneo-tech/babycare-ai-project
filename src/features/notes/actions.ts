@@ -323,9 +323,13 @@ export async function generateSchedulesAction(
       return { success: false, error: 'User not found' };
     }
 
-    // 아기 정보 조회
+    // 아기 정보 조회 (필요한 필드만 select)
     const baby = await prisma.baby.findUnique({
       where: { id: babyId },
+      select: {
+        id: true,
+        birthDate: true,
+      },
     });
 
     if (!baby) {

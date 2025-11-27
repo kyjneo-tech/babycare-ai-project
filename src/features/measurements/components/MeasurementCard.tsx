@@ -1,11 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { LineChart, Scale } from "lucide-react";
 import { AddMeasurementForm } from "./AddMeasurementForm";
-import { GrowthChart } from "./GrowthChart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+
+// GrowthChart를 동적 import로 변경 (차트 라이브러리가 클 수 있으므로)
+const GrowthChart = dynamic(
+  () => import("./GrowthChart").then(mod => ({ default: mod.GrowthChart })),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-gray-500">차트를 불러오는 중...</p>
+        </div>
+      </div>
+    ),
+  }
+);
 
 interface MeasurementCardProps {
   babyId: string;
