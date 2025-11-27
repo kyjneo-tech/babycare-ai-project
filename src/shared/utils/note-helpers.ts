@@ -115,3 +115,13 @@ export function formatDueDate(dueDate: Date, today: Date = new Date()): string {
     return `${year}.${month}.${day}`;
   }
 }
+
+/**
+ * NoteType에 따른 상세 정보(아이콘, 라벨) 반환
+ */
+export function getNoteTypeDetails(type: NoteType): { icon: string; label: string } {
+  return {
+    icon: getNoteIcon(type),
+    label: getNoteTypeLabel(type),
+  };
+}

@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { BarChart2, MessageCircle, Users, Plus, Menu, X, PenLine } from "lucide-react";
+import { BarChart2, MessageCircle, Users, Plus, Menu, X, PenLine, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FABMenuProps {
@@ -55,6 +55,15 @@ export function FABMenu({ isOpen, onOpenChange, pathname, isBottomBar = false }:
         label: "기록하기",
         icon: PenLine,
         href: currentBabyId ? `/babies/${currentBabyId}` : "/",
+      });
+    }
+
+    // 전체 일정 페이지가 아니면 일정 메뉴 추가
+    if (!pathname.includes("tab=timeline")) {
+      items.push({
+        label: "전체 일정",
+        icon: Calendar,
+        href: currentBabyId ? `/babies/${currentBabyId}?tab=timeline` : "/",
       });
     }
 

@@ -5,12 +5,13 @@ import { prisma } from "@/shared/lib/prisma";
 import { redirect } from "next/navigation";
 import { ActivityManagementClient } from "@/features/activities/components/ActivityManagementClient";
 import { BabyAnalyticsView } from "@/features/babies/components/BabyAnalyticsView";
+// import { BabyDetailTabs } from "@/features/babies/components/BabyDetailTabs"; // 사용 안 함
 import { AIChatView } from "@/components/features/ai-chat/AIChatView";
 import { MeasurementCard } from "@/features/measurements/components/MeasurementCard";
-import { MilestoneCard } from "@/features/milestones/components/MilestoneCard";
+import { CompactScheduleCarousel } from "@/features/schedules/components/CompactScheduleCarousel";
+import { InteractiveScheduleTimeline } from "@/features/schedules/components/InteractiveScheduleTimeline";
 import { getRecentActivities } from "@/features/activities/actions";
 import { Container } from "@/components/layout/Container";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ import Link from "next/link";
 // 페이지 캐시 설정: 3초마다 재검증 (ISR)
 export const revalidate = 3;
 
-type TabType = "activities" | "analytics" | "ai-chat";
+type TabType = "activities" | "analytics" | "ai-chat" | "timeline";
 
 const guestBaby: Baby = {
   id: "guest-baby-id",
@@ -58,9 +59,9 @@ export default async function BabyDetailPage({
     }
   }
 
-  
+
   // 유효한 탭 값 검증
-  const validTabs: TabType[] = ["activities", "analytics", "ai-chat"];
+  const validTabs: TabType[] = ["activities", "analytics", "ai-chat", "timeline"];
   const currentTab: TabType =
     searchParams.tab && validTabs.includes(searchParams.tab as TabType)
       ? (searchParams.tab as TabType)
@@ -98,17 +99,11 @@ export default async function BabyDetailPage({
         )
       : [];
 
-  const tabDescriptions: Record<TabType, string> = {
-    activities: "최근 활동을 기록하고 타임라인을 확인하세요.",
-    analytics: "아기의 성장 패턴과 통계를 분석하세요.",
-    "ai-chat": "AI 전문가에게 육아에 대해 무엇이든 물어보세요.",
-  };
-
   return (
     <Container>
       {/* 게스트 모드 안내 배너 */}
       {isGuestMode && (
-        <Alert className="mb-6 bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 border-purple-200">
+        <Alert className="bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 border-purple-200">
           <AlertTitle className="font-bold text-purple-800">
             👀 게스트 모드로 체험 중입니다
           </AlertTitle>
@@ -126,19 +121,20 @@ export default async function BabyDetailPage({
         </Alert>
       )}
 
-      <PageHeader
-        title={baby.name}
-        description={tabDescriptions[currentTab]}
-      />
+      {/* Tab Navigation - 제거됨 */}
+      {/* <BabyDetailTabs babyId={baby.id} /> */}
 
       {/* Tab Content */}
       <div className="mt-6">
         {currentTab === "activities" && (
-          <div className="space-y-6">
-            <div className="max-w-md space-y-6">
-              <MeasurementCard babyId={baby.id} />
-              <MilestoneCard babyId={baby.id} birthDate={baby.birthDate} />
-            </div>
+          <div className="space-y-4">
+            {/* 일정 캐러셀 - 최상단 */}
+            <CompactScheduleCarousel babyId={baby.id} />
+
+            {/* 성장 기록 - 축소 버전 */}
+            <MeasurementCard babyId={baby.id} />
+
+            {/* 최근 활동 - 메인 콘텐츠 */}
             <Card>
               <CardContent className="p-6">
                 <ActivityManagementClient
@@ -153,8 +149,22 @@ export default async function BabyDetailPage({
         {currentTab === "analytics" && <BabyAnalyticsView babyId={babyId} />}
 
         {currentTab === "ai-chat" && (
-          <Card>
+          <Card className="overflow-hidden relative z-0" data-testid="ai-chat-card">
             <AIChatView babyId={babyId} />
+          </Card>
+        )}
+
+        {currentTab === "timeline" && (
+          <Card>
+            <CardContent className="p-6">
+              <div className="mb-4">
+                <h2 className="text-xl font-bold text-gray-900">전체 일정</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  예방접종, 건강검진 등 모든 일정을 확인하고 관리하세요
+                </p>
+              </div>
+              <InteractiveScheduleTimeline babyId={baby.id} />
+            </CardContent>
           </Card>
         )}
       </div>

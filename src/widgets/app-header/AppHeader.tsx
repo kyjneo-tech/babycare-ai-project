@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { BabySwitcher } from "@/features/babies/components/BabySwitcher";
 import LogoutButton from "./LogoutButton";
@@ -11,11 +11,22 @@ import { useEffect, useState } from "react";
 export default function AppHeader() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const params = useParams();
   const [babies, setBabies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 게스트 모드 확인
   const isGuestMode = pathname?.includes("guest-baby-id") || false;
+
+  // 현재 선택된 아기 ID 추출
+  const currentBabyId = (params?.babyId || params?.id || "") as string;
+
+  // 홈 링크 결정: 아기가 선택되어 있으면 해당 아기의 기록 화면, 아니면 루트
+  const homeHref = currentBabyId
+    ? `/babies/${currentBabyId}?tab=activities`
+    : babies.length > 0
+      ? `/babies/${babies[0].id}?tab=activities`
+      : "/";
 
   useEffect(() => {
     async function fetchBabies() {
@@ -46,7 +57,7 @@ export default function AppHeader() {
         <div className="flex justify-between items-center py-[clamp(8px,2vw,12px)]">
           <div className="flex items-center space-x-[clamp(8px,2vw,16px)]">
             <Link
-              href="/"
+              href={homeHref}
               className="text-[clamp(18px,5vw,24px)] font-bold text-primary font-heading flex items-center"
             >
               <span className="hidden sm:inline">🍼 Babycare AI</span>

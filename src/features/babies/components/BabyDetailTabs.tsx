@@ -1,9 +1,9 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { Activity, BarChart3, MessageSquare } from "lucide-react";
+import { Activity, BarChart3, MessageSquare, Calendar } from "lucide-react";
 
-type TabType = "activities" | "analytics" | "ai-chat";
+type TabType = "activities" | "analytics" | "ai-chat" | "timeline";
 
 interface BabyDetailTabsProps {
   babyId: string;
@@ -14,15 +14,16 @@ export function BabyDetailTabs({ babyId }: BabyDetailTabsProps) {
   const searchParams = useSearchParams();
   
   // 유효한 탭 값 검증
-  const validTabs: TabType[] = ["activities", "analytics", "ai-chat"];
+  const validTabs: TabType[] = ["activities", "analytics", "ai-chat", "timeline"];
   const tabParam = searchParams.get("tab");
-  const currentTab: TabType = 
+  const currentTab: TabType =
     tabParam && validTabs.includes(tabParam as TabType)
       ? (tabParam as TabType)
       : "activities";
 
   const tabs = [
     { id: "activities" as const, label: "기록", icon: Activity },
+    { id: "timeline" as const, label: "일정", icon: Calendar },
     { id: "analytics" as const, label: "통계", icon: BarChart3 },
     { id: "ai-chat" as const, label: "AI 상담", icon: MessageSquare },
   ];
@@ -32,7 +33,7 @@ export function BabyDetailTabs({ babyId }: BabyDetailTabsProps) {
   };
 
   return (
-    <div className="border-b border-gray-200 bg-white">
+    <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-[60px] z-40">
       <nav className="flex -mb-px" aria-label="Tabs">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -43,8 +44,8 @@ export function BabyDetailTabs({ babyId }: BabyDetailTabsProps) {
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
               className={`
-                flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm
-                transition-colors duration-200
+                flex-1 py-2 px-1 text-center border-b-2 font-medium text-xs
+                transition-colors duration-200 flex flex-col items-center gap-0.5
                 ${
                   isActive
                     ? "border-blue-500 text-blue-600"
@@ -53,7 +54,7 @@ export function BabyDetailTabs({ babyId }: BabyDetailTabsProps) {
               `}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon className="w-5 h-5 mx-auto mb-1" />
+              <Icon className="w-4 h-4" />
               <span>{tab.label}</span>
             </button>
           );

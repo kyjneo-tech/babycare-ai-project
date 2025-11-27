@@ -21,9 +21,12 @@ export function MeasurementCard({ babyId }: MeasurementCardProps) {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-2 bg-white rounded-lg border border-gray-200 px-3 py-2">
         {/* 타이틀 */}
-        <h3 className="text-lg sm:text-xl font-bold text-gray-800">성장 기록</h3>
+        <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+          <Scale className="h-4 w-4" />
+          성장 기록
+        </h3>
 
         {/* 버튼들 */}
         <div className="flex gap-2">
@@ -31,16 +34,18 @@ export function MeasurementCard({ babyId }: MeasurementCardProps) {
             variant="outline"
             size="sm"
             onClick={() => setShowInputDialog(true)}
+            className="h-7 px-2 text-xs"
           >
-            키&체중 입력
+            📏 키 & 체중
           </Button>
 
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowChartDialog(true)}
+            className="h-7 px-2 text-xs"
           >
-            성장 차트
+            📊 차트
           </Button>
         </div>
       </div>

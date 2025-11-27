@@ -8,6 +8,7 @@ import { CreateBabyInput, CreateBabySchema } from "@/shared/types/schemas";
 import { ZodError } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/shared/lib/prisma";
+import { generateSchedulesAction } from "@/features/notes/actions";
 
 export async function createBaby(input: CreateBabyInput) {
   try {
@@ -24,12 +25,23 @@ export async function createBaby(input: CreateBabyInput) {
     // 3. 서비스 호출
     const result = await createBabyService(userId, validatedInput);
 
-    // 4. 대시보드 페이지 캐시 무효화
+    // 4. 생성된 아기에 대한 모든 일정 자동 생성
+    console.log(`Generating schedules for new baby: ${result.baby.id}`);
+    const scheduleResult = await generateSchedulesAction(result.baby.id);
+    if (!scheduleResult.success) {
+      // 일정 생성 실패는 전체 프로세스를 중단시키지 않음. 로깅만 수행.
+      console.error(`Failed to generate schedules for baby ${result.baby.id}:`, scheduleResult.error);
+    } else {
+      console.log(`${scheduleResult.data.count} schedules generated for baby ${result.baby.id}.`);
+    }
+
+    // 5. 대시보드 페이지 캐시 무효화
     revalidatePath("/");
+    revalidatePath("/schedules"); // 스케줄 페이지도 무효화
 
     return { success: true, data: result };
   } catch (error: any) {
-    // 5. 에러 처리
+    // 6. 에러 처리
     if (error instanceof ZodError) {
       return { success: false, error: error.errors[0].message };
     }

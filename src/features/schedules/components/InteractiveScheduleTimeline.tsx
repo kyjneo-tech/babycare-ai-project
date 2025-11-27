@@ -1,0 +1,388 @@
+"use client";
+
+import { useState, useEffect, useMemo, useRef } from "react";
+import { Note, NoteType } from "@prisma/client";
+import { getAllSchedulesForBaby } from "@/features/notes/actions";
+import { Loader2, Plus, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScheduleTimelineItem } from "./ScheduleTimelineItem";
+import { ScheduleDetailModal } from "./ScheduleDetailModal";
+import { useInView } from "react-intersection-observer";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface InteractiveScheduleTimelineProps {
+  babyId: string;
+}
+
+export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimelineProps) {
+  const [schedules, setSchedules] = useState<Note[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  // 필터 & 검색 상태
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "completed">("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | NoteType>("all");
+  const [periodFilter, setPeriodFilter] = useState<"all" | "week" | "month" | "3months">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Today 마커 ref & 자동 스크롤 상태
+  const todayMarkerRef = useRef<HTMLDivElement>(null);
+  const firstItemRef = useRef<HTMLDivElement>(null);
+  const hasAutoScrolledRef = useRef(false);
+
+  // 무한 스크롤 상태
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const INITIAL_LIMIT = 50; // 초기 로드는 Today를 포함하도록 많이 가져옴
+  const LIMIT = 20; // 추가 로드는 20개씩
+
+  // Intersection Observer로 무한 스크롤 감지
+  const { ref: loadMoreRef, inView } = useInView({
+    threshold: 0,
+    rootMargin: '100px',
+  });
+
+  // 초기 로드
+  useEffect(() => {
+    fetchSchedules(true);
+  }, [babyId]);
+
+  // Today 위치로 자동 스크롤 (컴포넌트 마운트 시 한 번만)
+  useEffect(() => {
+    if (!isLoading && schedules.length > 0 && !hasAutoScrolledRef.current) {
+      console.log('🔍 Auto-scroll check:', {
+        isLoading,
+        schedulesLength: schedules.length,
+        hasTodayRef: !!todayMarkerRef.current,
+        hasFirstRef: !!firstItemRef.current,
+        hasAutoScrolled: hasAutoScrolledRef.current
+      });
+
+      setTimeout(() => {
+        // Today 마커가 있으면 그곳으로, 없으면 첫 번째 항목으로 스크롤
+        const targetRef = todayMarkerRef.current || firstItemRef.current;
+
+        if (targetRef) {
+          console.log('✅ Auto-scrolling to:', todayMarkerRef.current ? 'Today marker' : 'First item');
+          targetRef.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+          hasAutoScrolledRef.current = true;
+          console.log('📍 Auto-scroll completed');
+        } else {
+          console.log('❌ No scroll target found');
+        }
+      }, 1000);
+    }
+  }, [isLoading, schedules.length]);
+
+  // 스크롤로 추가 로드
+  useEffect(() => {
+    if (inView && hasMore && !isLoadingMore && !isLoading) {
+      fetchSchedules(false);
+    }
+  }, [inView, hasMore, isLoadingMore, isLoading]);
+
+  const fetchSchedules = async (reset: boolean = false, showLoading: boolean = true) => {
+    if (reset) {
+      if (showLoading) setIsLoading(true);
+      setOffset(0);
+    } else {
+      setIsLoadingMore(true);
+    }
+
+    const currentOffset = reset ? 0 : offset;
+    const currentLimit = reset ? INITIAL_LIMIT : LIMIT;
+
+    const result = await getAllSchedulesForBaby(babyId, {
+      offset: currentOffset,
+      limit: currentLimit
+    });
+
+    if (result.success) {
+      if (reset) {
+        setSchedules(result.data.schedules);
+      } else {
+        // 중복 제거: 기존 ID와 겹치지 않는 항목만 추가
+        setSchedules(prev => {
+          const existingIds = new Set(prev.map(s => s.id));
+          const newSchedules = result.data.schedules.filter(s => !existingIds.has(s.id));
+          return [...prev, ...newSchedules];
+        });
+      }
+      setHasMore(result.data.hasMore);
+      setOffset(currentOffset + result.data.schedules.length);
+    } else {
+      console.error(result.error);
+    }
+
+    if (showLoading) setIsLoading(false);
+    setIsLoadingMore(false);
+  };
+
+  const handleScheduleUpdated = (silent: boolean = false) => {
+    fetchSchedules(true, !silent);
+  };
+
+  const updateScheduleLocally = (scheduleId: string, updates: Partial<Note>) => {
+    setSchedules(prev => 
+      prev.map(s => s.id === scheduleId ? { ...s, ...updates } : s)
+    );
+  };
+
+  // 필터링 & 검색 적용 (Hooks는 조건부 return 이전에 호출되어야 함)
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
+
+  // 필터링된 일정 목록 (단일 리스트)
+  const displaySchedules = useMemo(() => {
+    let filtered = [...schedules];
+
+    // 상태별 필터
+    if (statusFilter === "pending") {
+      filtered = filtered.filter(s => !s.completed);
+    } else if (statusFilter === "completed") {
+      filtered = filtered.filter(s => s.completed);
+    }
+    // "all"일 경우 모든 항목 표시 (완료 여부 상관없음)
+
+    // 타입별 필터
+    if (typeFilter !== "all") {
+      filtered = filtered.filter(s => s.type === typeFilter);
+    }
+
+    // 기간별 필터
+    if (periodFilter !== "all") {
+      const now = new Date();
+      const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const start3Months = new Date(now.setMonth(now.getMonth() - 3));
+
+      filtered = filtered.filter(s => {
+        if (!s.dueDate) return false;
+        const dueDate = new Date(s.dueDate);
+
+        switch (periodFilter) {
+          case "week":
+            return dueDate >= startOfWeek;
+          case "month":
+            return dueDate >= startOfMonth;
+          case "3months":
+            return dueDate >= start3Months;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // 검색
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(s =>
+        s.title.toLowerCase().includes(query) ||
+        (s.content && s.content.toLowerCase().includes(query))
+      );
+    }
+
+    // 날짜순 정렬 (같은 날짜면 생성 시간 역순)
+    return filtered.sort((a, b) => {
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      
+      const dateCompare = new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      if (dateCompare !== 0) return dateCompare;
+      
+      // 같은 날짜면 생성 시간 역순 (최근 생성된 것이 먼저)
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [schedules, statusFilter, typeFilter, periodFilter, searchQuery]);
+
+  // Today 마커 위치 찾기
+  const todayIndex = useMemo(() => {
+    return displaySchedules.findIndex(schedule => {
+      if (!schedule.dueDate) return false;
+      const scheduleDate = new Date(schedule.dueDate);
+      scheduleDate.setHours(0, 0, 0, 0);
+      return scheduleDate >= today;
+    });
+  }, [displaySchedules, today]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-10">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  if (schedules.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-gray-500 mb-4">생성된 일정이 없습니다.</p>
+        <Button onClick={() => setShowAddModal(true)} size="sm">
+          <Plus className="h-4 w-4 mr-2" />
+          첫 일정 추가하기
+        </Button>
+
+        {showAddModal && (
+          <ScheduleDetailModal
+            schedule={null}
+            babyId={babyId}
+            onClose={() => setShowAddModal(false)}
+            onSuccess={handleScheduleUpdated}
+          />
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* 필터 & 검색 & 추가 버튼 */}
+      <div className="space-y-3 mb-6">
+        {/* 검색 */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="일정 제목이나 내용 검색..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* 필터 & 추가 버튼 */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* 상태별 필터 */}
+          <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+            <SelectTrigger className="w-[100px]">
+              <SelectValue placeholder="상태" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="pending">예정</SelectItem>
+              <SelectItem value="completed">완료</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* 타입별 필터 */}
+          <Select value={typeFilter} onValueChange={(v: any) => setTypeFilter(v)}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="타입" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="VACCINATION">예방접종</SelectItem>
+              <SelectItem value="HEALTH_CHECKUP">건강검진</SelectItem>
+              <SelectItem value="APPOINTMENT">사용자 일정</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* 기간별 필터 */}
+          <Select value={periodFilter} onValueChange={(v: any) => setPeriodFilter(v)}>
+            <SelectTrigger className="w-[110px]">
+              <SelectValue placeholder="기간" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체 기간</SelectItem>
+              <SelectItem value="week">이번 주</SelectItem>
+              <SelectItem value="month">이번 달</SelectItem>
+              <SelectItem value="3months">3개월 내</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* 결과 개수 */}
+          <span className="text-sm text-gray-500 ml-auto mr-2">
+            {schedules.length}개 중 {displaySchedules.length}개 표시
+          </span>
+
+          {/* 새 일정 추가 */}
+          <Button onClick={() => setShowAddModal(true)} size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            새 일정
+          </Button>
+        </div>
+      </div>
+
+      {/* 타임라인 */}
+      {displaySchedules.length === 0 ? (
+        <div className="text-center py-10 text-gray-500">
+          {searchQuery || statusFilter !== "all" || typeFilter !== "all"
+            ? "검색 조건에 맞는 일정이 없습니다."
+            : "생성된 일정이 없습니다."}
+        </div>
+      ) : (
+        <div className="relative space-y-6">
+          <div className="relative">
+            {displaySchedules.map((schedule, index) => {
+              const showTodayMarker = todayIndex === index;
+              const isFirstItem = index === 0;
+
+              return (
+                <div key={schedule.id} ref={isFirstItem ? firstItemRef : undefined}>
+                  {/* Today 마커 */}
+                  {showTodayMarker && (
+                    <div ref={todayMarkerRef} className="flex items-center gap-2 my-4">
+                      <div className="h-px bg-blue-500 flex-1"></div>
+                      <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                        📍 오늘 (Today)
+                      </span>
+                      <div className="h-px bg-blue-500 flex-1"></div>
+                    </div>
+                  )}
+
+                  {/* 일정 항목 */}
+                  <ScheduleTimelineItem
+                    schedule={schedule}
+                    babyId={babyId}
+                    onUpdate={handleScheduleUpdated}
+                    onUpdateLocally={updateScheduleLocally}
+                    isLast={index === displaySchedules.length - 1}
+                  />
+                </div>
+              );
+            })}
+
+            {/* 무한 스크롤 로더 */}
+            {hasMore && (
+              <div ref={loadMoreRef} className="flex justify-center py-4">
+                {isLoadingMore && (
+                  <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 끝 메시지 */}
+          {!hasMore && displaySchedules.length > 0 && (
+            <div className="text-center py-6 text-sm text-gray-500">
+              모든 일정을 불러왔습니다
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 새 일정 추가 모달 */}
+      {showAddModal && (
+        <ScheduleDetailModal
+          schedule={null}
+          babyId={babyId}
+          onClose={() => setShowAddModal(false)}
+          onSuccess={handleScheduleUpdated}
+        />
+      )}
+    </div>
+  );
+}

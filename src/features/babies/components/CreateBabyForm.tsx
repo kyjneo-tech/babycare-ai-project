@@ -37,9 +37,9 @@ export function CreateBabyForm() {
 
     const result = await createBaby(input);
 
-    if (result.success) {
-      // 성공 시 대시보드로 이동
-      router.push('/');
+    if (result.success && result.data?.baby?.id) {
+      // 성공 시 새로 생성된 아기의 대시보드로 이동
+      router.push(`/babies/${result.data.baby.id}`);
     } else {
       setError(result.error || '아기 등록에 실패했습니다.');
       setLoading(false);

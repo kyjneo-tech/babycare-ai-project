@@ -161,10 +161,10 @@ export function MedicineFormSection({
       {/* 권장 용량 안내 */}
       {medicineName && (
         <>
-          {latestWeight && medicineAmount ? (
+          {latestWeight ? (
             <GuidelinePanel
               type="medicine"
-              value={parseFloat(medicineAmount)}
+              value={parseFloat(medicineAmount) || 0}
               weight={latestWeight}
               medicineName={medicineName}
               syrupConc={syrupConc ? parseFloat(syrupConc) : undefined}

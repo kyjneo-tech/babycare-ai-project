@@ -10,7 +10,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/shared/lib/prisma';
 import { NoteService, CreateNoteData } from './services/noteService';
-import { NoteType, Priority } from '@prisma/client';
+import { NoteType, Priority, Note } from '@prisma/client';
 import { generateAllSchedules } from './services/scheduleGeneratorService';
 
 type ActionResult<T> =
@@ -333,7 +333,10 @@ export async function generateSchedulesAction(
     }
 
     // 일정 생성
-    const schedules = generateAllSchedules(babyId, user.id, baby.birthDate, options);
+    const schedules = generateAllSchedules(babyId, user.id, baby.birthDate, {
+      ...options,
+      includeMilestone: false,
+    });
 
     // CreateNoteData 타입으로 변환
     const cleanedSchedules: CreateNoteData[] = schedules.map(schedule => ({
@@ -360,5 +363,222 @@ export async function generateSchedulesAction(
   } catch (error) {
     console.error('generateSchedulesAction error:', error);
     return { success: false, error: 'Failed to generate schedules' };
+  }
+}
+
+/**
+ * 다가오는 주요 일정 조회 액션
+ */
+export async function getUpcomingSchedules(
+  babyId: string,
+  limit: number = 2
+): Promise<ActionResult<(Note & { daysUntil: number })[]>> {
+  try {
+    // 게스트 모드에서는 샘플 일정 반환
+    if (babyId === 'guest-baby-id') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const sampleSchedules = [
+        {
+          id: 'sample-1',
+          babyId: 'guest-baby-id',
+          userId: 'guest-user',
+          type: 'VACCINATION' as const,
+          title: 'BCG 예방접종',
+          content: '결핵 예방접종',
+          dueDate: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000), // 7일 후
+          completed: false,
+          completedAt: null,
+          priority: 'MEDIUM' as const,
+          tags: [],
+          metadata: {},
+          reminderDays: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          daysUntil: 7
+        },
+        {
+          id: 'sample-2',
+          babyId: 'guest-baby-id',
+          userId: 'guest-user',
+          type: 'HEALTH_CHECKUP' as const,
+          title: '4개월 건강검진',
+          content: '성장 발달 확인',
+          dueDate: new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000), // 14일 후
+          completed: false,
+          completedAt: null,
+          priority: 'MEDIUM' as const,
+          tags: [],
+          metadata: {},
+          reminderDays: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          daysUntil: 14
+        }
+      ];
+
+      return { success: true, data: sampleSchedules.slice(0, limit) };
+    }
+
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const notes = await prisma.note.findMany({
+      where: {
+        babyId: babyId,
+        completed: false,
+        dueDate: {
+          gte: todayStart, // 오늘 00:00 이후 (오늘 포함)
+        },
+        type: {
+          in: ['VACCINATION', 'HEALTH_CHECKUP', 'WONDER_WEEK', 'APPOINTMENT'],
+        },
+      },
+      orderBy: {
+        dueDate: 'asc',
+      },
+      take: limit,
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const notesWithDaysUntil = notes.map(note => {
+      const dueDate = new Date(note.dueDate!);
+      dueDate.setHours(0, 0, 0, 0);
+      const diffTime = dueDate.getTime() - today.getTime();
+      const daysUntil = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return { ...note, daysUntil };
+    });
+
+    return { success: true, data: notesWithDaysUntil };
+  } catch (error) {
+    console.error('getUpcomingSchedules error:', error);
+    return { success: false, error: 'Failed to fetch upcoming schedules' };
+  }
+}
+
+/**
+ * 특정 아기의 자동 생성된 모든 일정 삭제 액션
+ */
+export async function deleteSchedulesForBabyAction(
+  babyId: string,
+): Promise<ActionResult<{ count: number }>> {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    
+    // 권한 검증: 사용자가 해당 아기의 가족 구성원인지 확인
+    const baby = await prisma.baby.findFirst({
+      where: {
+        id: babyId,
+        Family: {
+          FamilyMembers: {
+            some: { userId: session.user.id }
+          }
+        }
+      }
+    });
+
+    if (!baby) {
+      return { success: false, error: '권한이 없거나 아기를 찾을 수 없습니다.' };
+    }
+
+    const result = await prisma.note.deleteMany({
+      where: {
+        babyId: babyId,
+        type: {
+          in: ['VACCINATION', 'HEALTH_CHECKUP', 'MILESTONE', 'WONDER_WEEK', 'SLEEP_REGRESSION', 'FEEDING_STAGE'],
+        },
+      },
+    });
+
+    revalidatePath(`/schedules?babyId=${babyId}`);
+    revalidatePath(`/babies/${babyId}`);
+
+    return { success: true, data: { count: result.count } };
+  } catch (error) {
+    console.error('deleteSchedulesForBabyAction error:', error);
+    return { success: false, error: '일정 삭제 중 오류가 발생했습니다.' };
+  }
+}
+
+/**
+ * 특정 아기의 모든 일정 조회 액션 (페이지네이션 지원)
+ */
+export async function getAllSchedulesForBaby(
+  babyId: string,
+  options?: { offset?: number; limit?: number }
+): Promise<ActionResult<{schedules: Note[], babyName: string, allBabies: {id: string, name: string}[], total: number, hasMore: boolean}>> {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const offset = options?.offset ?? 0;
+    const limit = options?.limit ?? 100;
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        FamilyMembers: {
+          include: {
+            Family: {
+              include: {
+                Babies: {
+                  select: { id: true, name: true },
+                  orderBy: { createdAt: 'asc' },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const allBabies = user?.FamilyMembers.flatMap(fm => fm.Family.Babies) ?? [];
+    const currentBaby = allBabies.find(b => b.id === babyId);
+
+    if (!currentBaby) {
+      // babyId가 유효하지 않거나, 해당 유저의 아기가 아닐 경우
+      return { success: true, data: { schedules: [], babyName: '', allBabies: allBabies, total: 0, hasMore: false } };
+    }
+
+    const where = {
+      babyId: babyId,
+      type: {
+        in: ['VACCINATION', 'HEALTH_CHECKUP', 'MILESTONE', 'WONDER_WEEK', 'SLEEP_REGRESSION', 'FEEDING_STAGE', 'APPOINTMENT', 'TODO'] as NoteType[],
+      },
+    };
+
+    // 전체 개수 조회
+    const total = await prisma.note.count({ where });
+
+    // 페이지네이션된 일정 조회
+    const schedules = await prisma.note.findMany({
+      where,
+      orderBy: [
+        { dueDate: 'asc' },
+        { createdAt: 'desc' },
+      ],
+      skip: offset,
+      take: limit,
+    });
+
+    const hasMore = offset + schedules.length < total;
+
+    return { success: true, data: { schedules, babyName: currentBaby.name, allBabies, total, hasMore } };
+  } catch (error) {
+    console.error('getAllSchedulesForBaby error:', error);
+    return { success: false, error: 'Failed to fetch schedules' };
   }
 }

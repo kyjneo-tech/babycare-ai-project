@@ -143,10 +143,10 @@ export function FeedingFormSection({
             disabled={disabled}
           />
 
-          {latestWeight && feedingAmount && (
+          {latestWeight && (
             <GuidelinePanel
               type="feeding"
-              value={parseFloat(feedingAmount)}
+              value={parseFloat(feedingAmount) || 0}
               weight={latestWeight}
             />
           )}

@@ -5,6 +5,16 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // /schedules 페이지 리디렉션 (timeline 탭으로 통합됨)
+  if (pathname === '/schedules') {
+    const babyId = req.nextUrl.searchParams.get('babyId');
+    if (babyId) {
+      return NextResponse.redirect(new URL(`/babies/${babyId}?tab=timeline`, req.url));
+    }
+    // babyId가 없으면 홈으로 리디렉션
+    return NextResponse.redirect(new URL('/', req.url));
+  }
+
   // NEXTAUTH_SECRET 확인
   if (!process.env.NEXTAUTH_SECRET) {
     console.error("❌ NEXTAUTH_SECRET is not set. Middleware will not work correctly.");

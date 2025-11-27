@@ -298,7 +298,7 @@ export function MobileOptimizedTimeline({
 
       {/* 전체 스크롤 컨테이너 */}
       <div className="overflow-x-auto">
-        <div className="min-w-[376px]">
+        <div className="min-w-[334px]">
           {/* 헤더: 날짜들 */}
           <div className="sticky top-0 bg-white z-20 border-b-2 border-gray-300 shadow-sm">
             <div className="flex">
@@ -312,7 +312,7 @@ export function MobileOptimizedTimeline({
                   return (
                     <div
                       key={date.toISOString()}
-                      className={`flex-1 min-w-[48px] p-2 text-center border-r border-gray-200 ${
+                      className={`flex-1 min-w-[42px] p-2 text-center border-r border-gray-200 ${
                         isToday ? "bg-blue-50" : ""
                       }`}
                     >
@@ -354,7 +354,7 @@ export function MobileOptimizedTimeline({
                 return (
                   <div
                     key={date.toISOString()}
-                    className="flex-1 min-w-[48px] border-r border-gray-200 relative"
+                    className="flex-1 min-w-[42px] border-r border-gray-200 relative"
                   >
                 {/* 지속 활동 바들 (absolute positioning) */}
                 {ongoingActivities.map((activity) => {
@@ -364,12 +364,13 @@ export function MobileOptimizedTimeline({
                     (new Date(activity.startTime).getHours() >= 18 ||
                       new Date(activity.startTime).getHours() < 6);
 
+                  const bgColor = getActivityColors(activity.type, isNightSleep).bg;
+                  const borderColor = isNightSleep ? 'border-indigo-700' : 'border-indigo-400';
+
                   return (
                     <div
                       key={activity.id}
-                      className={`absolute left-0 right-0 z-[5] ${
-                        getActivityColors(activity.type, isNightSleep).bg
-                      } cursor-pointer hover:brightness-110 transition-all mx-[2px] rounded-lg`}
+                      className={`absolute left-0 right-0 z-[5] ${bgColor} opacity-40 border-2 ${borderColor} cursor-pointer hover:opacity-50 transition-all mx-[3px] rounded-lg`}
                       style={{ top: `${top}px`, height: `${height}px` }}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -396,7 +397,7 @@ export function MobileOptimizedTimeline({
                               key={activity.id}
                               className={`${
                                 getActivityColors(activity.type).bg
-                              } w-1.5 h-6 rounded-full cursor-pointer hover:brightness-110 hover:scale-110 transition-all shadow-sm pointer-events-auto`}
+                              } w-2 h-7 rounded-full cursor-pointer hover:brightness-110 hover:scale-110 transition-all shadow-md pointer-events-auto`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleCellClick(activity);

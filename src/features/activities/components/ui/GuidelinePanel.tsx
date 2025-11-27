@@ -38,28 +38,30 @@ export function GuidelinePanel({ type, value, weight, ageInMonths, medicineName,
         </div>
 
         {/* 프로그레스 바 */}
-        <div className="space-y-1">
-          <div className="flex justify-between text-xs text-gray-600">
-            <span>최소: {guide.perFeeding.min}ml</span>
-            <span>최대: {guide.perFeeding.max}ml</span>
+        {amount > 0 && (
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs text-gray-600">
+              <span>최소: {guide.perFeeding.min}ml</span>
+              <span>최대: {guide.perFeeding.max}ml</span>
+            </div>
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all ${
+                  isInRange ? 'bg-green-500' : 'bg-yellow-500'
+                }`}
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
+            <p className="text-xs text-center mt-1">
+              {isInRange
+                ? '✅ 적정 범위입니다'
+                : amount < guide.perFeeding.min
+                ? '⚠️ 권장량보다 적습니다'
+                : '⚠️ 권장량보다 많습니다'
+              }
+            </p>
           </div>
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className={`h-full transition-all ${
-                isInRange ? 'bg-green-500' : 'bg-yellow-500'
-              }`}
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
-          <p className="text-xs text-center mt-1">
-            {isInRange
-              ? '✅ 적정 범위입니다'
-              : amount < guide.perFeeding.min
-              ? '⚠️ 권장량보다 적습니다'
-              : '⚠️ 권장량보다 많습니다'
-            }
-          </p>
-        </div>
+        )}
       </div>
     );
   }
