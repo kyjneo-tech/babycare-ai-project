@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { UnifiedTimeline } from "@/components/features/analytics/UnifiedTimeline";
 import { getActivitiesByDateRange } from "@/features/analytics/actions";
-import { Activity } from "@prisma/client";
+import { Activity, ActivityType } from "@prisma/client";
 import { subDays, startOfDay, endOfDay, format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { ChartSkeleton } from "@/components/common/Skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { TYPOGRAPHY, SPACING } from "@/design-system";
 import { cn } from "@/lib/utils";
+import { ActivityTypeFilter } from "@/components/features/analytics/ActivityTypeFilter";
 
 interface BabyAnalyticsViewProps {
   babyId: string;
@@ -22,7 +23,8 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDays, setSelectedDays] = useState(7);
-  
+  const [activeFilters, setActiveFilters] = useState<ActivityType[]>([]);
+
   // 기본값: 최근 7일
   const [startDate, setStartDate] = useState<Date>(
     startOfDay(subDays(new Date(), 6))
@@ -38,7 +40,7 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
     setLoading(false);
   }, [babyId]);
 
-  useEffect(() =>{
+  useEffect(() => {
     // babyId가 변경되면 날짜 범위를 초기화하고 데이터를 다시 로드
     const newStartDate = startOfDay(subDays(new Date(), 6));
     const newEndDate = endOfDay(new Date());
@@ -69,6 +71,10 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
       loadActivities(startDate, newEnd);
     }
     setSelectedDays(0); // 커스텀 날짜 선택 시 기본 버튼 해제
+  };
+
+  const handleFilterChange = (filters: ActivityType[]) => {
+    setActiveFilters(filters);
   };
 
   if (loading) {
@@ -105,7 +111,7 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
       <Card>
         <CardContent className={cn(SPACING.card.small, "space-y-4")}>
           <h3 className={TYPOGRAPHY.h3}>기간 선택</h3>
-          
+
           {/* 빠른 선택 버튼 */}
           <div className="grid grid-cols-3 gap-2">
             {[7, 14, 30].map((days) => (
@@ -145,6 +151,16 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
         </CardContent>
       </Card>
 
+      {/* 활동 필터 */}
+      <Card>
+        <CardContent className={cn(SPACING.card.small, "space-y-4")}>
+          <h3 className={TYPOGRAPHY.h3}>활동 필터</h3>
+          <ActivityTypeFilter
+            activeFilters={activeFilters}
+            onFilterChange={handleFilterChange}
+          />
+        </CardContent>
+      </Card>
 
       {/* 타임라인 */}
       <Card>
@@ -155,13 +171,25 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
               activities={activities}
               startDate={startDate}
               endDate={endDate}
+              activeFilters={activeFilters}
             />
           ) : (
             <div className="py-12 text-center">
-              <p className={cn(TYPOGRAPHY.body.large, "text-muted-foreground", "mb-2")}>
+              <p
+                className={cn(
+                  TYPOGRAPHY.body.large,
+                  "text-muted-foreground",
+                  "mb-2"
+                )}
+              >
                 이 기간에 기록된 활동이 없습니다.
               </p>
-              <p className={cn(TYPOGRAPHY.body.default, "text-muted-foreground")}>
+              <p
+                className={cn(
+                  TYPOGRAPHY.body.default,
+                  "text-muted-foreground"
+                )}
+              >
                 아기의 활동을 기록해보세요!
               </p>
             </div>

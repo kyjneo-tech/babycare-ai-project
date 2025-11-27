@@ -365,12 +365,11 @@ export function MobileOptimizedTimeline({
                       new Date(activity.startTime).getHours() < 6);
 
                   const bgColor = getActivityColors(activity.type, isNightSleep).bg;
-                  const borderColor = isNightSleep ? 'border-indigo-700' : 'border-indigo-400';
 
                   return (
                     <div
                       key={activity.id}
-                      className={`absolute left-0 right-0 z-[5] ${bgColor} opacity-40 border-2 ${borderColor} cursor-pointer hover:opacity-50 transition-all mx-[3px] rounded-lg`}
+                      className={`absolute left-0 right-0 z-[5] ${bgColor} cursor-pointer hover:brightness-110 transition-all`}
                       style={{ top: `${top}px`, height: `${height}px` }}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -382,22 +381,27 @@ export function MobileOptimizedTimeline({
 
                 {/* 시간대별 셀들 (순간 활동용) */}
                 {hours.map((hour) => {
-                  const instantActivities = getInstantActivitiesAtDateAndHour(date, hour);
+                  const instantActivities = getInstantActivitiesAtDateAndHour(
+                    date,
+                    hour
+                  );
 
                   return (
                     <div
                       key={`${date.toISOString()}-${hour}`}
-                      className={`min-h-[40px] relative ${isToday ? "bg-blue-50/20" : ""}`}
+                      className={`min-h-[40px] relative ${
+                        isToday ? "bg-blue-50/20" : ""
+                      }`}
                     >
                       {/* 순간 활동 바 */}
                       {instantActivities.length > 0 && (
-                        <div className="absolute inset-0 flex items-center justify-center gap-0.5 p-1 z-10 pointer-events-none">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 p-1 z-10 pointer-events-none">
                           {instantActivities.map((activity) => (
                             <div
                               key={activity.id}
                               className={`${
                                 getActivityColors(activity.type).bg
-                              } w-2 h-7 rounded-full cursor-pointer hover:brightness-110 hover:scale-110 transition-all shadow-md pointer-events-auto`}
+                              } h-1.5 w-full cursor-pointer hover:brightness-110 transition-all shadow-sm pointer-events-auto`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleCellClick(activity);
