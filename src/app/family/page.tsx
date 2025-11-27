@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
-import { FamilyManagementPage } from "@/components/features/families/FamilyManagementPage";
+import { FamilyManagementPage } from "@/features/families/components/FamilyManagementPage";
 
 export const metadata = {
   title: "가족 관리 | Babycare AI",

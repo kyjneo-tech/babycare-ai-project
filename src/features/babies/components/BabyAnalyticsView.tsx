@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { UnifiedTimeline } from "@/components/features/analytics/UnifiedTimeline";
+import { UnifiedTimeline } from "@/features/analytics/components/UnifiedTimeline";
 import { getActivitiesByDateRange } from "@/features/analytics/actions";
 import { Activity, ActivityType } from "@prisma/client";
 import { subDays, startOfDay, endOfDay, format } from "date-fns";
@@ -13,7 +13,9 @@ import { ChartSkeleton } from "@/components/common/Skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { TYPOGRAPHY, SPACING } from "@/design-system";
 import { cn } from "@/lib/utils";
-import { ActivityTypeFilter } from "@/components/features/analytics/ActivityTypeFilter";
+import { ActivityTypeFilter } from "@/features/analytics/components/ActivityTypeFilter";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 
 interface BabyAnalyticsViewProps {
   babyId: string;
@@ -107,58 +109,74 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
 
   return (
     <div className="space-y-6">
-      {/* 기간 선택 */}
+      {/* 통합 필터 카드 */}
       <Card>
         <CardContent className={cn(SPACING.card.small, "space-y-4")}>
-          <h3 className={TYPOGRAPHY.h3}>기간 선택</h3>
+          <h3 className={TYPOGRAPHY.h3}>📊 통계 필터</h3>
 
-          {/* 빠른 선택 버튼 */}
-          <div className="grid grid-cols-3 gap-2">
-            {[7, 14, 30].map((days) => (
+          {/* 빠른 기간 선택 */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">기간 선택</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {[7, 14, 30].map((days) => (
+                <Button
+                  key={days}
+                  variant={selectedDays === days ? "default" : "secondary"}
+                  onClick={() => handlePeriodChange(days)}
+                  size="sm"
+                >
+                  {days}일
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* 커스텀 날짜 선택 (접을 수 있음) */}
+          <Collapsible>
+            <CollapsibleTrigger asChild>
               <Button
-                key={days}
-                variant={selectedDays === days ? "default" : "secondary"}
-                onClick={() => handlePeriodChange(days)}
+                variant="ghost"
+                size="sm"
+                className="w-full justify-between text-sm"
               >
-                {days}일
+                <span>상세 기간 설정</span>
+                <ChevronDown className="h-4 w-4" />
               </Button>
-            ))}
-          </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="start-date" className="text-xs">시작일</Label>
+                  <Input
+                    id="start-date"
+                    type="date"
+                    value={format(startDate, "yyyy-MM-dd")}
+                    onChange={(e) =>
+                      handleCustomDateChange("start", e.target.value)
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="end-date" className="text-xs">종료일</Label>
+                  <Input
+                    id="end-date"
+                    type="date"
+                    value={format(endDate, "yyyy-MM-dd")}
+                    onChange={(e) => handleCustomDateChange("end", e.target.value)}
+                  />
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
-          {/* 커스텀 날짜 선택 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="start-date">시작일</Label>
-              <Input
-                id="start-date"
-                type="date"
-                value={format(startDate, "yyyy-MM-dd")}
-                onChange={(e) =>
-                  handleCustomDateChange("start", e.target.value)
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="end-date">종료일</Label>
-              <Input
-                id="end-date"
-                type="date"
-                value={format(endDate, "yyyy-MM-dd")}
-                onChange={(e) => handleCustomDateChange("end", e.target.value)}
-              />
-            </div>
+          {/* 활동 필터 */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">활동 유형</Label>
+            <ActivityTypeFilter
+              activeFilters={activeFilters}
+              onFilterChange={handleFilterChange}
+            />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* 활동 필터 */}
-      <Card>
-        <CardContent className={cn(SPACING.card.small, "space-y-4")}>
-          <h3 className={TYPOGRAPHY.h3}>활동 필터</h3>
-          <ActivityTypeFilter
-            activeFilters={activeFilters}
-            onFilterChange={handleFilterChange}
-          />
         </CardContent>
       </Card>
 

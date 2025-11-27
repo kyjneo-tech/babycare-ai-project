@@ -15,7 +15,7 @@ export function AIConsultMenu({ currentBabyId, pathname }: AIConsultMenuProps) {
   return (
     <Link href={chatLink} className="flex-1">
       <Button
-        className="w-full h-full rounded-none bg-transparent hover:bg-white/10 text-white font-semibold text-base border-r border-white/20 justify-center gap-2"
+        className="w-full h-full rounded-none bg-transparent hover:bg-white/20 text-primary-foreground font-semibold text-base border-r border-white/20 justify-center gap-2"
         aria-label="AI 상담"
       >
         <MessageCircle className="h-5 w-5" />

@@ -5,7 +5,7 @@ import { prisma } from "@/shared/lib/prisma";
 import { redirect } from "next/navigation";
 import dynamic from "next/dynamic";
 import { ActivityManagementClient } from "@/features/activities/components/ActivityManagementClient";
-// import { BabyDetailTabs } from "@/features/babies/components/BabyDetailTabs"; // 사용 안 함
+
 import { MeasurementCard } from "@/features/measurements/components/MeasurementCard";
 import { CompactScheduleCarousel } from "@/features/schedules/components/CompactScheduleCarousel";
 import { getRecentActivities } from "@/features/activities/actions";
@@ -35,7 +35,7 @@ const BabyAnalyticsView = dynamic(
 );
 
 const AIChatView = dynamic(
-  () => import("@/components/features/ai-chat/AIChatView").then(mod => ({ default: mod.AIChatView })),
+  () => import("@/features/ai-chat/components/AIChatView").then(mod => ({ default: mod.AIChatView })),
   {
     loading: () => (
       <div className="flex items-center justify-center h-96">

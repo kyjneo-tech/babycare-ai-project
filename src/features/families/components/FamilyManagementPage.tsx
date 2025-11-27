@@ -13,6 +13,8 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { BabyCard } from "./BabyCard";
+import { EditBabyDialog } from "./EditBabyDialog";
 import { SPACING, TYPOGRAPHY } from "@/design-system";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +27,7 @@ export function FamilyManagementPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserPermission, setCurrentUserPermission] = useState<string | null>(null);
   const [currentUserRelation, setCurrentUserRelation] = useState<string | null>(null);
+  const [editingBaby, setEditingBaby] = useState<any | null>(null);
 
   useEffect(() => {
     loadFamilyInfo();
@@ -115,6 +118,29 @@ export function FamilyManagementPage() {
   const handleJoinSuccess = () => {
     setShowJoinForm(false);
     setRefreshKey((prev) => prev + 1);
+  };
+
+  const handleEditBaby = (babyId: string) => {
+    const baby = familyData?.babies?.find((b: any) => b.id === babyId);
+    if (baby) {
+      setEditingBaby(baby);
+    }
+  };
+
+  const handleDeleteBaby = async (babyId: string) => {
+    if (!confirm("정말 이 아기를 삭제하시겠습니까? 모든 기록이 삭제됩니다.")) return;
+
+    try {
+      const { deleteBaby } = await import("@/features/babies/actions");
+      const result = await deleteBaby(babyId);
+      if (result.success) {
+        setRefreshKey((prev) => prev + 1);
+      } else {
+        setError(result.error || "아기 삭제에 실패했습니다.");
+      }
+    } catch (err: any) {
+      setError(err.message || "오류가 발생했습니다.");
+    }
   };
 
   if (loading) {
@@ -244,26 +270,17 @@ export function FamilyManagementPage() {
                   <CardHeader>
                     <CardTitle className={TYPOGRAPHY.h3}>👶 우리 아기들</CardTitle>
                   </CardHeader>
-                  <CardContent className={SPACING.space.sm}>
-                    {familyData.babies.map((baby: any) => (
-                      <div
-                        key={baby.id}
-                        className={cn("flex items-center p-2 sm:p-3 bg-muted rounded-lg", SPACING.gap.sm)}
-                      >
-                        <span className="text-xl sm:text-2xl">
-                          {baby.gender === "male" ? "👶‍♂️" : "👶‍♀️"}
-                        </span>
-                        <div className="flex-1">
-                          <p className={cn(TYPOGRAPHY.body.default, "font-semibold")}>
-                            {baby.name}
-                          </p>
-                          <p className={cn(TYPOGRAPHY.caption, "text-muted-foreground")}>
-                            {new Date(baby.birthDate).toLocaleDateString("ko-KR")} 출생
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    {/* 아기 추가 버튼 */}
+                <CardContent className={SPACING.space.sm}>
+                  {familyData.babies.map((baby: any) => (
+                    <BabyCard
+                      key={baby.id}
+                      baby={baby}
+                      canEdit={currentUserPermission === "owner" || currentUserPermission === "admin"}
+                      onEdit={handleEditBaby}
+                      onDelete={handleDeleteBaby}
+                    />
+                  ))}
+                  {/* 아기 추가 버튼 */}
                     <Button asChild variant="outline" className="w-full mt-4">
                       <Link href="/add-baby">
                         <Plus className="mr-2 h-4 w-4" />
@@ -277,6 +294,19 @@ export function FamilyManagementPage() {
           )}
         </div>
       </Container>
+
+      {/* 아기 수정 다이얼로그 */}
+      {editingBaby && (
+        <EditBabyDialog
+          baby={editingBaby}
+          open={!!editingBaby}
+          onOpenChange={(open) => !open && setEditingBaby(null)}
+          onUpdate={() => {
+            setEditingBaby(null);
+            setRefreshKey((prev) => prev + 1);
+          }}
+        />
+      )}
     </div>
   );
 }

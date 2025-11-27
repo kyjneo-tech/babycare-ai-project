@@ -93,7 +93,7 @@ export function FABMenu({ isOpen, onOpenChange, pathname, isBottomBar = false }:
       <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
         <DropdownMenuTrigger asChild>
           <Button
-            className="w-full h-full rounded-none bg-transparent hover:bg-white/10 text-white font-semibold text-base"
+            className="w-full h-full rounded-none bg-transparent hover:bg-white/20 text-primary-foreground font-semibold text-base"
             aria-label="메뉴"
           >
             <Menu className="mr-2 h-5 w-5" />

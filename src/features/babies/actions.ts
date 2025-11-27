@@ -100,6 +100,7 @@ export async function deleteBaby(babyId: string) {
     });
 
     revalidatePath("/");
+    revalidatePath("/family");
     revalidatePath(`/babies/${babyId}`);
 
     return { success: true, message: "아기가 삭제되었습니다." };
@@ -107,6 +108,89 @@ export async function deleteBaby(babyId: string) {
     return {
       success: false,
       error: error.message || "아기 삭제에 실패했습니다.",
+    };
+  }
+}
+
+export async function updateBabyAndRecalculateSchedules(
+  babyId: string,
+  data: { name?: string; birthDate?: Date; gender?: string }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    // 아기 확인
+    const baby = await prisma.baby.findUnique({
+      where: { id: babyId },
+      select: {
+        id: true,
+        name: true,
+        birthDate: true,
+        gender: true,
+        familyId: true,
+      },
+    });
+
+    if (!baby) {
+      throw new Error("아기를 찾을 수 없습니다.");
+    }
+
+    // 가족원 확인
+    const isFamilyMember = await prisma.familyMember.findFirst({
+      where: {
+        familyId: baby.familyId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!isFamilyMember) {
+      throw new Error("이 아기를 수정할 권한이 없습니다.");
+    }
+
+    const birthDateChanged = data.birthDate && 
+      baby.birthDate.getTime() !== new Date(data.birthDate).getTime();
+
+    // 아기 정보 업데이트
+    const updatedBaby = await prisma.baby.update({
+      where: { id: babyId },
+      data: {
+        name: data.name || baby.name,
+        birthDate: data.birthDate || baby.birthDate,
+        gender: data.gender || baby.gender,
+      },
+    });
+
+    // 생년월일 변경 시 일정 재계산
+    if (birthDateChanged) {
+      // 자동 생성된 일정 중 완료되지 않은 것만 삭제
+      await prisma.note.deleteMany({
+        where: {
+          babyId,
+          type: { in: ["VACCINATION", "HEALTH_CHECKUP"] },
+          completed: false,
+        },
+      });
+
+      // 일정 재생성
+      const scheduleResult = await generateSchedulesAction(babyId);
+      if (!scheduleResult.success) {
+        console.error(`Failed to regenerate schedules for baby ${babyId}:`, scheduleResult.error);
+      }
+    }
+
+    revalidatePath("/");
+    revalidatePath("/family");
+    revalidatePath(`/babies/${babyId}`);
+
+    return { success: true, data: updatedBaby };
+  } catch (error: any) {
+    console.error("아기 정보 업데이트 실패:", error);
+    return {
+      success: false,
+      error: error.message || "아기 정보 업데이트에 실패했습니다.",
     };
   }
 }

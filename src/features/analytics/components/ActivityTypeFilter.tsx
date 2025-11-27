@@ -41,7 +41,8 @@ export function ActivityTypeFilter({ activeFilters, onFilterChange }: ActivityTy
               onClick={() => onFilterChange([])}
               className="transition-all"
             >
-              <span className="text-lg">✨</span>
+              <span className="text-base sm:text-lg mr-1">✨</span>
+              <span className="text-sm font-medium">전체</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>

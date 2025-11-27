@@ -6,6 +6,7 @@ import { getAllSchedulesForBaby } from "@/features/notes/actions";
 import { Loader2, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FloatingActionButton } from "@/components/ui/floating-action-button";
 import { ScheduleTimelineItem } from "./ScheduleTimelineItem";
 import { ScheduleDetailModal } from "./ScheduleDetailModal";
 import { useInView } from "react-intersection-observer";
@@ -304,15 +305,9 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
           </Select>
 
           {/* 결과 개수 */}
-          <span className="text-sm text-gray-500 ml-auto mr-2">
+          <span className="text-sm text-gray-500 ml-auto">
             {schedules.length}개 중 {displaySchedules.length}개 표시
           </span>
-
-          {/* 새 일정 추가 */}
-          <Button onClick={() => setShowAddModal(true)} size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            새 일정
-          </Button>
         </div>
       </div>
 
@@ -373,6 +368,14 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
           )}
         </div>
       )}
+
+      {/* Floating Action Button - 새 일정 추가 */}
+      <FloatingActionButton
+        icon={<Plus className="h-5 w-5" />}
+        label="새 일정"
+        onClick={() => setShowAddModal(true)}
+        position="bottom-right"
+      />
 
       {/* 새 일정 추가 모달 */}
       {showAddModal && (

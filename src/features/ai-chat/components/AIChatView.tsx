@@ -1,7 +1,7 @@
 "use client";
 
-import { ChatMessageBubble } from "@/components/features/ai-chat/ChatMessageBubble";
-import { ChatInput } from "@/components/features/ai-chat/ChatInput";
+import { ChatMessageBubble } from "@/features/ai-chat/components/ChatMessageBubble";
+import { ChatInput } from "@/features/ai-chat/components/ChatInput";
 import { AIChatSettings } from "./AIChatSettings";
 import { useChat } from "./useChat";
 import { Skeleton } from "@/components/ui/skeleton";

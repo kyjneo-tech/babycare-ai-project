@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito, Jua } from "next/font/google";
+import { Nunito } from "next/font/google";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -8,16 +8,6 @@ const nunito = Nunito({
   display: "swap",
   fallback: ["system-ui", "sans-serif"],
 });
-
-const jua = Jua({
-  weight: "400",
-  variable: "--font-jua",
-  subsets: ["latin"],
-  display: "swap",
-  fallback: ["system-ui", "sans-serif"],
-});
-
-
 
 export const metadata: Metadata = {
   title: "BabyCare AI - 따뜻한 육아 동반자",
@@ -37,7 +27,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#FF8BA7", // Primary color
+  themeColor: "#FB7185", // New Primary color (Soft Coral)
 };
 
 import Providers from './providers';
@@ -50,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body
-        className={`${nunito.variable} ${jua.variable} antialiased font-sans`}
+        className={`${nunito.variable} antialiased font-sans`}
       >
         <Providers>{children}</Providers>
       </body>

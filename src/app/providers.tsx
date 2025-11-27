@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import AppHeader from '@/widgets/app-header/AppHeader';
-import { QuickRecordModal } from '@/components/features/activities/QuickRecordModal';
+import { QuickRecordModal } from '@/features/activities/components/QuickRecordModal';
 import { FABMenu } from '@/components/ui/fab-menu';
 import { AIConsultMenu } from '@/components/ui/ai-consult-menu';
 import { Button } from '@/components/ui/button';
@@ -57,7 +57,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* 하단 네비게이션 바 (AI 상담 + 메뉴 통합) */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-purple-500 to-blue-500 shadow-lg border-t border-purple-600/20">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-primary text-primary-foreground shadow-[0_-4px_20px_-2px_rgba(0,0,0,0.1)]">
         <div className="flex h-14">
           {/* AI 상담 드롭다운 (60%) */}
           <AIConsultMenu

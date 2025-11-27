@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { SPACING, TYPOGRAPHY } from "@/design-system";
 import { cn } from "@/lib/utils";
 
-import { TimeSelector } from "@/features/activities/components/ui/TimeSelector";
+import { TimeSelector } from "../../../components/common/TimeSelector";
 import { ActivitySuggestions } from "@/features/activities/components/ui/ActivitySuggestions";
 import { FeedingFormSection } from "@/features/activities/components/forms/FeedingFormSection";
 import { SleepFormSection } from "@/features/activities/components/forms/SleepFormSection";
@@ -250,21 +250,22 @@ export function ActivityForm({
                 />
               )}
 
-              {/* SuggestionsPanel */}
-              <ActivitySuggestions type={type} />
-
+              {/* 메모 입력 - AI 상담에 활용 */}
               <div className={cn("p-3 bg-muted rounded-lg", SPACING.space.sm)}>
                 <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>
                   💬 메모 (선택)
                 </Label>
                 <Textarea
                   name="note"
-                  placeholder="특별한 사항..."
+                  placeholder="💡 메모는 AI 상담에 반영되어 더 정확한 답변을 받을 수 있어요"
                   rows={2}
                   className={TYPOGRAPHY.body.small}
                   disabled={isGuestMode}
                 />
               </div>
+
+              {/* SuggestionsPanel */}
+              <ActivitySuggestions type={type} />
 
               {error && (
                 <div className={cn("p-3 bg-destructive/10 text-destructive rounded-md", TYPOGRAPHY.body.small)}>

@@ -35,7 +35,7 @@ export function getNoteColor(type: NoteType): string {
     MILESTONE: 'bg-yellow-100 text-yellow-800',
     WONDER_WEEK: 'bg-cyan-100 text-cyan-800',
     SLEEP_REGRESSION: 'bg-indigo-100 text-indigo-800',
-    FEEDING_STAGE: 'bg-pink-100 text-pink-800',
+    FEEDING_STAGE: 'bg-primary/10 text-primary',
     APPOINTMENT: 'bg-orange-100 text-orange-800',
   };
 

@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/shared/lib/prisma";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { TodoList } from "@/components/notes/TodoList";
+import { TodoList } from "@/features/notes/components/TodoList";
 
 export default async function TodosPage() {
   const session = await getServerSession(authOptions);

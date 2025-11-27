@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { BabySwitcher } from "@/features/babies/components/BabySwitcher";
+import { BabySwitcher } from "@/components/common/BabySwitcher";
 import LogoutButton from "./LogoutButton";
 import { useEffect, useState } from "react";
 
@@ -49,7 +49,7 @@ export default function AppHeader() {
     }
 
     fetchBabies();
-  }, [session, isGuestMode]);
+  }, [session, isGuestMode, pathname]);
 
   return (
     <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-blue-50">

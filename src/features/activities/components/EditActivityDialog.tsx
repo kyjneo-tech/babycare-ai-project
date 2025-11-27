@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { activityTypeLabels } from "@/shared/utils/activityLabels";
-import { TimeSelector } from "@/features/activities/components/ui/TimeSelector";
+import { TimeSelector } from "@/components/common/TimeSelector";
 import { FeedingFormSection } from "@/features/activities/components/forms/FeedingFormSection";
 import { SleepFormSection } from "@/features/activities/components/forms/SleepFormSection";
 import { DiaperFormSection } from "@/features/activities/components/forms/DiaperFormSection";
@@ -353,7 +353,7 @@ export function EditActivityDialog({
             />
           )}
 
-          {/* 메모 */}
+          {/* 메모 - AI 상담에 활용 */}
           <div className={cn("p-3 bg-muted rounded-lg", SPACING.space.sm)}>
             <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>
               💬 메모 (선택)
@@ -361,7 +361,7 @@ export function EditActivityDialog({
             <Textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="특별한 사항..."
+              placeholder="💡 메모는 AI 상담에 반영되어 더 정확한 답변을 받을 수 있어요"
               rows={2}
               className={TYPOGRAPHY.body.small}
             />

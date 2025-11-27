@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useMilestones } from "../hooks/useMilestones";
+import { useMilestones } from "@/features/schedules/hooks/useMilestones";
 import { MilestoneItem } from "./MilestoneItem";
 import { MILESTONES, MilestoneCategory } from "@/shared/templates/milestone-templates";
 

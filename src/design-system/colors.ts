@@ -4,7 +4,7 @@
  */
 
 export const COLORS = {
-  // Primary (Blue)
+  // Primary (Soft Coral / Warm Rose)
   primary: {
     bg: 'bg-primary',
     text: 'text-primary',
@@ -12,7 +12,7 @@ export const COLORS = {
     hover: 'hover:bg-primary/90',
   },
 
-  // Secondary (Pink)
+  // Secondary (Sage Green)
   secondary: {
     bg: 'bg-secondary',
     text: 'text-secondary',
@@ -20,7 +20,7 @@ export const COLORS = {
     hover: 'hover:bg-secondary/90',
   },
 
-  // Accent (Orange)
+  // Accent (Soft Honey)
   accent: {
     bg: 'bg-accent',
     text: 'text-accent',
@@ -28,14 +28,14 @@ export const COLORS = {
     hover: 'hover:bg-accent/90',
   },
 
-  // Muted (Lavender)
+  // Muted (Warm Stone)
   muted: {
     bg: 'bg-muted',
     text: 'text-muted',
     foreground: 'text-muted-foreground',
   },
 
-  // Destructive (Red)
+  // Destructive (Soft Red)
   destructive: {
     bg: 'bg-destructive',
     text: 'text-destructive',
@@ -50,11 +50,12 @@ export const COLORS = {
     border: 'border-border',
   },
 
-  // Gradients (기존 스타일 유지하면서 통일)
+  // Gradients (Updated for Sophisticated Comfort)
   gradient: {
-    primary: 'bg-gradient-to-r from-pink-500 to-purple-600',
-    primaryHover: 'hover:from-pink-600 hover:to-purple-700',
-    soft: 'bg-gradient-to-r from-pink-50 to-purple-50',
-    softBlue: 'bg-gradient-to-r from-blue-50 to-indigo-50',
+    primary: 'bg-gradient-to-r from-primary to-primary/80',
+    primaryHover: 'hover:from-primary/90 hover:to-primary/70',
+    soft: 'bg-gradient-to-r from-primary/10 to-secondary/10',
+    softBlue: 'bg-gradient-to-r from-sky-50 to-indigo-50', // Kept as a cool alternative
+    warm: 'bg-gradient-to-r from-orange-50 to-rose-50',
   },
 } as const;

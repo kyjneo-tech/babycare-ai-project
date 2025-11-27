@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 import { SPACING, TYPOGRAPHY } from "@/design-system";
 
 // 기존 ActivityForm 컴포넌트 재사용
-import { TimeSelector } from "@/features/activities/components/ui/TimeSelector";
+import { TimeSelector } from "@/components/common/TimeSelector";
 import { ActivitySuggestions } from "@/features/activities/components/ui/ActivitySuggestions";
 import { FeedingFormSection } from "@/features/activities/components/forms/FeedingFormSection";
 import { SleepFormSection } from "@/features/activities/components/forms/SleepFormSection";
@@ -314,22 +314,22 @@ export function QuickRecordModal({
                   />
                 )}
 
-                {/* SuggestionsPanel - 적정량 표시 */}
-                {type && <ActivitySuggestions type={type} />}
-
-                {/* 메모 */}
+                {/* 메모 입력 - AI 상담에 활용 */}
                 <div className={cn("p-3 bg-muted rounded-lg", SPACING.space.sm)}>
                   <Label className={cn(TYPOGRAPHY.body.small, "font-medium mb-2 block")}>
                     💬 메모 (선택)
                   </Label>
                   <Textarea
                     name="note"
-                    placeholder="특별한 사항..."
+                    placeholder="💡 메모는 AI 상담에 반영되어 더 정확한 답변을 받을 수 있어요"
                     rows={2}
                     className={TYPOGRAPHY.body.small}
                     disabled={isGuestMode}
                   />
                 </div>
+
+                {/* SuggestionsPanel - 적정량 표시 */}
+                {type && <ActivitySuggestions type={type} />}
 
                 {/* 에러 메시지 */}
                 {error && (

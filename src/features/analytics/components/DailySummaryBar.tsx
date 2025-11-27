@@ -126,7 +126,7 @@ export function DailySummaryBar({ date, activities }: DailySummaryBarProps) {
             icon="💊"
             label="약"
             value={`${stats.medicine.count}회`}
-            colorClass="bg-pink-50"
+            colorClass="bg-primary/5"
           />
         )}
 
