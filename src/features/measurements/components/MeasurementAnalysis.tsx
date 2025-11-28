@@ -27,7 +27,7 @@ export function MeasurementAnalysis({
   if (!analysis) return null;
 
   return (
-    <div className="bg-white rounded-xl border-2 border-blue-100 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full max-w-md mx-auto bg-white rounded-xl border-2 border-blue-100 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* 헤더 */}
       <div className="bg-blue-50 p-4 border-b border-blue-100">
         <div className="flex items-center gap-2 mb-1">

@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { updateMemberPermission } from "@/features/families/actions";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 
 interface FamilyMember {
   userId: string;
@@ -135,21 +138,25 @@ export function FamilyMembersList({
                 {/* Permission Change Dropdown (Owner only, not for self or other owners) */}
                 {isOwner && !isCurrentUser && memberPermission !== "owner" && (
                   <div className="mt-2">
-                    <select
-                      value={memberPermission}
-                      onChange={(e) =>
-                        handlePermissionChange(
-                          member.userId,
-                          e.target.value as "admin" | "member" | "viewer"
-                        )
-                      }
-                      disabled={changingPermission === member.userId}
-                      className="text-xs px-2 py-1 border border-gray-300 rounded bg-white text-gray-700 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="admin">관리자</option>
-                      <option value="member">구성원</option>
-                      <option value="viewer">조회 전용</option>
-                    </select>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="text-xs" disabled={changingPermission === member.userId}>
+                          {changingPermission === member.userId ? "변경 중..." : `권한: ${permissionLabels[memberPermission]}`}
+                          <ChevronDown className="ml-2 h-3 w-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handlePermissionChange(member.userId, "admin")}>
+                          <span>{permissionLabels["admin"]}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handlePermissionChange(member.userId, "member")}>
+                          <span>{permissionLabels["member"]}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handlePermissionChange(member.userId, "viewer")}>
+                          <span>{permissionLabels["viewer"]}</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 )}
               </div>

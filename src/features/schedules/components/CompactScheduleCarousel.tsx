@@ -6,6 +6,7 @@ import { Note } from "@prisma/client";
 import { getNoteTypeDetails } from "@/shared/utils/note-helpers";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -100,7 +101,17 @@ export function CompactScheduleCarousel({
   }
 
   if (schedules.length === 0) {
-    return null; // 일정이 없으면 아예 표시하지 않음
+    return (
+      <div className="bg-white rounded-lg border-2 border-dashed border-gray-200 p-4 flex flex-col items-center justify-center text-center">
+        <p className="text-sm text-gray-500 font-medium">등록된 다음 일정이 없습니다.</p>
+        <p className="text-xs text-gray-400 mt-1 mb-3">예방접종, 영유아 검진일을 등록해 보세요.</p>
+        <Link href={`/babies/${babyId}?tab=timeline`}>
+          <Button variant="outline" size="sm">
+            + 일정 추가하기
+          </Button>
+        </Link>
+      </div>
+    );
   }
 
   return (

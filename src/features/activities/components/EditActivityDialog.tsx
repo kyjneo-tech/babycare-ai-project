@@ -5,7 +5,7 @@ import { Activity } from "@prisma/client";
 import { updateActivity } from "@/features/activities/actions";
 import { getBabyById } from "@/features/babies/actions";
 import { getLatestMeasurement } from "@/features/measurements/actions";
-import { differenceInMonths } from "date-fns";
+import { differenceInMinutes, differenceInMonths } from "date-fns";
 import { useSession } from "next-auth/react";
 import {
   Dialog,
@@ -46,175 +46,114 @@ export function EditActivityDialog({
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // 시간 관련 상태
-  const startDate = new Date(activity.startTime);
-  const [hours, setHours] = useState(startDate.getHours());
-  const [minutes, setMinutes] = useState(startDate.getMinutes());
-
-  // 공통 상태
+  // --- Refactored State Management ---
+  const [startTime, setStartTime] = useState(new Date(activity.startTime));
+  const [endTime, setEndTime] = useState(activity.endTime ? new Date(activity.endTime) : new Date(activity.startTime));
   const [note, setNote] = useState(activity.note || "");
 
-  // 수유 관련 상태
+  // Type-specific states
   const [feedingType, setFeedingType] = useState(activity.feedingType || "formula");
   const [feedingAmount, setFeedingAmount] = useState(activity.feedingAmount?.toString() || "");
   const [feedingDuration, setFeedingDuration] = useState(activity.duration?.toString() || "");
   const [breastSide, setBreastSide] = useState(activity.breastSide || "left");
-
-
-  // 수면 관련 상태
-  const endDate = activity.endTime ? new Date(activity.endTime) : null;
-  const [endTimeHours, setEndTimeHours] = useState((endDate?.getHours() || hours).toString());
-  const [endTimeMinutes, setEndTimeMinutes] = useState((endDate?.getMinutes() || minutes).toString());
   
-  // 수면 시간 계산 (기존 활동에서 역산)
   const calculateDuration = () => {
-    if (activity.endTime && activity.startTime) {
-      const start = new Date(activity.startTime);
-      const end = new Date(activity.endTime);
-      const diffMs = end.getTime() - start.getTime();
-      const diffMins = Math.floor(diffMs / 60000);
-      const hours = Math.floor(diffMins / 60);
-      const mins = diffMins % 60;
-      return { hours: hours.toString(), mins: mins.toString() };
-    }
-    return { hours: "", mins: "" };
+    if (!activity.startTime || !activity.endTime) return { hours: "", mins: "" };
+    const diffMins = differenceInMinutes(new Date(activity.endTime), new Date(activity.startTime));
+    return {
+      hours: Math.floor(diffMins / 60).toString(),
+      mins: (diffMins % 60).toString()
+    };
   };
-  
   const initialDuration = calculateDuration();
   const [sleepDurationHours, setSleepDurationHours] = useState(initialDuration.hours);
   const [sleepDurationMinutes, setSleepDurationMinutes] = useState(initialDuration.mins);
 
-  // 배변 관련 상태
   const [diaperType, setDiaperType] = useState(activity.diaperType || "poo");
   const [stoolCondition, setStoolCondition] = useState(activity.stoolCondition || "");
-
-  // 투약 관련 상태
   const [medicineName, setMedicineName] = useState(activity.medicineName || "");
   const [medicineAmount, setMedicineAmount] = useState(activity.medicineAmount?.toString() || "");
   const [medicineUnit, setMedicineUnit] = useState(activity.medicineUnit || "ml");
   const [syrupConc, setSyrupConc] = useState("");
-
-  // 체온 관련 상태
   const [temperature, setTemperature] = useState(activity.temperature?.toString() || "");
-
-  // 목욕 관련 상태
   const [bathType, setBathType] = useState(activity.bathType || "full");
   const [bathTemp, setBathTemp] = useState(activity.bathTemp?.toString() || "");
-  const [bathReaction, setBathReaction] = useState(activity.reaction || "");
-
-  // 놀이 관련 상태
+  const [reaction, setReaction] = useState(activity.reaction || "");
   const [playLocation, setPlayLocation] = useState(activity.playLocation || "");
-  const [playType, setPlayType] = useState<string[]>([]);
-  const [playReaction, setPlayReaction] = useState(activity.reaction || "");
+  const [playType, setPlayType] = useState<string[]>(activity.playType?.split(',') || []);
 
-  // 아기 정보
   const [latestWeight, setLatestWeight] = useState<number | null>(null);
   const [ageInMonths, setAgeInMonths] = useState(0);
 
-  // 아기 정보 로드
+  // Reset form when activity prop changes
+  useEffect(() => {
+    setStartTime(new Date(activity.startTime));
+    setEndTime(activity.endTime ? new Date(activity.endTime) : new Date(activity.startTime));
+    setNote(activity.note || "");
+    setFeedingType(activity.feedingType || "formula");
+    setFeedingAmount(activity.feedingAmount?.toString() || "");
+    setFeedingDuration(activity.duration?.toString() || "");
+    setBreastSide(activity.breastSide || "left");
+    const duration = calculateDuration();
+    setSleepDurationHours(duration.hours);
+    setSleepDurationMinutes(duration.mins);
+    setDiaperType(activity.diaperType || "poo");
+    setStoolCondition(activity.stoolCondition || "");
+    setMedicineName(activity.medicineName || "");
+    setMedicineAmount(activity.medicineAmount?.toString() || "");
+    setMedicineUnit(activity.medicineUnit || "ml");
+    setTemperature(activity.temperature?.toString() || "");
+    setBathType(activity.bathType || "full");
+    setBathTemp(activity.bathTemp?.toString() || "");
+    setReaction(activity.reaction || "");
+    setPlayLocation(activity.playLocation || "");
+    setPlayType(activity.playType?.split(',') || []);
+  }, [activity]);
+
   useEffect(() => {
     const loadBabyData = async () => {
       try {
         const babyResult = await getBabyById(activity.babyId);
         if (babyResult.success && babyResult.data) {
-          const months = differenceInMonths(new Date(), babyResult.data.birthDate);
-          setAgeInMonths(months);
+          setAgeInMonths(differenceInMonths(new Date(), babyResult.data.birthDate));
         }
-
         const measurementResult = await getLatestMeasurement(activity.babyId);
         if (measurementResult.success && measurementResult.data) {
           setLatestWeight(measurementResult.data.weight);
         }
-      } catch (error) {
-        console.error("아기 정보 로드 실패:", error);
-      }
+      } catch (error) { console.error("아기 정보 로드 실패:", error); }
     };
-
-    if (open) {
-      loadBabyData();
-    }
+    if (open) loadBabyData();
   }, [activity.babyId, open]);
-
-  // 활동 변경 시 폼 리셋
-  useEffect(() => {
-    const startDate = new Date(activity.startTime);
-    setHours(startDate.getHours());
-    setMinutes(startDate.getMinutes());
-    setNote(activity.note || "");
-
-    // 타입별 필드 초기화
-    if (activity.type === "FEEDING") {
-      setFeedingType(activity.feedingType || "formula");
-      setFeedingAmount(activity.feedingAmount?.toString() || "");
-      setFeedingDuration(activity.duration?.toString() || "");
-      setBreastSide(activity.breastSide || "left");
-    } else if (activity.type === "SLEEP") {
-      const endDate = activity.endTime ? new Date(activity.endTime) : null;
-      setEndTimeHours((endDate?.getHours() || startDate.getHours()).toString());
-      setEndTimeMinutes((endDate?.getMinutes() || startDate.getMinutes()).toString());
-    } else if (activity.type === "DIAPER") {
-      setDiaperType(activity.diaperType || "poo");
-      setStoolCondition(activity.stoolCondition || "");
-    } else if (activity.type === "MEDICINE") {
-      setMedicineName(activity.medicineName || "");
-      setMedicineAmount(activity.medicineAmount?.toString() || "");
-      setMedicineUnit(activity.medicineUnit || "ml");
-    } else if (activity.type === "TEMPERATURE") {
-      setTemperature(activity.temperature?.toString() || "");
-    } else if (activity.type === "BATH") {
-      setBathType(activity.bathType || "full");
-      setBathTemp(activity.bathTemp?.toString() || "");
-      setBathReaction(activity.reaction || "");
-    } else if (activity.type === "PLAY") {
-      setPlayLocation(activity.playLocation || "");
-      setPlayReaction(activity.reaction || "");
-    }
-  }, [activity]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!session?.user?.id) {
-        alert("로그인이 필요합니다.");
-        return;
+      alert("로그인이 필요합니다.");
+      return;
     }
-
     setIsSaving(true);
     setErrors({});
 
     try {
-      // 시간 업데이트
-      const newStartTime = new Date(activity.startTime);
-      newStartTime.setHours(hours, minutes, 0, 0);
-
       const updateData: any = {
-        startTime: newStartTime.toISOString(),
+        startTime: startTime.toISOString(),
         note: note.trim() || null,
       };
 
-      // 타입별 필드 추가
       if (activity.type === "FEEDING") {
         updateData.feedingType = feedingType;
         updateData.feedingAmount = feedingType !== "breast" && feedingAmount ? parseFloat(feedingAmount) : null;
         updateData.duration = feedingType === "breast" && feedingDuration ? parseInt(feedingDuration) : null;
         updateData.breastSide = feedingType === "breast" ? breastSide : null;
       } else if (activity.type === "SLEEP") {
-        // 종료 시간과 수면 시간으로 시작 시간 계산
-        if (endTimeHours && endTimeMinutes && (sleepDurationHours || sleepDurationMinutes)) {
-          const endH = parseInt(endTimeHours);
-          const endM = parseInt(endTimeMinutes);
-          const durH = parseInt(sleepDurationHours) || 0;
-          const durM = parseInt(sleepDurationMinutes) || 0;
-          
-          const now = new Date();
-          const newEndTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM);
-          const durationMs = (durH * 60 + durM) * 60 * 1000;
-          const calculatedStartTime = new Date(newEndTime.getTime() - durationMs);
-          
-          updateData.startTime = calculatedStartTime.toISOString();
-          updateData.endTime = newEndTime.toISOString();
-          updateData.duration = durH * 60 + durM;
-        }
+        const durH = parseInt(sleepDurationHours) || 0;
+        const durM = parseInt(sleepDurationMinutes) || 0;
+        const durationMs = (durH * 60 + durM) * 60 * 1000;
+        
+        updateData.endTime = endTime.toISOString();
+        updateData.startTime = new Date(endTime.getTime() - durationMs).toISOString();
+        updateData.duration = durH * 60 + durM;
       } else if (activity.type === "DIAPER") {
         updateData.diaperType = diaperType;
         updateData.stoolCondition = stoolCondition || null;
@@ -227,11 +166,11 @@ export function EditActivityDialog({
       } else if (activity.type === "BATH") {
         updateData.bathType = bathType;
         updateData.bathTemp = bathTemp ? parseFloat(bathTemp) : null;
-        updateData.reaction = bathReaction || null;
+        updateData.reaction = reaction || null;
       } else if (activity.type === "PLAY") {
         updateData.playLocation = playLocation || null;
         updateData.playType = playType.length > 0 ? playType.join(",") : null;
-        updateData.reaction = playReaction || null;
+        updateData.reaction = reaction || null;
       }
 
       const result = await updateActivity(activity.id, session.user.id, updateData);
@@ -250,9 +189,7 @@ export function EditActivityDialog({
   };
 
   const togglePlayType = (type: string) => {
-    setPlayType(prev =>
-      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
-    );
+    setPlayType(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
   };
 
   return (
@@ -260,155 +197,54 @@ export function EditActivityDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className={cn(TYPOGRAPHY.h3, "flex items-center gap-2")}>
-            <span>
-              {activity.type === "FEEDING" && "🍼"}
-              {activity.type === "SLEEP" && "😴"}
-              {activity.type === "DIAPER" && "💩"}
-              {activity.type === "MEDICINE" && "💊"}
-              {activity.type === "TEMPERATURE" && "🌡️"}
-              {activity.type === "BATH" && "🛁"}
-              {activity.type === "PLAY" && "🧸"}
-            </span>
-            {activityTypeLabels[activity.type]} 수정
+            <span>{activityTypeLabels[activity.type]?.icon}</span>
+            {activityTypeLabels[activity.type]?.label} 수정
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className={SPACING.space.md}>
-          {/* 시간 선택 */}
-          <div className="mb-4">
-            <Label className="mb-2 block">시작 시간</Label>
-            <TimeSelector
-              hours={hours}
-              minutes={minutes}
-              onTimeChange={(h, m) => {
-                setHours(h);
-                setMinutes(m);
-              }}
-              disabled={false}
-            />
-          </div>
+          {activity.type !== "SLEEP" && (
+            <div className="mb-4">
+              <TimeSelector
+                value={startTime}
+                onChange={setStartTime}
+                label="시작 시간"
+              />
+            </div>
+          )}
 
-          {/* 타입별 폼 섹션 */}
           {activity.type === "FEEDING" && (
-            <FeedingFormSection
-              feedingType={feedingType}
-              setFeedingType={setFeedingType}
-              feedingAmount={feedingAmount}
-              setFeedingAmount={setFeedingAmount}
-              feedingDuration={feedingDuration}
-              setFeedingDuration={setFeedingDuration}
-              breastSide={breastSide}
-              setBreastSide={setBreastSide}
-
-              latestWeight={latestWeight}
-              ageInMonths={ageInMonths}
-              errors={errors}
-              disabled={false}
-            />
+            <FeedingFormSection {...{ feedingType, setFeedingType, feedingAmount, setFeedingAmount, feedingDuration, setFeedingDuration, breastSide, setBreastSide, latestWeight, ageInMonths, errors, disabled: false }} />
           )}
-
           {activity.type === "SLEEP" && (
-            <SleepFormSection
-              endTimeHours={endTimeHours}
-              setEndTimeHours={setEndTimeHours}
-              endTimeMinutes={endTimeMinutes}
-              setEndTimeMinutes={setEndTimeMinutes}
-              sleepDurationHours={sleepDurationHours}
-              setSleepDurationHours={setSleepDurationHours}
-              sleepDurationMinutes={sleepDurationMinutes}
-              setSleepDurationMinutes={setSleepDurationMinutes}
-              ageInMonths={ageInMonths}
-              errors={errors}
-              disabled={false}
-            />
+            <SleepFormSection {...{ endTime, setEndTime, sleepDurationHours, setSleepDurationHours, sleepDurationMinutes, setSleepDurationMinutes, ageInMonths, errors, disabled: false }} />
           )}
-
           {activity.type === "DIAPER" && (
-            <DiaperFormSection
-              diaperType={diaperType}
-              setDiaperType={setDiaperType}
-              stoolCondition={stoolCondition}
-              setStoolCondition={setStoolCondition}
-              errors={errors}
-              disabled={false}
-            />
+            <DiaperFormSection {...{ diaperType, setDiaperType, stoolCondition, setStoolCondition, errors, disabled: false }} />
           )}
-
           {activity.type === "MEDICINE" && (
-            <MedicineFormSection
-              medicineName={medicineName}
-              setMedicineName={setMedicineName}
-              medicineAmount={medicineAmount}
-              setMedicineAmount={setMedicineAmount}
-              medicineUnit={medicineUnit}
-              setMedicineUnit={setMedicineUnit}
-              syrupConc={syrupConc}
-              setSyrupConc={setSyrupConc}
-              latestWeight={latestWeight}
-              errors={errors}
-              disabled={false}
-            />
+            <MedicineFormSection {...{ medicineName, setMedicineName, medicineAmount, setMedicineAmount, medicineUnit, setMedicineUnit, syrupConc, setSyrupConc, latestWeight, errors, disabled: false }} />
           )}
-
           {activity.type === "TEMPERATURE" && (
-            <TemperatureFormSection
-              temperature={temperature}
-              setTemperature={setTemperature}
-              errors={errors}
-              disabled={false}
-            />
+            <TemperatureFormSection {...{ temperature, setTemperature, errors, disabled: false }} />
           )}
-
-          {activity.type === "BATH" && (
-            <BathFormSection
-              bathType={bathType}
-              setBathType={setBathType}
-              bathTemp={bathTemp}
-              setBathTemp={setBathTemp}
-              reaction={bathReaction}
-              setReaction={setBathReaction}
-              disabled={false}
-            />
+           {activity.type === "BATH" && (
+            <BathFormSection bathType={bathType} setBathType={setBathType} bathTemp={bathTemp} setBathTemp={setBathTemp} reaction={reaction} setReaction={setReaction} disabled={false} />
           )}
-
           {activity.type === "PLAY" && (
-            <PlayFormSection
-              playLocation={playLocation}
-              setPlayLocation={setPlayLocation}
-              playType={playType}
-              togglePlayType={togglePlayType}
-              reaction={playReaction}
-              setReaction={setPlayReaction}
-              disabled={false}
-            />
+            <PlayFormSection playLocation={playLocation} setPlayLocation={setPlayLocation} playType={playType} togglePlayType={togglePlayType} reaction={reaction} setReaction={setReaction} disabled={false} />
           )}
 
-          {/* 메모 - AI 상담에 활용 */}
           <div className={cn("p-3 bg-muted rounded-lg", SPACING.space.sm)}>
             <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>
               💬 메모 (선택)
             </Label>
-            <Textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="💡 메모는 AI 상담에 반영되어 더 정확한 답변을 받을 수 있어요"
-              rows={2}
-              className={TYPOGRAPHY.body.small}
-            />
+            <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="💡 메모는 AI 상담에 반영되어 더 정확한 답변을 받을 수 있어요" rows={2} className={TYPOGRAPHY.body.small} />
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSaving}
-            >
-              취소
-            </Button>
-            <Button type="submit" disabled={isSaving}>
-              {isSaving ? "저장 중..." : "저장"}
-            </Button>
+          <DialogFooter className="gap-2 sm:gap-0 mt-4">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>취소</Button>
+            <Button type="submit" disabled={isSaving}>{isSaving ? "저장 중..." : "저장"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

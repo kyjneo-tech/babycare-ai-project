@@ -1,4 +1,5 @@
-import { useState, Dispatch, SetStateAction } from "react"; // Dispatch, SetStateAction 임포트 추가
+import { useState, Dispatch, SetStateAction } from "react";
+import { set } from "date-fns";
 
 export type ActivityType =
   | "FEEDING"
@@ -9,7 +10,7 @@ export type ActivityType =
   | "BATH"
   | "PLAY";
 
-// --- UseActivityFormStateReturn 인터페이스 추가 시작 ---
+// --- UseActivityFormStateReturn 인터페이스 수정 ---
 interface UseActivityFormStateReturn {
   type: ActivityType;
   setType: Dispatch<SetStateAction<ActivityType>>;
@@ -19,10 +20,10 @@ interface UseActivityFormStateReturn {
   setError: Dispatch<SetStateAction<string>>;
   showDetail: boolean;
   setShowDetail: Dispatch<SetStateAction<boolean>>;
-  hours: number;
-  setHours: Dispatch<SetStateAction<number>>;
-  minutes: number;
-  setMinutes: Dispatch<SetStateAction<number>>;
+  startTime: Date;
+  setStartTime: Dispatch<SetStateAction<Date>>;
+  endTime: Date;
+  setEndTime: Dispatch<SetStateAction<Date>>;
   recentValues: Record<string, any>;
   setRecentValues: Dispatch<SetStateAction<Record<string, any>>>;
   feedingType: string;
@@ -47,10 +48,6 @@ interface UseActivityFormStateReturn {
   setMedicineUnit: Dispatch<SetStateAction<string>>;
   syrupConc: string;
   setSyrupConc: Dispatch<SetStateAction<string>>;
-  endTimeHours: string;
-  setEndTimeHours: Dispatch<SetStateAction<string>>;
-  endTimeMinutes: string;
-  setEndTimeMinutes: Dispatch<SetStateAction<string>>;
   feedingDuration: string;
   setFeedingDuration: Dispatch<SetStateAction<string>>;
   sleepDurationHours: string;
@@ -79,23 +76,24 @@ interface UseActivityFormStateReturn {
   ageInMonths: number;
   setAgeInMonths: Dispatch<SetStateAction<number>>;
   togglePlayType: (tag: string) => void;
-  setNow: () => void;
-  adjustTime: (hoursOffset: number, minutesOffset?: number) => void;
   setSleepDuration: (durationMinutes: number) => void;
 }
-// --- UseActivityFormStateReturn 인터페이스 추가 끝 ---
 
-export function useActivityFormState(): UseActivityFormStateReturn { // 반환 타입 명시
-  // Original states
+const getInitialTime = () => {
+    const now = new Date();
+    const roundedMinutes = Math.floor(now.getMinutes() / 5) * 5;
+    return set(now, { minutes: roundedMinutes, seconds: 0, milliseconds: 0 });
+}
+
+export function useActivityFormState(): UseActivityFormStateReturn {
   const [type, setType] = useState<ActivityType>("FEEDING");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showDetail, setShowDetail] = useState(false);
-  const [hours, setHours] = useState(9);
-  const [minutes, setMinutes] = useState(30);
+  const [startTime, setStartTime] = useState(getInitialTime());
+  const [endTime, setEndTime] = useState(getInitialTime());
   const [recentValues, setRecentValues] = useState<Record<string, any>>({});
 
-  // New states for visual feedback
   const [feedingType, setFeedingType] = useState("breast");
   const [feedingAmount, setFeedingAmount] = useState("");
   const [breastSide, setBreastSide] = useState("");
@@ -107,23 +105,16 @@ export function useActivityFormState(): UseActivityFormStateReturn { // 반환 �
   const [medicineAmount, setMedicineAmount] = useState("");
   const [medicineUnit, setMedicineUnit] = useState("ml");
   const [syrupConc, setSyrupConc] = useState("");
-  const [endTimeHours, setEndTimeHours] = useState("");
-  const [endTimeMinutes, setEndTimeMinutes] = useState("");
   const [feedingDuration, setFeedingDuration] = useState("");
   const [sleepDurationHours, setSleepDurationHours] = useState("");
   const [sleepDurationMinutes, setSleepDurationMinutes] = useState("");
-
   const [temperature, setTemperature] = useState("36.5");
-
-  // States for Bath and Play
   const [bathType, setBathType] = useState("tub");
   const [bathTemp, setBathTemp] = useState("38");
   const [playLocation, setPlayLocation] = useState("indoor");
   const [playType, setPlayType] = useState<string[]>([]);
   const [reaction, setReaction] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // States for growth guidelines
   const [babyInfo, setBabyInfo] = useState<{ birthDate: Date; gender: 'male' | 'female' } | null>(null);
   const [latestWeight, setLatestWeight] = useState<number | null>(null);
   const [ageInMonths, setAgeInMonths] = useState<number>(0);
@@ -133,46 +124,21 @@ export function useActivityFormState(): UseActivityFormStateReturn { // 반환 �
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
   };
-
-  const setNow = () => {
-    const now = new Date();
-    setHours(now.getHours());
-    setMinutes(Math.floor(now.getMinutes() / 5) * 5);
-  };
-
-  const adjustTime = (hoursOffset: number, minutesOffset: number = 0) => {
-    let newHours = hours + hoursOffset;
-    let newMinutes = minutes + minutesOffset;
-
-    // Handle minute overflow/underflow
-    while (newMinutes >= 60) {
-      newMinutes -= 60;
-      newHours += 1;
-    }
-    while (newMinutes < 0) {
-      newMinutes += 60;
-      newHours -= 1;
-    }
-
-    // Handle hour overflow/underflow
-    while (newHours >= 24) {
-      newHours -= 24;
-    }
-    while (newHours < 0) {
-      newHours += 24;
-    }
-
-    setHours(newHours);
-    setMinutes(newMinutes);
-  };
+  
+  const setSleepDuration = (durationMinutes: number) => {
+    const now = getInitialTime();
+    setEndTime(now);
+    const newStartTime = new Date(now.getTime() - durationMinutes * 60000);
+    setStartTime(newStartTime);
+  }
 
   return {
     type, setType,
     loading, setLoading,
     error, setError,
     showDetail, setShowDetail,
-    hours, setHours,
-    minutes, setMinutes,
+    startTime, setStartTime,
+    endTime, setEndTime,
     recentValues, setRecentValues,
     feedingType, setFeedingType,
     feedingAmount, setFeedingAmount,
@@ -184,13 +150,10 @@ export function useActivityFormState(): UseActivityFormStateReturn { // 반환 �
     medicineName, setMedicineName,
     medicineAmount, setMedicineAmount,
     medicineUnit, setMedicineUnit,
-    syrupConc, setSyrupConc,
-    endTimeHours, setEndTimeHours,
-    endTimeMinutes, setEndTimeMinutes,
+ syrupConc, setSyrupConc,
     feedingDuration, setFeedingDuration,
     sleepDurationHours, setSleepDurationHours,
     sleepDurationMinutes, setSleepDurationMinutes,
-
     temperature, setTemperature,
     bathType, setBathType,
     bathTemp, setBathTemp,
@@ -202,19 +165,6 @@ export function useActivityFormState(): UseActivityFormStateReturn { // 반환 �
     latestWeight, setLatestWeight,
     ageInMonths, setAgeInMonths,
     togglePlayType,
-    setNow,
-    adjustTime,
-    setSleepDuration: (durationMinutes: number) => {
-      const now = new Date();
-      const startTime = new Date(now.getTime() - durationMinutes * 60000);
-      
-      // Set end time to now
-      setEndTimeHours(now.getHours().toString());
-      setEndTimeMinutes(now.getMinutes().toString());
-      
-      // Set start time calculated from duration
-      setHours(startTime.getHours());
-      setMinutes(startTime.getMinutes());
-    }
+    setSleepDuration,
   };
 }

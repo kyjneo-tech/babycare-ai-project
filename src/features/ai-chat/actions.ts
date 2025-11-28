@@ -449,20 +449,18 @@ ${exclusionNote}
       .join("\n\n");
 
     const finalPrompt = `
-${systemPrompt}
-
-[이전 대화 기록]
-${historyContext ? historyContext : "없음"}
-
-[현재 질문]
-User: ${message}
-AI: 
-`;
-
-    // 4. Gemini API 호출 (Retry Logic 적용)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    ${systemPrompt}
     
-    let reply = "";
+    [이전 대화 기록]
+    ${historyContext ? historyContext : "없음"}
+    
+    [현재 질문]
+    User: ${message}
+    AI:
+    `;
+    
+        // 4. Gemini API 호출 (Retry Logic 적용)
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });    let reply = "";
     let retryCount = 0;
     const MAX_RETRIES = 3;
 

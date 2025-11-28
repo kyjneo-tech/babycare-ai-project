@@ -1,73 +1,140 @@
-// src/features/activities/components/ui/TimeSelector.tsx
 "use client";
 
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
+import { format, set, startOfToday, startOfYesterday } from "date-fns";
+import { cn } from '@/lib/utils';
 
 interface TimeSelectorProps {
-  hours: number;
-  minutes: number;
-  onTimeChange: (hours: number, minutes: number) => void;
+  value: Date;
+  onChange: (date: Date) => void;
+  label: string;
   disabled?: boolean;
 }
 
 export function TimeSelector({
-  hours,
-  minutes,
-  onTimeChange,
+  value,
+  onChange,
+  label,
   disabled = false,
 }: TimeSelectorProps) {
+  // Prevent rendering if value is not yet available, preventing crash
+  if (!value) {
+    return null;
+  }
+
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  const hours = value.getHours();
+  const minutes = value.getMinutes();
   const totalMinutes = hours * 60 + minutes;
 
-  const handleSliderChange = (value: number[]) => {
-    const newTotalMinutes = value[0];
+  const handleDatePartChange = (newDatePart: Date) => {
+    const newDate = set(value, {
+      year: newDatePart.getFullYear(),
+      month: newDatePart.getMonth(),
+      date: newDatePart.getDate(),
+    });
+    onChange(newDate);
+  };
+  
+  const handleSliderChange = (v: number[]) => {
+    const newTotalMinutes = v[0];
     const newHours = Math.floor(newTotalMinutes / 60);
     const newMinutes = newTotalMinutes % 60;
-    onTimeChange(newHours, newMinutes);
+    const newDate = set(value, { hours: newHours, minutes: newMinutes });
+    onChange(newDate);
   };
 
   const setNow = () => {
     const now = new Date();
-    onTimeChange(now.getHours(), Math.floor(now.getMinutes() / 5) * 5);
+    // 5분 단위로 내림
+    const roundedMinutes = Math.floor(now.getMinutes() / 5) * 5;
+    onChange(set(now, { minutes: roundedMinutes, seconds: 0, milliseconds: 0 }));
   };
 
-  const adjustTime = (hoursOffset: number, minutesOffset: number = 0) => {
-    let newHours = hours + hoursOffset;
-    let newMinutes = minutes + minutesOffset;
-
-    while (newMinutes >= 60) {
-      newMinutes -= 60;
-      newHours += 1;
-    }
-    while (newMinutes < 0) {
-      newMinutes += 60;
-      newHours -= 1;
-    }
-    while (newHours >= 24) newHours -= 24;
-    while (newHours < 0) newHours += 24;
-
-    onTimeChange(newHours, newMinutes);
+  const adjustTime = (minutesOffset: number) => {
+    const newDate = new Date(value.getTime() + minutesOffset * 60 * 1000);
+    onChange(newDate);
   };
 
   return (
-    <div className="space-y-3">
-      <Label className="text-sm font-semibold text-gray-700">
-        🕐 시간 선택 (시작 시간)
+    <div className="space-y-4">
+      <Label className="text-base font-semibold text-gray-800">
+        {label}
       </Label>
       
-      <div className="flex items-center gap-3">
-        <span className="text-2xl font-bold text-blue-600 min-w-20 text-center">
-          {String(hours).padStart(2, "0")}:{String(minutes).padStart(2, "0")}
-        </span>
-        <Slider
-          value={[totalMinutes]}
-          onValueChange={handleSliderChange}
-          max={1439}
-          step={5}
-          disabled={disabled}
-          className="flex-1"
-        />
+      <div className="space-y-3 p-4 border rounded-lg bg-gray-50">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            type="button"
+            onClick={() => handleDatePartChange(startOfToday())}
+            variant={format(value, 'yyyy-MM-dd') === format(startOfToday(), 'yyyy-MM-dd') ? 'default' : 'outline'}
+            size="sm"
+            disabled={disabled}
+          >
+            오늘
+          </Button>
+          <Button
+            type="button"
+            onClick={() => handleDatePartChange(startOfYesterday())}
+            variant={format(value, 'yyyy-MM-dd') === format(startOfYesterday(), 'yyyy-MM-dd') ? 'default' : 'outline'}
+            size="sm"
+            disabled={disabled}
+          >
+            어제
+          </Button>
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant={"outline"}
+                size="sm"
+                className={cn(
+                  "w-[150px] justify-start text-left font-normal",
+                  !value && "text-muted-foreground"
+                )}
+                disabled={disabled}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {format(value, "yyyy-MM-dd")}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={value}
+                onSelect={(day) => {
+                  if (day) {
+                    handleDatePartChange(day);
+                  }
+                  setCalendarOpen(false);
+                }}
+                initialFocus
+                disabled={disabled}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div className="flex items-center gap-3 pt-2">
+          <span className="text-3xl font-bold text-blue-600 min-w-24 text-center tracking-tight">
+            {String(hours).padStart(2, "0")}:{String(minutes).padStart(2, "0")}
+          </span>
+          <Slider
+            value={[totalMinutes]}
+            onValueChange={handleSliderChange}
+            max={24 * 60 - 1} // 00:00 to 23:59
+            step={5}
+            disabled={disabled}
+            className="flex-1"
+          />
+        </div>
       </div>
 
       <div className="flex gap-2 flex-wrap">
@@ -79,11 +146,11 @@ export function TimeSelector({
           disabled={disabled}
           className="flex-1 min-w-16 bg-green-500 hover:bg-green-600"
         >
-          지금
+          방금
         </Button>
         <Button
           type="button"
-          onClick={() => adjustTime(0, -15)}
+          onClick={() => adjustTime(-15)}
           variant="outline"
           size="sm"
           disabled={disabled}
@@ -93,7 +160,7 @@ export function TimeSelector({
         </Button>
         <Button
           type="button"
-          onClick={() => adjustTime(0, -30)}
+          onClick={() => adjustTime(-30)}
           variant="outline"
           size="sm"
           disabled={disabled}
@@ -103,7 +170,7 @@ export function TimeSelector({
         </Button>
         <Button
           type="button"
-          onClick={() => adjustTime(-1)}
+          onClick={() => adjustTime(-60)}
           variant="outline"
           size="sm"
           disabled={disabled}

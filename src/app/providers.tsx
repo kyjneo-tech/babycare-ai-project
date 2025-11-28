@@ -1,5 +1,4 @@
-// src/app/providers.tsx
-'use client';
+"use client";
 
 import { SessionProvider, useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
@@ -7,17 +6,13 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import AppHeader from '@/widgets/app-header/AppHeader';
 import { QuickRecordModal } from '@/features/activities/components/QuickRecordModal';
-import { FABMenu } from '@/components/ui/fab-menu';
-import { AIConsultMenu } from '@/components/ui/ai-consult-menu';
-import { Button } from '@/components/ui/button';
-import { MessageCircle } from 'lucide-react';
+import { BottomNavBar } from '@/components/layout/BottomNavBar';
 
 
 function AppShell({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const [isQuickRecordOpen, setIsQuickRecordOpen] = useState(false);
-  const [isFABMenuOpen, setIsFABMenuOpen] = useState(false); // New state for FAB menu
   const [currentBabyId, setCurrentBabyId] = useState<string | undefined>(undefined);
 
   // URL에서 babyId 추출 또는 localStorage에서 가져오기 (경로 수정됨)
@@ -45,6 +40,9 @@ function AppShell({ children }: { children: React.ReactNode }) {
   const authRoutes = ['/login', '/signup', '/join'];
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
 
+  const noNavRoutes = ['/login', '/signup', '/join', '/add-baby'];
+  const shouldShowNav = status !== 'loading' && session && !noNavRoutes.some(route => pathname.startsWith(route));
+
   if (status === 'loading' || isAuthRoute || !session) {
     return <>{children}</>;
   }
@@ -52,30 +50,11 @@ function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-[100dvh] flex flex-col">
       <AppHeader />
-      <main className="flex-1 pb-14">
+      <main className="flex-1 pb-20">
         {children}
       </main>
 
-      {/* 하단 네비게이션 바 (AI 상담 + 메뉴 통합) */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-primary text-primary-foreground shadow-[0_-4px_20px_-2px_rgba(0,0,0,0.1)]">
-        <div className="flex h-14">
-          {/* AI 상담 드롭다운 (60%) */}
-          <AIConsultMenu
-            currentBabyId={currentBabyId}
-            pathname={pathname}
-          />
-
-          {/* 메뉴 버튼 (40%) */}
-          <div className="w-[40%] relative">
-            <FABMenu
-              isOpen={isFABMenuOpen}
-              onOpenChange={setIsFABMenuOpen}
-              pathname={pathname}
-              isBottomBar={true}
-            />
-          </div>
-        </div>
-      </div>
+      {shouldShowNav && <BottomNavBar currentBabyId={currentBabyId} />}
 
       <QuickRecordModal
         isOpen={isQuickRecordOpen}

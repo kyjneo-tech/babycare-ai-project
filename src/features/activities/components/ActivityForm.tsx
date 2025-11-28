@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { SPACING, TYPOGRAPHY } from "@/design-system";
 import { cn } from "@/lib/utils";
 
-import { TimeSelector } from "../../../components/common/TimeSelector";
+import { TimeSelector } from "@/components/common/TimeSelector";
 import { ActivitySuggestions } from "@/features/activities/components/ui/ActivitySuggestions";
 import { FeedingFormSection } from "@/features/activities/components/forms/FeedingFormSection";
 import { SleepFormSection } from "@/features/activities/components/forms/SleepFormSection";
@@ -47,16 +47,14 @@ export function ActivityForm({
     error,
     showDetail,
     setShowDetail,
-    hours,
-    minutes,
+    startTime,
+    setStartTime,
     setBabyInfo,
     setLatestWeight,
     setAgeInMonths,
     ageInMonths,
     latestWeight,
     errors,
-    setNow,
-    adjustTime,
   } = state;
 
   const { handleSubmit } = useActivitySubmit({
@@ -140,12 +138,9 @@ export function ActivityForm({
       <Card className="border-none shadow-sm bg-white/50 backdrop-blur-sm">
         <CardContent className={cn(SPACING.card.medium, SPACING.space.lg)}>
           <TimeSelector
-            hours={hours}
-            minutes={minutes}
-            onTimeChange={(h, m) => {
-              state.setHours(h);
-              state.setMinutes(m);
-            }}
+            value={startTime}
+            onChange={setStartTime}
+            label="언제 시작했나요?"
             disabled={isGuestMode}
           />
 
@@ -296,10 +291,8 @@ export function ActivityForm({
 
               {type === "SLEEP" && (
                 <SleepFormSection
-                  endTimeHours={state.endTimeHours}
-                  setEndTimeHours={state.setEndTimeHours}
-                  endTimeMinutes={state.endTimeMinutes}
-                  setEndTimeMinutes={state.setEndTimeMinutes}
+                  endTime={state.endTime}
+                  setEndTime={state.setEndTime}
                   sleepDurationHours={state.sleepDurationHours}
                   setSleepDurationHours={state.setSleepDurationHours}
                   sleepDurationMinutes={state.sleepDurationMinutes}
@@ -327,6 +320,7 @@ export function ActivityForm({
                   setMedicineName={state.setMedicineName}
                   medicineAmount={state.medicineAmount}
                   setMedicineAmount={state.setMedicineAmount}
+
                   medicineUnit={state.medicineUnit}
                   setMedicineUnit={state.setMedicineUnit}
                   syrupConc={state.syrupConc}

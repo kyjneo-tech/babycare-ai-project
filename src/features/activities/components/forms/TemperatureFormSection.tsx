@@ -45,7 +45,8 @@ export function TemperatureFormSection({
             onChange={(e) => setTemperature(e.target.value)}
             className={cn(
               "flex-1 text-center text-2xl font-bold h-12",
-              errors.temperature && "border-destructive"
+              errors.temperature && "border-destructive",
+              parseFloat(temperature) >= 38 && "text-destructive"
             )}
             disabled={disabled}
           />

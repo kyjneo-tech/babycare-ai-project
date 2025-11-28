@@ -78,7 +78,7 @@ export function AddMeasurementForm({
           )}
 
           {/* 체중/키 선택 그리드 */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <ScrollablePicker
               options={weightOptions}
               value={formState.selectedWeight}

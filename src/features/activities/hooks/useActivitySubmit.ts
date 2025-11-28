@@ -1,11 +1,11 @@
 import { createActivity } from "@/features/activities/actions";
-import { ActivityType } from "./useActivityFormState";
+import { UseActivityFormStateReturn } from "./useActivityFormState";
 
 interface UseActivitySubmitProps {
   babyId: string;
   userId?: string;
   isGuestMode: boolean;
-  state: any; // In a real app, we would define a proper interface for the state object
+  state: UseActivityFormStateReturn;
   onActivityCreated?: (activity: any) => void;
 }
 
@@ -18,14 +18,11 @@ export function useActivitySubmit({
 }: UseActivitySubmitProps) {
   const {
     type,
-    hours,
-    minutes,
+    startTime,
+    endTime,
     feedingType,
     feedingAmount,
-    babyFoodMenu,
     sleepType,
-    endTimeHours,
-    endTimeMinutes,
     sleepDurationHours,
     sleepDurationMinutes,
     diaperType,
@@ -46,7 +43,7 @@ export function useActivitySubmit({
     setError,
     setErrors,
     setShowDetail,
-    setNow,
+    setStartTime,
     recentValues,
     setRecentValues,
   } = state;
@@ -64,45 +61,33 @@ export function useActivitySubmit({
 
     try {
       const formData = new FormData(e.currentTarget);
-      const now = new Date();
-      const startTime = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        hours,
-        minutes
-      );
 
       // ===== 필수 입력 검증 =====
       const newErrors: Record<string, string> = {};
 
-      // 수유 검증
       if (type === "FEEDING") {
         if (!feedingType) newErrors.feedingType = "수유 타입을 선택해주세요";
         if (feedingType === "formula" && !feedingAmount)
           newErrors.feedingAmount = "수유량을 입력해주세요";
-        if (feedingType === "baby_food" && !babyFoodMenu)
-          newErrors.babyFoodMenu = "이유식 메뉴를 입력해주세요";
       }
 
-      // 수면 검증
       if (type === "SLEEP") {
-        if (!sleepType) newErrors.sleepType = "수면 타입을 선택해주세요";
-        if (!endTimeHours || !endTimeMinutes)
-          newErrors.endTime = "수면 종료 시간을 입력해주세요";
+        const durH = Number(sleepDurationHours) || 0;
+        const durM = Number(sleepDurationMinutes) || 0;
+        if (durH === 0 && durM === 0) {
+            newErrors.duration = "수면 시간을 입력해주세요."
+        }
       }
 
       if (type === "DIAPER") {
         if (!diaperType) newErrors.diaperType = "배변 타입을 선택해주세요";
       }
 
-      // 투약 검증
       if (type === "MEDICINE") {
         if (!medicineName) newErrors.medicineName = "약 이름을 입력해주세요";
         if (!medicineAmount) newErrors.medicineAmount = "약 용량을 입력해주세요";
       }
 
-      // 체온 검증
       if (type === "TEMPERATURE") {
         if (
           !temperature ||
@@ -133,29 +118,19 @@ export function useActivitySubmit({
           input.breastSide = breastSide;
         } else {
           if (feedingAmount) input.feedingAmount = Number(feedingAmount);
-          if (feedingType === "baby_food" && babyFoodMenu) {
-            const currentNote = formData.get("note") as string;
-            input.note = babyFoodMenu + (currentNote ? ` ${currentNote}` : "");
-          }
         }
       } else if (type === "SLEEP") {
         input.sleepType = sleepType;
         
-        // 종료 시간과 수면 시간으로 시작 시간 계산
-        if (endTimeHours && endTimeMinutes && (sleepDurationHours || sleepDurationMinutes)) {
-          const endH = Number(endTimeHours);
-          const endM = Number(endTimeMinutes);
-          const durH = Number(sleepDurationHours) || 0;
-          const durM = Number(sleepDurationMinutes) || 0;
-          
-          const now = new Date();
-          const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM);
-          const durationMs = (durH * 60 + durM) * 60 * 1000;
-          const calculatedStartTime = new Date(endTime.getTime() - durationMs);
-          
-          input.startTime = calculatedStartTime;
-          input.endTime = endTime;
-        }
+        const durH = Number(sleepDurationHours) || 0;
+        const durM = Number(sleepDurationMinutes) || 0;
+        
+        const durationMs = (durH * 60 + durM) * 60 * 1000;
+        const calculatedStartTime = new Date(endTime.getTime() - durationMs);
+        
+        input.startTime = calculatedStartTime;
+        input.endTime = endTime;
+
       } else if (type === "DIAPER") {
         input.diaperType = diaperType;
         input.stoolColor = stoolColor;
@@ -189,7 +164,7 @@ export function useActivitySubmit({
         updated[type] = { feedingType: input.feedingType };
         setRecentValues(updated);
         setShowDetail(false);
-        setNow();
+        setStartTime(new Date()); // Reset time for next entry
         if (onActivityCreated && result.data) {
           onActivityCreated(result.data);
         }
