@@ -26,6 +26,8 @@ export function useActivitySubmit({
     sleepType,
     endTimeHours,
     endTimeMinutes,
+    sleepDurationHours,
+    sleepDurationMinutes,
     diaperType,
     stoolCondition,
     medicineName,
@@ -90,11 +92,8 @@ export function useActivitySubmit({
           newErrors.endTime = "수면 종료 시간을 입력해주세요";
       }
 
-      // 배변 검증
       if (type === "DIAPER") {
         if (!diaperType) newErrors.diaperType = "배변 타입을 선택해주세요";
-        if (diaperType === "stool" && !stoolCondition)
-          newErrors.stoolCondition = "대변 상태를 선택해주세요";
       }
 
       // 투약 검증
@@ -141,9 +140,20 @@ export function useActivitySubmit({
         }
       } else if (type === "SLEEP") {
         input.sleepType = sleepType;
-        if (endTimeHours && endTimeMinutes) {
-          const endTime = new Date(startTime);
-          endTime.setHours(Number(endTimeHours), Number(endTimeMinutes));
+        
+        // 종료 시간과 수면 시간으로 시작 시간 계산
+        if (endTimeHours && endTimeMinutes && (sleepDurationHours || sleepDurationMinutes)) {
+          const endH = Number(endTimeHours);
+          const endM = Number(endTimeMinutes);
+          const durH = Number(sleepDurationHours) || 0;
+          const durM = Number(sleepDurationMinutes) || 0;
+          
+          const now = new Date();
+          const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM);
+          const durationMs = (durH * 60 + durM) * 60 * 1000;
+          const calculatedStartTime = new Date(endTime.getTime() - durationMs);
+          
+          input.startTime = calculatedStartTime;
           input.endTime = endTime;
         }
       } else if (type === "DIAPER") {

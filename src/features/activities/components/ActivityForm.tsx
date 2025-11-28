@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { Activity } from "@prisma/client";
 import { differenceInMonths } from "date-fns";
@@ -38,6 +38,7 @@ export function ActivityForm({
   const { data: session, status } = useSession();
   const isGuestMode = status === "unauthenticated";
 
+  const formRef = useRef<HTMLFormElement>(null);
   const state = useActivityFormState();
   const {
     type,
@@ -94,6 +95,44 @@ export function ActivityForm({
 
     loadBabyData();
   }, [babyId, setBabyInfo, setAgeInMonths, setLatestWeight]);
+
+  // Smart Defaults: Load last feeding data
+  useEffect(() => {
+    const loadLastFeeding = async () => {
+      if (type !== "FEEDING" || !babyId) return;
+
+      try {
+        const { getLastActivity } = await import("@/features/activities/actions");
+        const result = await getLastActivity(babyId, "FEEDING");
+        
+        if (result.success && result.data) {
+          const lastActivity = result.data;
+          
+          if (lastActivity.feedingType) {
+            state.setFeedingType(lastActivity.feedingType);
+          }
+          
+          if (lastActivity.feedingAmount) {
+            state.setFeedingAmount(lastActivity.feedingAmount.toString());
+          }
+          
+          if (lastActivity.breastSide) {
+            state.setBreastSide(lastActivity.breastSide);
+          }
+          
+          if (lastActivity.duration) {
+            state.setFeedingDuration(lastActivity.duration.toString());
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load last feeding:", error);
+      }
+    };
+
+    if (showDetail && type === "FEEDING") {
+      loadLastFeeding();
+    }
+  }, [type, showDetail, babyId, state.setFeedingType, state.setFeedingAmount, state.setBreastSide, state.setFeedingDuration]);
 
   return (
     <div className={SPACING.space.lg}>
@@ -213,20 +252,30 @@ export function ActivityForm({
       {showDetail && (
         <Card className="border-primary/20 shadow-md animate-in slide-in-from-bottom-4 duration-300">
           <CardHeader className={cn(SPACING.card.medium, "border-b bg-primary/5")}>
-            <CardTitle className={cn(TYPOGRAPHY.h3, "flex items-center gap-2")}>
-              <span>
-                {type === "FEEDING" && "🍼 수유 기록"}
-                {type === "SLEEP" && "😴 수면 기록"}
-                {type === "DIAPER" && "💩 배변 기록"}
-                {type === "MEDICINE" && "💊 투약 기록"}
-                {type === "TEMPERATURE" && "🌡️ 체온 기록"}
-                {type === "BATH" && "🛁 목욕 기록"}
-                {type === "PLAY" && "🧸 놀이 기록"}
-              </span>
-            </CardTitle>
+            <div className="flex flex-row items-center justify-between w-full">
+              <CardTitle className={cn(TYPOGRAPHY.h3, "flex items-center gap-2")}>
+                <span>
+                  {type === "FEEDING" && "🍼 수유 기록"}
+                  {type === "SLEEP" && "😴 수면 기록"}
+                  {type === "DIAPER" && "💩 배변 기록"}
+                  {type === "MEDICINE" && "💊 투약 기록"}
+                  {type === "TEMPERATURE" && "🌡️ 체온 기록"}
+                  {type === "BATH" && "🛁 목욕 기록"}
+                  {type === "PLAY" && "🧸 놀이 기록"}
+                </span>
+              </CardTitle>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => formRef.current?.requestSubmit()}
+                disabled={loading || isGuestMode}
+              >
+                {loading ? "저장 중..." : "✅ 저장"}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className={SPACING.card.medium}>
-            <form onSubmit={handleSubmit} className={SPACING.space.lg}>
+            <form ref={formRef} onSubmit={handleSubmit} className={SPACING.space.lg}>
               {type === "FEEDING" && (
                 <FeedingFormSection
                   feedingType={state.feedingType}
@@ -237,9 +286,9 @@ export function ActivityForm({
                   setFeedingDuration={state.setFeedingDuration}
                   breastSide={state.breastSide}
                   setBreastSide={state.setBreastSide}
-                  babyFoodMenu={state.babyFoodMenu}
-                  setBabyFoodMenu={state.setBabyFoodMenu}
+
                   latestWeight={latestWeight}
+                  ageInMonths={ageInMonths}
                   errors={errors}
                   disabled={isGuestMode}
                 />
@@ -251,6 +300,10 @@ export function ActivityForm({
                   setEndTimeHours={state.setEndTimeHours}
                   endTimeMinutes={state.endTimeMinutes}
                   setEndTimeMinutes={state.setEndTimeMinutes}
+                  sleepDurationHours={state.sleepDurationHours}
+                  setSleepDurationHours={state.setSleepDurationHours}
+                  sleepDurationMinutes={state.sleepDurationMinutes}
+                  setSleepDurationMinutes={state.setSleepDurationMinutes}
                   ageInMonths={ageInMonths}
                   errors={errors}
                   disabled={isGuestMode}
@@ -324,7 +377,7 @@ export function ActivityForm({
                 </Label>
                 <Textarea
                   name="note"
-                  placeholder="💡 메모는 AI 상담에 반영되어 더 정확한 답변을 받을 수 있어요"
+                  placeholder="💡 메모도 AI 상담에 반영되어 더 정확한 답변을 받을 수 있어요"
                   rows={2}
                   className={TYPOGRAPHY.body.small}
                   disabled={isGuestMode}

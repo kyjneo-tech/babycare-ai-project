@@ -401,3 +401,29 @@ export async function bulkDeleteActivities(
     return { success: false, error: "활동 삭제 중 오류가 발생했습니다." };
   }
 }
+
+export async function getLastActivity(
+  babyId: string,
+  type: string
+): Promise<{ success: boolean; data?: Activity | null; error?: string }> {
+  if (babyId === 'guest-baby-id') {
+    return { success: true, data: null };
+  }
+
+  try {
+    const lastActivity = await prisma.activity.findFirst({
+      where: {
+        babyId,
+        type: type as any,
+      },
+      orderBy: {
+        startTime: 'desc',
+      },
+    });
+
+    return { success: true, data: lastActivity };
+  } catch (error) {
+    console.error("마지막 활동 조회 실패:", error);
+    return { success: false, error: "마지막 활동 조회에 실패했습니다" };
+  }
+}

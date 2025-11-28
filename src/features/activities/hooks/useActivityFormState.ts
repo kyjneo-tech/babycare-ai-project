@@ -53,8 +53,11 @@ interface UseActivityFormStateReturn {
   setEndTimeMinutes: Dispatch<SetStateAction<string>>;
   feedingDuration: string;
   setFeedingDuration: Dispatch<SetStateAction<string>>;
-  babyFoodMenu: string;
-  setBabyFoodMenu: Dispatch<SetStateAction<string>>;
+  sleepDurationHours: string;
+  setSleepDurationHours: Dispatch<SetStateAction<string>>;
+  sleepDurationMinutes: string;
+  setSleepDurationMinutes: Dispatch<SetStateAction<string>>;
+
   temperature: string;
   setTemperature: Dispatch<SetStateAction<string>>;
   bathType: string;
@@ -78,6 +81,7 @@ interface UseActivityFormStateReturn {
   togglePlayType: (tag: string) => void;
   setNow: () => void;
   adjustTime: (hoursOffset: number, minutesOffset?: number) => void;
+  setSleepDuration: (durationMinutes: number) => void;
 }
 // --- UseActivityFormStateReturn 인터페이스 추가 끝 ---
 
@@ -106,7 +110,9 @@ export function useActivityFormState(): UseActivityFormStateReturn { // 반환 �
   const [endTimeHours, setEndTimeHours] = useState("");
   const [endTimeMinutes, setEndTimeMinutes] = useState("");
   const [feedingDuration, setFeedingDuration] = useState("");
-  const [babyFoodMenu, setBabyFoodMenu] = useState("");
+  const [sleepDurationHours, setSleepDurationHours] = useState("");
+  const [sleepDurationMinutes, setSleepDurationMinutes] = useState("");
+
   const [temperature, setTemperature] = useState("36.5");
 
   // States for Bath and Play
@@ -182,7 +188,9 @@ export function useActivityFormState(): UseActivityFormStateReturn { // 반환 �
     endTimeHours, setEndTimeHours,
     endTimeMinutes, setEndTimeMinutes,
     feedingDuration, setFeedingDuration,
-    babyFoodMenu, setBabyFoodMenu,
+    sleepDurationHours, setSleepDurationHours,
+    sleepDurationMinutes, setSleepDurationMinutes,
+
     temperature, setTemperature,
     bathType, setBathType,
     bathTemp, setBathTemp,
@@ -195,6 +203,18 @@ export function useActivityFormState(): UseActivityFormStateReturn { // 반환 �
     ageInMonths, setAgeInMonths,
     togglePlayType,
     setNow,
-    adjustTime
+    adjustTime,
+    setSleepDuration: (durationMinutes: number) => {
+      const now = new Date();
+      const startTime = new Date(now.getTime() - durationMinutes * 60000);
+      
+      // Set end time to now
+      setEndTimeHours(now.getHours().toString());
+      setEndTimeMinutes(now.getMinutes().toString());
+      
+      // Set start time calculated from duration
+      setHours(startTime.getHours());
+      setMinutes(startTime.getMinutes());
+    }
   };
 }

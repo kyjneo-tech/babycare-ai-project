@@ -14,9 +14,8 @@ interface FeedingFormSectionProps {
   setFeedingDuration: (value: string) => void;
   breastSide: string;
   setBreastSide: (value: string) => void;
-  babyFoodMenu: string;
-  setBabyFoodMenu: (value: string) => void;
   latestWeight: number | null;
+  ageInMonths?: number;
   errors: Record<string, string>;
   disabled?: boolean;
 }
@@ -30,9 +29,9 @@ export function FeedingFormSection({
   setFeedingDuration,
   breastSide,
   setBreastSide,
-  babyFoodMenu,
-  setBabyFoodMenu,
+
   latestWeight,
+  ageInMonths,
   errors,
   disabled = false,
 }: FeedingFormSectionProps) {
@@ -119,7 +118,9 @@ export function FeedingFormSection({
           <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>
             {feedingType === "baby_food" ? "섭취량 (ml/g)" : "수유량 (ml)"}
           </Label>
-          <div className={cn("flex flex-wrap mb-2", SPACING.gap.sm)}>
+          
+          {/* 퀵 버튼 */}
+          <div className={cn("flex flex-wrap mb-3", SPACING.gap.sm)}>
             {[60, 90, 120, 160, 200, 240].map((amount) => (
               <Button
                 key={amount}
@@ -134,20 +135,115 @@ export function FeedingFormSection({
               </Button>
             ))}
           </div>
-          <Input
-            type="number"
-            placeholder="직접 입력"
-            value={feedingAmount}
-            onChange={(e) => setFeedingAmount(e.target.value)}
-            className={errors.feedingAmount ? "border-destructive" : ""}
-            disabled={disabled}
-          />
+
+          {/* 증감 버튼 UI */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-200">
+            {/* 상단: ±10 버튼 */}
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const current = parseInt(feedingAmount) || 0;
+                  setFeedingAmount(Math.max(0, current - 10).toString());
+                }}
+                disabled={disabled || parseInt(feedingAmount) <= 0}
+                className="w-12 h-12 text-sm font-semibold"
+              >
+                -10
+              </Button>
+              
+              <div className="flex-1 text-center">
+                <div className="text-3xl font-bold text-primary">
+                  {feedingAmount || "0"}
+                  <span className="text-lg ml-1">ml</span>
+                </div>
+              </div>
+              
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const current = parseInt(feedingAmount) || 0;
+                  setFeedingAmount(Math.min(500, current + 10).toString());
+                }}
+                disabled={disabled || parseInt(feedingAmount) >= 500}
+                className="w-12 h-12 text-sm font-semibold"
+              >
+                +10
+              </Button>
+            </div>
+
+            {/* 하단: ±1, ±5 버튼 */}
+            <div className="flex items-center justify-center gap-1.5">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const current = parseInt(feedingAmount) || 0;
+                  setFeedingAmount(Math.max(0, current - 5).toString());
+                }}
+                disabled={disabled || parseInt(feedingAmount) <= 0}
+                className="w-10 h-10 text-xs"
+              >
+                -5
+              </Button>
+              
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const current = parseInt(feedingAmount) || 0;
+                  setFeedingAmount(Math.max(0, current - 1).toString());
+                }}
+                disabled={disabled || parseInt(feedingAmount) <= 0}
+                className="w-10 h-10 text-xs"
+              >
+                -1
+              </Button>
+              
+              <div className="w-12"></div>
+              
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const current = parseInt(feedingAmount) || 0;
+                  setFeedingAmount(Math.min(500, current + 1).toString());
+                }}
+                disabled={disabled || parseInt(feedingAmount) >= 500}
+                className="w-10 h-10 text-xs"
+              >
+                +1
+              </Button>
+              
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const current = parseInt(feedingAmount) || 0;
+                  setFeedingAmount(Math.min(500, current + 5).toString());
+                }}
+                disabled={disabled || parseInt(feedingAmount) >= 500}
+                className="w-10 h-10 text-xs"
+              >
+                +5
+              </Button>
+            </div>
+          </div>
 
           {latestWeight && (
             <GuidelinePanel
-              type="feeding"
+              type={feedingType === "baby_food" ? "baby_food" : "feeding"}
               value={parseFloat(feedingAmount) || 0}
               weight={latestWeight}
+              ageInMonths={ageInMonths}
             />
           )}
           {errors.feedingAmount && (
@@ -156,39 +252,7 @@ export function FeedingFormSection({
         </div>
       )}
 
-      {feedingType === "baby_food" && (
-        <div className={SPACING.space.sm}>
-          <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>이유식 메뉴</Label>
-          <div className={cn("flex flex-wrap mb-2", SPACING.gap.sm)}>
-            {["쌀미음", "오트밀", "소고기", "닭고기", "야채", "과일", "간식"].map(
-              (menu) => (
-                <Button
-                  key={menu}
-                  type="button"
-                  variant={babyFoodMenu === menu ? "default" : "secondary"}
-                  size="sm"
-                  onClick={() => setBabyFoodMenu(menu)}
-                  disabled={disabled}
-                  className="rounded-full"
-                >
-                  {menu}
-                </Button>
-              )
-            )}
-          </div>
-          <Input
-            type="text"
-            placeholder="메뉴 직접 입력"
-            value={babyFoodMenu}
-            onChange={(e) => setBabyFoodMenu(e.target.value)}
-            className={errors.babyFoodMenu ? "border-destructive" : ""}
-            disabled={disabled}
-          />
-          {errors.babyFoodMenu && (
-            <p className={cn(TYPOGRAPHY.caption, "text-destructive mt-1")}>{errors.babyFoodMenu}</p>
-          )}
-        </div>
-      )}
+
     </div>
   );
 }

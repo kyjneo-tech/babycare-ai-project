@@ -3,6 +3,7 @@
 
 import {
   getFeedingGuideline,
+  getBabyFoodGuideline,
   getSleepGuideline,
   getDexibuprofenGuideline,
   getIbuprofenGuideline,
@@ -10,7 +11,7 @@ import {
 } from "@/shared/lib/growthGuidelines";
 
 interface GuidelinePanelProps {
-  type: 'feeding' | 'sleep' | 'medicine';
+  type: 'feeding' | 'baby_food' | 'sleep' | 'medicine';
   value: number;
   weight?: number | null;
   ageInMonths?: number;
@@ -56,6 +57,53 @@ export function GuidelinePanel({ type, value, weight, ageInMonths, medicineName,
               {isInRange
                 ? '✅ 적정 범위입니다'
                 : amount < guide.perFeeding.min
+                ? '⚠️ 권장량보다 적습니다'
+                : '⚠️ 권장량보다 많습니다'
+              }
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (type === 'baby_food' && weight && typeof ageInMonths === 'number') {
+    const guide = getBabyFoodGuideline(weight, ageInMonths);
+    const amount = value;
+    const isInRange = amount >= guide.min && amount <= guide.max;
+    const percentage = Math.min((amount / guide.max) * 100, 100);
+
+    return (
+      <div className="mt-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg">🍚</span>
+          <span className="text-xs font-medium text-orange-800">
+            권장 1회 이유식량 ({guide.stage}, 체중 {weight}kg, 생후 {ageInMonths}개월)
+          </span>
+        </div>
+        <div className="text-sm text-orange-700 mb-2">
+          {guide.min}~{guide.max}g
+        </div>
+
+        {/* 프로그레스 바 */}
+        {amount > 0 && (
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs text-gray-600">
+              <span>최소: {guide.min}g</span>
+              <span>최대: {guide.max}g</span>
+            </div>
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all ${
+                  isInRange ? 'bg-green-500' : 'bg-yellow-500'
+                }`}
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
+            <p className="text-xs text-center mt-1">
+              {isInRange
+                ? '✅ 적정 범위입니다'
+                : amount < guide.min
                 ? '⚠️ 권장량보다 적습니다'
                 : '⚠️ 권장량보다 많습니다'
               }

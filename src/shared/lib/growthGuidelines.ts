@@ -114,14 +114,58 @@ export function getFeedingGuideline(weight: number) {
   // 공식: 체중(kg) × 100~150ml
   const dailyMin = weight * 100;
   const dailyMax = weight * 150;
-  
+
   // 1회 수유량 (하루 수유량 ÷ 6~8회 기준)
   const perFeedingMin = Math.round(dailyMin / 8);
   const perFeedingMax = Math.round(dailyMax / 6);
-  
+
   return {
     daily: { min: Math.round(dailyMin), max: Math.round(dailyMax) },
     perFeeding: { min: perFeedingMin, max: perFeedingMax },
+  };
+}
+
+/**
+ * 아기의 1회 권장 이유식량을 계산합니다.
+ * 공식: 체중(kg) × 월령계수
+ * @param weight 체중 (kg)
+ * @param ageInMonths 생후 개월 수
+ * @returns { min: number, max: number, stage: string }
+ */
+export function getBabyFoodGuideline(weight: number, ageInMonths: number) {
+  // 월령별 계수 결정
+  let coefficient: number;
+  let stage: string;
+
+  if (ageInMonths <= 6) {
+    coefficient = 8;
+    stage = '초기';
+  } else if (ageInMonths <= 9) {
+    coefficient = 10;
+    stage = '중기';
+  } else if (ageInMonths <= 12) {
+    coefficient = 12;
+    stage = '후기';
+  } else if (ageInMonths <= 18) {
+    coefficient = 14;
+    stage = '완료기';
+  } else {
+    coefficient = 15;
+    stage = '유아식';
+  }
+
+  // 기본 계산값
+  const baseAmount = weight * coefficient;
+
+  // 범위: 계산값의 ±10%
+  const min = Math.round(baseAmount * 0.9);
+  const max = Math.round(baseAmount * 1.1);
+
+  return {
+    min,
+    max,
+    stage,
+    baseAmount: Math.round(baseAmount),
   };
 }
 

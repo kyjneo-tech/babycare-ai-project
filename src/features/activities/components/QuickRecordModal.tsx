@@ -123,6 +123,44 @@ export function QuickRecordModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [babyId]); // ✅ babyId만 의존성으로
 
+  // Smart Defaults: Load last feeding data
+  useEffect(() => {
+    const loadLastFeeding = async () => {
+      if (type !== "FEEDING" || !babyId) return;
+
+      try {
+        const { getLastActivity } = await import("@/features/activities/actions");
+        const result = await getLastActivity(babyId, "FEEDING");
+        
+        if (result.success && result.data) {
+          const lastActivity = result.data;
+          
+          if (lastActivity.feedingType) {
+            state.setFeedingType(lastActivity.feedingType);
+          }
+          
+          if (lastActivity.feedingAmount) {
+            state.setFeedingAmount(lastActivity.feedingAmount.toString());
+          }
+          
+          if (lastActivity.breastSide) {
+            state.setBreastSide(lastActivity.breastSide);
+          }
+          
+          if (lastActivity.duration) {
+            state.setFeedingDuration(lastActivity.duration.toString());
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load last feeding:", error);
+      }
+    };
+
+    if (selectedType === "FEEDING") {
+      loadLastFeeding();
+    }
+  }, [selectedType, babyId, state.setFeedingType, state.setFeedingAmount, state.setBreastSide, state.setFeedingDuration]);
+
   React.useEffect(() => {
     if (isOpen) {
       setSelectedType(null); // 모달 열 때마다 초기화
@@ -140,7 +178,7 @@ export function QuickRecordModal({
 
   return (
     <BottomSheet open={isOpen} onOpenChange={onClose}>
-      <BottomSheetContent className="max-h-[90vh]">
+      <BottomSheetContent className="max-h-[90vh]" showCloseButton={!selectedType}>
         {!selectedType ? (
           // 활동 선택 화면
           <>
@@ -257,7 +295,7 @@ export function QuickRecordModal({
         ) : (
           // 상세 입력 화면
           <>
-            <BottomSheetHeader className="border-b pb-4">
+            <BottomSheetHeader className="flex flex-row items-center justify-between border-b pb-4">
               <div className="flex items-center gap-3">
                 <Button
                   type="button"
@@ -275,6 +313,17 @@ export function QuickRecordModal({
                   </span>
                 </BottomSheetTitle>
               </div>
+              <Button
+                type="submit"
+                size="sm"
+                onClick={(e) => {
+                  const form = document.querySelector('form');
+                  if (form) form.requestSubmit();
+                }}
+                disabled={loading || isGuestMode}
+              >
+                {loading ? "저장 중..." : "✅ 저장"}
+              </Button>
             </BottomSheetHeader>
 
             <BottomSheetBody className="space-y-4">
@@ -301,9 +350,9 @@ export function QuickRecordModal({
                     setFeedingDuration={state.setFeedingDuration}
                     breastSide={state.breastSide}
                     setBreastSide={state.setBreastSide}
-                    babyFoodMenu={state.babyFoodMenu}
-                    setBabyFoodMenu={state.setBabyFoodMenu}
+
                     latestWeight={state.latestWeight}
+                    ageInMonths={state.ageInMonths}
                     errors={errors}
                     disabled={isGuestMode}
                   />
@@ -315,9 +364,13 @@ export function QuickRecordModal({
                     setEndTimeHours={state.setEndTimeHours}
                     endTimeMinutes={state.endTimeMinutes}
                     setEndTimeMinutes={state.setEndTimeMinutes}
+                    sleepDurationHours={state.sleepDurationHours}
+                    setSleepDurationHours={state.setSleepDurationHours}
+                    sleepDurationMinutes={state.sleepDurationMinutes}
+                    setSleepDurationMinutes={state.setSleepDurationMinutes}
                     ageInMonths={state.ageInMonths}
                     errors={errors}
-                    disabled={isGuestMode}
+                    disabled={loading}
                   />
                 )}
 

@@ -50,7 +50,9 @@ export function DiaperFormSection({
 
       {diaperType === "stool" && (
         <div className={SPACING.space.sm}>
-          <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>대변 상태 (필수)</Label>
+          <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>
+            대변 상태 <span className="text-muted-foreground font-normal text-xs">(선택)</span>
+          </Label>
           <div className={cn("grid grid-cols-2", SPACING.gap.sm)}>
             {[
               { label: "물설사", value: "watery", icon: "🌊" },
@@ -62,7 +64,7 @@ export function DiaperFormSection({
                 key={cond.value}
                 type="button"
                 variant={stoolCondition === cond.value ? "default" : "outline"}
-                onClick={() => setStoolCondition(cond.value)}
+                onClick={() => setStoolCondition(stoolCondition === cond.value ? "" : cond.value)}
                 disabled={disabled}
                 className="justify-start gap-2"
               >
@@ -71,9 +73,6 @@ export function DiaperFormSection({
               </Button>
             ))}
           </div>
-          {errors.stoolCondition && (
-            <p className={cn(TYPOGRAPHY.caption, "text-destructive mt-1")}>{errors.stoolCondition}</p>
-          )}
         </div>
       )}
     </div>

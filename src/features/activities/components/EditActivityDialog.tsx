@@ -59,12 +59,30 @@ export function EditActivityDialog({
   const [feedingAmount, setFeedingAmount] = useState(activity.feedingAmount?.toString() || "");
   const [feedingDuration, setFeedingDuration] = useState(activity.duration?.toString() || "");
   const [breastSide, setBreastSide] = useState(activity.breastSide || "left");
-  const [babyFoodMenu, setBabyFoodMenu] = useState(activity.note || "");
+
 
   // 수면 관련 상태
   const endDate = activity.endTime ? new Date(activity.endTime) : null;
   const [endTimeHours, setEndTimeHours] = useState((endDate?.getHours() || hours).toString());
   const [endTimeMinutes, setEndTimeMinutes] = useState((endDate?.getMinutes() || minutes).toString());
+  
+  // 수면 시간 계산 (기존 활동에서 역산)
+  const calculateDuration = () => {
+    if (activity.endTime && activity.startTime) {
+      const start = new Date(activity.startTime);
+      const end = new Date(activity.endTime);
+      const diffMs = end.getTime() - start.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const hours = Math.floor(diffMins / 60);
+      const mins = diffMins % 60;
+      return { hours: hours.toString(), mins: mins.toString() };
+    }
+    return { hours: "", mins: "" };
+  };
+  
+  const initialDuration = calculateDuration();
+  const [sleepDurationHours, setSleepDurationHours] = useState(initialDuration.hours);
+  const [sleepDurationMinutes, setSleepDurationMinutes] = useState(initialDuration.mins);
 
   // 배변 관련 상태
   const [diaperType, setDiaperType] = useState(activity.diaperType || "poo");
@@ -181,14 +199,22 @@ export function EditActivityDialog({
         updateData.duration = feedingType === "breast" && feedingDuration ? parseInt(feedingDuration) : null;
         updateData.breastSide = feedingType === "breast" ? breastSide : null;
       } else if (activity.type === "SLEEP") {
-        const newEndTime = new Date(activity.startTime);
-        newEndTime.setHours(parseInt(endTimeHours), parseInt(endTimeMinutes), 0, 0);
-        if (newEndTime < newStartTime) {
-          newEndTime.setDate(newEndTime.getDate() + 1);
+        // 종료 시간과 수면 시간으로 시작 시간 계산
+        if (endTimeHours && endTimeMinutes && (sleepDurationHours || sleepDurationMinutes)) {
+          const endH = parseInt(endTimeHours);
+          const endM = parseInt(endTimeMinutes);
+          const durH = parseInt(sleepDurationHours) || 0;
+          const durM = parseInt(sleepDurationMinutes) || 0;
+          
+          const now = new Date();
+          const newEndTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM);
+          const durationMs = (durH * 60 + durM) * 60 * 1000;
+          const calculatedStartTime = new Date(newEndTime.getTime() - durationMs);
+          
+          updateData.startTime = calculatedStartTime.toISOString();
+          updateData.endTime = newEndTime.toISOString();
+          updateData.duration = durH * 60 + durM;
         }
-        updateData.endTime = newEndTime.toISOString();
-        const durationMinutes = Math.round((newEndTime.getTime() - newStartTime.getTime()) / (1000 * 60));
-        updateData.duration = durationMinutes;
       } else if (activity.type === "DIAPER") {
         updateData.diaperType = diaperType;
         updateData.stoolCondition = stoolCondition || null;
@@ -273,9 +299,9 @@ export function EditActivityDialog({
               setFeedingDuration={setFeedingDuration}
               breastSide={breastSide}
               setBreastSide={setBreastSide}
-              babyFoodMenu={babyFoodMenu}
-              setBabyFoodMenu={setBabyFoodMenu}
+
               latestWeight={latestWeight}
+              ageInMonths={ageInMonths}
               errors={errors}
               disabled={false}
             />
@@ -287,6 +313,10 @@ export function EditActivityDialog({
               setEndTimeHours={setEndTimeHours}
               endTimeMinutes={endTimeMinutes}
               setEndTimeMinutes={setEndTimeMinutes}
+              sleepDurationHours={sleepDurationHours}
+              setSleepDurationHours={setSleepDurationHours}
+              sleepDurationMinutes={sleepDurationMinutes}
+              setSleepDurationMinutes={setSleepDurationMinutes}
               ageInMonths={ageInMonths}
               errors={errors}
               disabled={false}
