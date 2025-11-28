@@ -128,8 +128,7 @@ interface AISettings {
   growth: boolean;
   medication: boolean;
   temperature: boolean;
-  bath: boolean;
-  play: boolean;
+  other: boolean;
 }
 
 const DEFAULT_SETTINGS: AISettings = {
@@ -139,8 +138,7 @@ const DEFAULT_SETTINGS: AISettings = {
   growth: true,
   medication: true,
   temperature: true,
-  bath: true,
-  play: true,
+  other: false,
 };
 
 export async function getBabyAISettings(babyId: string) {
@@ -248,8 +246,6 @@ export async function sendChatMessage(
       if (a.type === 'DIAPER' && !settings.diaper) return false;
       if (a.type === 'MEDICINE' && !settings.medication) return false;
       if (a.type === 'TEMPERATURE' && !settings.temperature) return false;
-      if (a.type === 'BATH' && !settings.bath) return false;
-      if (a.type === 'PLAY' && !settings.play) return false;
       return true;
     });
 
@@ -287,8 +283,6 @@ export async function sendChatMessage(
     if (!settings.growth) excludedCategories.push("성장");
     if (!settings.medication) excludedCategories.push("투약");
     if (!settings.temperature) excludedCategories.push("체온");
-    if (!settings.bath) excludedCategories.push("목욕");
-    if (!settings.play) excludedCategories.push("놀이");
 
     const exclusionNote = excludedCategories.length > 0
       ? `\n[주의: 사용자 설정에 의해 다음 데이터는 분석에서 제외되었습니다: ${excludedCategories.join(", ")}. 해당 항목에 대한 데이터가 없다고 해서 문제가 있는 것으로 간주하지 마세요. 질문이 해당 항목에 관한 것이라면, 기록이 없음을 언급하고 일반적인 조언을 해주세요.]`

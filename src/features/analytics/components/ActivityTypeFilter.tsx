@@ -16,8 +16,6 @@ const ALL_FILTERS: { type: ActivityType; label: string; icon: string }[] = [
   { type: ActivityType.DIAPER, label: "기저귀", icon: "💩" },
   { type: ActivityType.MEDICINE, label: "약", icon: "💊" },
   { type: ActivityType.TEMPERATURE, label: "체온", icon: "🌡️" },
-  { type: ActivityType.BATH, label: "목욕", icon: "🛁" },
-  { type: ActivityType.PLAY, label: "놀이", icon: "🎮" },
 ];
 
 export function ActivityTypeFilter({ activeFilters, onFilterChange }: ActivityTypeFilterProps) {

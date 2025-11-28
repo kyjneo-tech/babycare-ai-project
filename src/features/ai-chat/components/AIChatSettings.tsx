@@ -12,8 +12,6 @@ interface AISettings {
   growth: boolean;
   medication: boolean;
   temperature: boolean;
-  bath: boolean;
-  play: boolean;
   other: boolean;
 }
 
@@ -24,8 +22,6 @@ const DEFAULT_SETTINGS: AISettings = {
   growth: true,
   medication: true,
   temperature: true,
-  bath: true,
-  play: true,
   other: false,
 };
 
@@ -47,26 +43,35 @@ export function AIChatSettings({ babyId }: { babyId: string }) {
   }, [babyId]);
 
   const SETTING_ITEMS = [
-    { key: "feeding", label: "수유", icon: "🍼" },
-    { key: "sleep", label: "수면", icon: "😴" },
-    { key: "diaper", label: "배변", icon: "💩" },
-    { key: "growth", label: "키/체중", icon: "📏" },
-    { key: "medication", label: "투약", icon: "💊" },
-    { key: "temperature", label: "체온", icon: "🌡️" },
-    { key: "bath", label: "목욕", icon: "🛁" },
-    { key: "play", label: "놀이", icon: "🧸" },
-    { key: "other", label: "이름 & 개월수", icon: "💬" },
+    { key: "feeding", label: "수유", icon: "🍼", description: "수유량·간격 분석, 분유/모유 고민, 수유 거부 원인" },
+    { key: "sleep", label: "수면", icon: "😴", description: "수면 패턴 분석, 밤잠 개선, 낮잠 조절 방법" },
+    { key: "diaper", label: "배변", icon: "💩", description: "배변 색깔·상태 확인, 변비·설사 대처법" },
+    { key: "growth", label: "키/체중", icon: "📏", description: "성장 곡선 분석, 또래 비교, 발달 지연 확인" },
+    { key: "medication", label: "투약", icon: "💊", description: "약 복용 기록 참고, 용량·시간 확인" },
+    { key: "temperature", label: "체온", icon: "🌡️", description: "발열 패턴 분석, 체온 변화 추적" },
+    { key: "other", label: "일반 육아 상담", icon: "💬", description: "개월수별 발달 정보, 육아 가이드, 예방접종 일정" },
   ] as const;
 
   const checkboxItems: CheckboxItem[] = SETTING_ITEMS.map((item) => ({
     key: item.key,
     label: item.label,
     icon: item.icon,
+    description: item.description,
     checked: settings[item.key],
   }));
 
   const handleSave = async (selectedKeys: string[]) => {
-    const newSettings = { ...DEFAULT_SETTINGS };
+    // 모든 항목을 false로 초기화한 후 선택된 항목만 true로 설정
+    const newSettings: AISettings = {
+      feeding: false,
+      sleep: false,
+      diaper: false,
+      growth: false,
+      medication: false,
+      temperature: false,
+      other: false,
+    };
+    
     selectedKeys.forEach((key) => {
       newSettings[key as keyof AISettings] = true;
     });

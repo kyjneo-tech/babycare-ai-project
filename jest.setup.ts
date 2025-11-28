@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 import { PrismaClient } from '@prisma/client';
 import { mockDeep, mockReset } from 'jest-mock-extended';
 import { getServerSession } from 'next-auth';

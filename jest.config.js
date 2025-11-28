@@ -9,7 +9,7 @@ const createJestConfig = nextJest({
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   testEnvironment: 'jest-environment-jsdom', // API 테스트지만, Next.js 환경에서는 jsdom이 더 안정적일 수 있습니다.
-  testMatch: ['<rootDir>/src/**/*.test.ts'],
+  testMatch: ['<rootDir>/src/**/*.test.ts', '<rootDir>/src/**/*.test.tsx'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },

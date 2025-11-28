@@ -57,7 +57,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* 하단 네비게이션 바 (AI 상담 + 메뉴 통합) */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-primary text-primary-foreground shadow-[0_-4px_20px_-2px_rgba(0,0,0,0.1)]">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-primary text-primary-foreground shadow-[0_-4px_20px_-2px_rgba(0,0,0,0.1)]">
         <div className="flex h-14">
           {/* AI 상담 드롭다운 (60%) */}
           <AIConsultMenu

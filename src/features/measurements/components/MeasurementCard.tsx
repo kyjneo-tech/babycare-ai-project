@@ -60,7 +60,7 @@ export function MeasurementCard({ babyId }: MeasurementCardProps) {
             onClick={() => setShowChartDialog(true)}
             className="h-7 px-2 text-xs"
           >
-            📊 차트
+            📊 성장 차트
           </Button>
         </div>
       </div>

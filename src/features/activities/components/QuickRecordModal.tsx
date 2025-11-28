@@ -54,8 +54,6 @@ const ACTIVITY_BUTTONS = [
   { type: "DIAPER" as const, icon: "💩", label: "배변" },
   { type: "MEDICINE" as const, icon: "💊", label: "투약" },
   { type: "TEMPERATURE" as const, icon: "🌡️", label: "체온" },
-  { type: "BATH" as const, icon: "🛁", label: "목욕" },
-  { type: "PLAY" as const, icon: "🧸", label: "놀이" },
 ];
 
 export function QuickRecordModal({
@@ -150,26 +148,95 @@ export function QuickRecordModal({
               <BottomSheetTitle>무엇을 기록할까요?</BottomSheetTitle>
             </BottomSheetHeader>
             <BottomSheetBody>
-              <div className={cn("grid grid-cols-4", SPACING.gap.sm)}>
-                {ACTIVITY_BUTTONS.map((item) => (
-                  <Button
-                    key={item.type}
-                    type="button"
-                    variant="outline"
-                    className={cn(
-                      "h-auto py-4 flex flex-col gap-2",
-                      "hover:bg-gradient-to-br hover:from-pink-50 hover:to-purple-50",
-                      "hover:border-primary/50 transition-all"
-                    )}
-                    onClick={() => handleTypeSelect(item.type)}
-                    disabled={isGuestMode || !babyId}
-                  >
-                    <span className="text-3xl">{item.icon}</span>
-                    <span className={cn(TYPOGRAPHY.caption, "font-medium")}>
-                      {item.label}
-                    </span>
-                  </Button>
-                ))}
+              {/* 가로 스크롤 컨테이너 */}
+              <div className="relative -mx-4 px-4">
+                <div 
+                  ref={(el) => {
+                    if (el) {
+                      const checkScroll = () => {
+                        const leftArrow = el.parentElement?.querySelector('.scroll-arrow-left');
+                        const rightArrow = el.parentElement?.querySelector('.scroll-arrow-right');
+                        
+                        if (leftArrow) {
+                          const isAtStart = el.scrollLeft <= 10;
+                          (leftArrow as HTMLElement).style.display = isAtStart ? 'none' : 'flex';
+                        }
+                        
+                        if (rightArrow) {
+                          const isAtEnd = el.scrollLeft >= (el.scrollWidth - el.clientWidth - 10);
+                          (rightArrow as HTMLElement).style.display = isAtEnd ? 'none' : 'flex';
+                        }
+                      };
+                      el.addEventListener('scroll', checkScroll);
+                      checkScroll(); // 초기 체크
+                    }
+                  }}
+                  className="overflow-x-auto snap-x snap-mandatory pb-2"
+                  style={{
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                  }}
+                >
+                  <div className="flex gap-3 px-1 min-w-max [&::-webkit-scrollbar]:hidden">
+                    {ACTIVITY_BUTTONS.map((item) => (
+                      <Button
+                        key={item.type}
+                        type="button"
+                        variant="outline"
+                        className={cn(
+                          "flex-shrink-0 w-20 h-24 flex flex-col gap-2 snap-start",
+                          "hover:bg-gradient-to-br hover:from-pink-50 hover:to-purple-50",
+                          "hover:border-primary/50 transition-all"
+                        )}
+                        onClick={() => handleTypeSelect(item.type)}
+                        disabled={isGuestMode || !babyId}
+                      >
+                        <span className="text-3xl">{item.icon}</span>
+                        <span className="text-[10px] font-medium leading-tight">
+                          {item.label}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* 왼쪽 스크롤 화살표 버튼 */}
+                <button
+                  className="scroll-arrow-left absolute left-2 top-1/2 -translate-y-1/2 z-10
+                             bg-white/95 backdrop-blur-sm rounded-full p-2 shadow-lg
+                             hover:bg-white transition-all
+                             hidden"
+                  onClick={(e) => {
+                    const container = e.currentTarget.parentElement?.querySelector('.overflow-x-auto');
+                    if (container) {
+                      container.scrollBy({ left: -200, behavior: 'smooth' });
+                    }
+                  }}
+                  aria-label="이전"
+                >
+                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                
+                {/* 오른쪽 스크롤 화살표 버튼 */}
+                <button
+                  className="scroll-arrow-right absolute right-2 top-1/2 -translate-y-1/2 z-10
+                             bg-white/95 backdrop-blur-sm rounded-full p-2 shadow-lg
+                             hover:bg-white transition-all
+                             animate-pulse hover:animate-none"
+                  onClick={(e) => {
+                    const container = e.currentTarget.parentElement?.querySelector('.overflow-x-auto');
+                    if (container) {
+                      container.scrollBy({ left: 200, behavior: 'smooth' });
+                    }
+                  }}
+                  aria-label="다음"
+                >
+                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
 
               {isGuestMode ? (

@@ -35,8 +35,6 @@ const ACTIVITY_TYPES: ActivityType[] = [
   "DIAPER",
   "MEDICINE",
   "TEMPERATURE",
-  "BATH",
-  "PLAY",
 ];
 
 export function QuickActivityButtons({

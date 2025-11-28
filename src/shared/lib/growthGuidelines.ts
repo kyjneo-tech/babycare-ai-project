@@ -38,7 +38,13 @@ export function getWeightPercentile(
   gender: 'male' | 'female'
 ) {
   const chart = KCDC_WEIGHT_CHARTS[gender];
-  const ageData = chart[ageInMonths.toString() as keyof typeof chart];
+  // 가장 가까운 개월 수 데이터 찾기 (단순화)
+  let targetMonth = '0';
+  if (ageInMonths >= 12) targetMonth = '12';
+  else if (ageInMonths >= 6) targetMonth = '6';
+  else if (ageInMonths >= 3) targetMonth = '3';
+
+  const ageData = chart[targetMonth as keyof typeof chart];
 
   if (!ageData) return { percentile: 50, label: '평균' }; // 데이터 없는 경우 기본값
 
@@ -47,6 +53,54 @@ export function getWeightPercentile(
   if (weight < ageData.p50) return { percentile: 35, label: '평균 이하' };
   if (weight < ageData.p85) return { percentile: 65, label: '평균 이상' };
   if (weight < ageData.p97) return { percentile: 95, label: '상위 15%' };
+  return { percentile: 97, label: '상위 3%' };
+}
+
+// 남아/여아별, 개월수별 신장 백분위수 (단위: cm)
+// 출처: 질병관리청 2017 소아청소년 성장도표
+const KCDC_HEIGHT_CHARTS = {
+  male: {
+    '0': { p3: 46.5, p15: 48.1, p50: 49.9, p85: 51.7, p97: 53.4 },
+    '3': { p3: 57.6, p15: 59.4, p50: 61.4, p85: 63.4, p97: 65.3 },
+    '6': { p3: 63.6, p15: 65.5, p50: 67.6, p85: 69.7, p97: 71.7 },
+    '12': { p3: 71.0, p15: 73.0, p50: 75.7, p85: 78.5, p97: 80.5 },
+  },
+  female: {
+    '0': { p3: 45.9, p15: 47.4, p50: 49.1, p85: 50.9, p97: 52.5 },
+    '3': { p3: 56.2, p15: 58.0, p50: 59.8, p85: 61.7, p97: 63.5 },
+    '6': { p3: 62.2, p15: 64.1, p50: 66.3, p85: 68.5, p97: 70.5 },
+    '12': { p3: 69.6, p15: 71.7, p50: 74.3, p85: 77.0, p97: 79.2 },
+  },
+};
+
+/**
+ * 아기의 신장 백분위를 추정합니다. (단순화된 버전)
+ * @param height 신장 (cm)
+ * @param ageInMonths 생후 개월 수
+ * @param gender 성별 ('male' | 'female')
+ * @returns { percentile: number, label: string }
+ */
+export function getHeightPercentile(
+  height: number,
+  ageInMonths: number,
+  gender: 'male' | 'female'
+) {
+  const chart = KCDC_HEIGHT_CHARTS[gender];
+  // 가장 가까운 개월 수 데이터 찾기 (단순화)
+  let targetMonth = '0';
+  if (ageInMonths >= 12) targetMonth = '12';
+  else if (ageInMonths >= 6) targetMonth = '6';
+  else if (ageInMonths >= 3) targetMonth = '3';
+  
+  const ageData = chart[targetMonth as keyof typeof chart];
+
+  if (!ageData) return { percentile: 50, label: '평균' };
+
+  if (height < ageData.p3) return { percentile: 3, label: '하위 3%' };
+  if (height < ageData.p15) return { percentile: 15, label: '하위 15%' };
+  if (height < ageData.p50) return { percentile: 35, label: '평균 이하' };
+  if (height < ageData.p85) return { percentile: 65, label: '평균 이상' };
+  if (height < ageData.p97) return { percentile: 95, label: '상위 15%' };
   return { percentile: 97, label: '상위 3%' };
 }
 
