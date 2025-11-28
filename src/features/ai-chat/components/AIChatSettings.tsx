@@ -49,7 +49,7 @@ export function AIChatSettings({ babyId }: { babyId: string }) {
     { key: "growth", label: "키/체중", icon: "📏", description: "성장 곡선 분석, 또래 비교, 발달 지연 확인" },
     { key: "medication", label: "투약", icon: "💊", description: "약 복용 기록 참고, 용량·시간 확인" },
     { key: "temperature", label: "체온", icon: "🌡️", description: "발열 패턴 분석, 체온 변화 추적" },
-    { key: "other", label: "일반 육아 상담", icon: "💬", description: "개월수별 발달 정보, 육아 가이드, 예방접종 일정" },
+    { key: "other", label: "일반 육아 상담 (이름 & 개월 수)", icon: "💬", description: "개월수별 발달 정보, 육아 가이드, 예방접종 일정" },
   ] as const;
 
   const checkboxItems: CheckboxItem[] = SETTING_ITEMS.map((item) => ({

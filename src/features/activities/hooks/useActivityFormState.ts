@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Dispatch, SetStateAction } from "react"; // Dispatch, SetStateAction 임포트 추가
 
 export type ActivityType =
   | "FEEDING"
@@ -9,7 +9,79 @@ export type ActivityType =
   | "BATH"
   | "PLAY";
 
-export function useActivityFormState() {
+// --- UseActivityFormStateReturn 인터페이스 추가 시작 ---
+interface UseActivityFormStateReturn {
+  type: ActivityType;
+  setType: Dispatch<SetStateAction<ActivityType>>;
+  loading: boolean;
+  setLoading: Dispatch<SetStateAction<boolean>>;
+  error: string;
+  setError: Dispatch<SetStateAction<string>>;
+  showDetail: boolean;
+  setShowDetail: Dispatch<SetStateAction<boolean>>;
+  hours: number;
+  setHours: Dispatch<SetStateAction<number>>;
+  minutes: number;
+  setMinutes: Dispatch<SetStateAction<number>>;
+  recentValues: Record<string, any>;
+  setRecentValues: Dispatch<SetStateAction<Record<string, any>>>;
+  feedingType: string;
+  setFeedingType: Dispatch<SetStateAction<string>>;
+  feedingAmount: string;
+  setFeedingAmount: Dispatch<SetStateAction<string>>;
+  breastSide: string;
+  setBreastSide: Dispatch<SetStateAction<string>>;
+  sleepType: string;
+  setSleepType: Dispatch<SetStateAction<string>>;
+  diaperType: string;
+  setDiaperType: Dispatch<SetStateAction<string>>;
+  stoolColor: string;
+  setStoolColor: Dispatch<SetStateAction<string>>;
+  stoolCondition: string;
+  setStoolCondition: Dispatch<SetStateAction<string>>;
+  medicineName: string;
+  setMedicineName: Dispatch<SetStateAction<string>>;
+  medicineAmount: string;
+  setMedicineAmount: Dispatch<SetStateAction<string>>;
+  medicineUnit: string;
+  setMedicineUnit: Dispatch<SetStateAction<string>>;
+  syrupConc: string;
+  setSyrupConc: Dispatch<SetStateAction<string>>;
+  endTimeHours: string;
+  setEndTimeHours: Dispatch<SetStateAction<string>>;
+  endTimeMinutes: string;
+  setEndTimeMinutes: Dispatch<SetStateAction<string>>;
+  feedingDuration: string;
+  setFeedingDuration: Dispatch<SetStateAction<string>>;
+  babyFoodMenu: string;
+  setBabyFoodMenu: Dispatch<SetStateAction<string>>;
+  temperature: string;
+  setTemperature: Dispatch<SetStateAction<string>>;
+  bathType: string;
+  setBathType: Dispatch<SetStateAction<string>>;
+  bathTemp: string;
+  setBathTemp: Dispatch<SetStateAction<string>>;
+  playLocation: string;
+  setPlayLocation: Dispatch<SetStateAction<string>>;
+  playType: string[];
+  setPlayType: Dispatch<SetStateAction<string[]>>;
+  reaction: string;
+  setReaction: Dispatch<SetStateAction<string>>;
+  errors: Record<string, string>;
+  setErrors: Dispatch<SetStateAction<Record<string, string>>>;
+  babyInfo: { birthDate: Date; gender: 'male' | 'female' } | null;
+  setBabyInfo: Dispatch<SetStateAction<{ birthDate: Date; gender: 'male' | 'female' } | null>>;
+  latestWeight: number | null;
+  setLatestWeight: Dispatch<SetStateAction<number | null>>;
+  ageInMonths: number;
+  setAgeInMonths: Dispatch<SetStateAction<number>>;
+  togglePlayType: (tag: string) => void;
+  setNow: () => void;
+  adjustTime: (hoursOffset: number, minutesOffset?: number) => void;
+}
+// --- UseActivityFormStateReturn 인터페이스 추가 끝 ---
+
+export function useActivityFormState(): UseActivityFormStateReturn { // 반환 타입 명시
   // Original states
   const [type, setType] = useState<ActivityType>("FEEDING");
   const [loading, setLoading] = useState(false);

@@ -103,22 +103,6 @@ export function MeasurementAnalysis({
             </div>
           </div>
 
-          {/* 수면 */}
-          <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg border border-purple-100">
-            <span className="text-xl mt-0.5">😴</span>
-            <div>
-              <h4 className="font-bold text-sm text-purple-900 mb-1">
-                권장 수면
-              </h4>
-              <p className="text-sm text-purple-800">
-                총 {analysis.sleep.total}
-              </p>
-              <p className="text-xs text-purple-700 mt-0.5">
-                낮잠: {analysis.sleep.naps}
-              </p>
-            </div>
-          </div>
-
           {/* 해열제 */}
           <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-100">
             <span className="text-xl mt-0.5">💊</span>

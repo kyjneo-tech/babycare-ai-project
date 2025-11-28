@@ -111,34 +111,36 @@ export function AddMeasurementForm({
           </div>
 
           {/* 안내 패널 */}
-          <div className="p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border-2 border-blue-200">
-            <div className="flex items-start gap-3">
-              <div className="text-3xl">💡</div>
-              <div className="flex-1">
-                <h3 className="font-bold text-blue-800 text-sm mb-2">
-                  키와 체중을 입력하면
-                </h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-lg">📊</span>
-                    <span className="text-gray-700">성장 백분위</span>
+          <div className="p-3 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-xl border border-blue-100/50 shadow-sm">
+            <div className="space-y-1.5">
+              <div className="text-xs text-gray-700">
+                <span className="flex items-center gap-1.5 mb-1">
+                  <span>✨</span>
+                  <span className="font-medium">키&체중을 입력하시면</span>
+                </span>
+                <div className="ml-5 flex items-center gap-1">
+                  <span>📊</span>
+                  <span className="font-semibold text-blue-700">성장 백분위</span>
+                  <span className="text-gray-500">즉시 확인해 드리고요</span>
+                </div>
+              </div>
+              <div className="text-xs text-gray-700">
+                <span className="flex items-center gap-1.5 mb-1">
+                  <span>📝</span>
+                  <span className="font-medium">활동 기록 시</span>
+                </span>
+                <div className="ml-5 space-y-0.5">
+                  <div className="flex items-center gap-1">
+                    <span>🍼</span>
+                    <span className="font-semibold text-purple-700">권장 수유량</span>
+                    <span className="text-gray-500">과</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-lg">🍼</span>
-                    <span className="text-gray-700">권장 수유량</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-lg">😴</span>
-                    <span className="text-gray-700">권장 수면</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-lg">💊</span>
-                    <span className="text-gray-700">약 적정 용량</span>
+                  <div className="flex items-center gap-1">
+                    <span>💊</span>
+                    <span className="font-semibold text-pink-700">약 적정 용량</span>
+                    <span className="text-gray-500">자동 계산해 드려요</span>
                   </div>
                 </div>
-                <p className="text-xs text-blue-600 mt-2">
-                  을 즉시 알려드려요!
-                </p>
               </div>
             </div>
           </div>

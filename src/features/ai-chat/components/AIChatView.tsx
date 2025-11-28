@@ -10,9 +10,16 @@ import { TYPOGRAPHY, SPACING, COLORS } from "@/design-system";
 import { cn } from "@/lib/utils";
 import { Bot } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useEffect, useRef } from "react";
 
 export function AIChatView({ babyId }: { babyId: string }) {
   const { messages, isLoading, handleSend, isGuestMode } = useChat(babyId);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // 메시지가 추가되거나 로딩 상태가 변경될 때마다 스크롤을 맨 아래로
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] max-w-3xl mx-auto">
@@ -40,6 +47,8 @@ export function AIChatView({ babyId }: { babyId: string }) {
             </div>
           </div>
         )}
+        {/* 스크롤 타겟 */}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}

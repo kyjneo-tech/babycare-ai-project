@@ -4,16 +4,22 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBaby } from '@/features/babies/actions';
+import { getAllSchedulesForBaby } from '@/features/notes/actions';
 import { FormField, FormInput, FormSelect } from '@/components/form';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SPACING, TYPOGRAPHY } from '@/design-system';
 import { cn } from '@/lib/utils';
+import { BabySchedulePreviewDialog } from './BabySchedulePreviewDialog';
+import { Note } from '@prisma/client';
 
 export function CreateBabyForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const [schedules, setSchedules] = useState<Note[]>([]);
+  const [babyInfo, setBabyInfo] = useState<{ id: string; name: string } | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,72 +44,109 @@ export function CreateBabyForm() {
     const result = await createBaby(input);
 
     if (result.success && result.data?.baby?.id) {
-      // 성공 시 새로 생성된 아기의 대시보드로 이동
-      router.push(`/babies/${result.data.baby.id}`);
+      // 성공 시 생성된 일정 조회
+      const babyId = result.data.baby.id;
+      const babyName = result.data.baby.name;
+
+      setBabyInfo({ id: babyId, name: babyName });
+
+      // 일정 조회 (1초 대기 - DB 커밋 시간 확보)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const schedulesResult = await getAllSchedulesForBaby(babyId);
+
+      if (schedulesResult.success && schedulesResult.data.schedules.length > 0) {
+        setSchedules(schedulesResult.data.schedules);
+        setShowScheduleDialog(true);
+      } else {
+        // 일정이 없어도 아기 페이지로 이동
+        router.push(`/babies/${babyId}`);
+      }
+
+      setLoading(false);
     } else {
       setError(result.error || '아기 등록에 실패했습니다.');
       setLoading(false);
     }
   }
 
+  // Dialog가 닫히면 아기 페이지로 이동
+  function handleDialogClose(open: boolean) {
+    setShowScheduleDialog(open);
+    if (!open && babyInfo?.id) {
+      router.push(`/babies/${babyInfo.id}`);
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit} className={SPACING.space.md}>
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+    <>
+      <form onSubmit={handleSubmit} className={SPACING.space.md}>
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <FormField label="아기 이름" htmlFor="name" required>
+          <FormInput
+            id="name"
+            name="name"
+            type="text"
+            placeholder="예: 김철수"
+            required
+          />
+        </FormField>
+
+        <FormField label="성별" htmlFor="gender" required>
+          <FormSelect
+            id="gender"
+            name="gender"
+            required
+            options={[
+              { value: 'male', label: '남아' },
+              { value: 'female', label: '여아' },
+            ]}
+          />
+        </FormField>
+
+        <div className={cn("grid grid-cols-2", SPACING.gap.md)}>
+          <FormField label="생년월일" htmlFor="birthDate" required>
+            <FormInput
+              id="birthDate"
+              name="birthDate"
+              type="date"
+              required
+            />
+          </FormField>
+
+          <FormField label="태어난 시간" htmlFor="birthTime" required>
+            <FormInput
+              id="birthTime"
+              name="birthTime"
+              type="time"
+              required
+            />
+          </FormField>
+        </div>
+
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full"
+          size="lg"
+        >
+          {loading ? '등록 중...' : '등록하기'}
+        </Button>
+      </form>
+
+      {/* 일정 미리보기 Dialog */}
+      {babyInfo && (
+        <BabySchedulePreviewDialog
+          open={showScheduleDialog}
+          onOpenChange={handleDialogClose}
+          schedules={schedules}
+          babyName={babyInfo.name}
+        />
       )}
-
-      <FormField label="아기 이름" htmlFor="name" required>
-        <FormInput
-          id="name"
-          name="name"
-          type="text"
-          placeholder="예: 김철수"
-          required
-        />
-      </FormField>
-
-      <FormField label="성별" htmlFor="gender" required>
-        <FormSelect
-          id="gender"
-          name="gender"
-          required
-          options={[
-            { value: 'male', label: '남아' },
-            { value: 'female', label: '여아' },
-          ]}
-        />
-      </FormField>
-
-      <div className={cn("grid grid-cols-2", SPACING.gap.md)}>
-        <FormField label="생년월일" htmlFor="birthDate" required>
-          <FormInput
-            id="birthDate"
-            name="birthDate"
-            type="date"
-            required
-          />
-        </FormField>
-
-        <FormField label="태어난 시간" htmlFor="birthTime" required>
-          <FormInput
-            id="birthTime"
-            name="birthTime"
-            type="time"
-            required
-          />
-        </FormField>
-      </div>
-
-      <Button
-        type="submit"
-        disabled={loading}
-        className="w-full"
-        size="lg"
-      >
-        {loading ? '등록 중...' : '등록하기'}
-      </Button>
-    </form>
+    </>
   );
 }
