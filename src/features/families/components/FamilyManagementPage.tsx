@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { getFamilyInfo, removeFamilyMember, leaveFamily, deleteFamily } from "@/features/families/actions";
@@ -19,6 +20,7 @@ import { SPACING, TYPOGRAPHY } from "@/design-system";
 import { cn } from "@/lib/utils";
 
 export function FamilyManagementPage() {
+  const router = useRouter();
   const [familyData, setFamilyData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -134,7 +136,10 @@ export function FamilyManagementPage() {
       const { deleteBaby } = await import("@/features/babies/actions");
       const result = await deleteBaby(babyId);
       if (result.success) {
+        // 로컬 상태 업데이트
         setRefreshKey((prev) => prev + 1);
+        // 서버 컴포넌트 캐시 갱신 (AppHeader 드롭다운 즉시 반영)
+        router.refresh();
       } else {
         setError(result.error || "아기 삭제에 실패했습니다.");
       }
