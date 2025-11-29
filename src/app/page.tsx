@@ -3,9 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 import { PrismaFamilyRepository } from "@/features/families/repositories/PrismaFamilyRepository";
-import { ActivityManagementClient } from "@/features/activities/components/ActivityManagementClient";
-import { MeasurementCard } from "@/features/measurements/components/MeasurementCard";
-import { getRecentActivities } from "@/features/activities/actions";
 import { Container } from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateBabyForm } from "@/features/babies/components/CreateBabyForm";
@@ -45,26 +42,6 @@ export default async function HomePage() {
     );
   }
 
-  // 4. 아기가 있으면, 활동 기록 컴포넌트 렌더링
-  const initialActivitiesResult = await getRecentActivities(mainBaby.id);
-  const initialActivities = initialActivitiesResult.success ? initialActivitiesResult.data || [] : [];
-
-  return (
-    <Container>
-      <div className="space-y-6 py-8">
-        {/* 체중/키 성장 기록 카드 */}
-        <div className="max-w-2xl mx-auto">
-          <MeasurementCard babyId={mainBaby.id} />
-        </div>
-
-        {/* 활동 기록 */}
-        <div className="max-w-2xl mx-auto">
-          <ActivityManagementClient
-            babyId={mainBaby.id}
-            initialActivities={initialActivities}
-          />
-        </div>
-      </div>
-    </Container>
-  );
+  // 4. 아기가 있으면 /babies/[id] 페이지로 리다이렉트
+  redirect(`/babies/${mainBaby.id}`);
 }
