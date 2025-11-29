@@ -435,11 +435,17 @@ ${exclusionNote}
 11. 주의: 마크다운 볼드(**)를 절대 사용하지 마세요.
 `;
 
-    // 3. 이전 대화 기록 조회 (최근 5개)
+    // 3. 스마트 대화 기록 조회
+    // 건강/질병 관련 질문은 더 많은 맥락 필요
+    const healthKeywords = ['아프', '열', '체온', '증상', '병', '토', '설사', '기침', '콧물', '구토', '통증', '울', '보채'];
+    const isHealthRelated = healthKeywords.some(keyword => message.includes(keyword));
+    
+    const historyCount = isHealthRelated ? 5 : 3;
+    
     const recentMessages = await prisma.chatMessage.findMany({
       where: { babyId },
       orderBy: { createdAt: "desc" },
-      take: 5,
+      take: historyCount,
     });
     
     // 시간순 정렬 (과거 -> 현재)
