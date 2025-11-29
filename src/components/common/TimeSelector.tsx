@@ -70,13 +70,14 @@ export function TimeSelector({
       </Label>
       
       <div className="space-y-3 p-4 border rounded-lg bg-gray-50">
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
           <Button
             type="button"
             onClick={() => handleDatePartChange(startOfToday())}
             variant={format(value, 'yyyy-MM-dd') === format(startOfToday(), 'yyyy-MM-dd') ? 'default' : 'outline'}
             size="sm"
             disabled={disabled}
+            className="flex-shrink-0"
           >
             오늘
           </Button>
@@ -86,6 +87,7 @@ export function TimeSelector({
             variant={format(value, 'yyyy-MM-dd') === format(startOfYesterday(), 'yyyy-MM-dd') ? 'default' : 'outline'}
             size="sm"
             disabled={disabled}
+            className="flex-shrink-0"
           >
             어제
           </Button>
@@ -96,7 +98,7 @@ export function TimeSelector({
                 variant={"outline"}
                 size="sm"
                 className={cn(
-                  "w-[150px] justify-start text-left font-normal",
+                  "w-[150px] justify-start text-left font-normal flex-shrink-0",
                   !value && "text-muted-foreground"
                 )}
                 disabled={disabled}
