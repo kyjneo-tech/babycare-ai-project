@@ -219,7 +219,7 @@ export function EditActivityDialog({
             <SleepFormSection {...{ endTime, setEndTime, sleepDurationHours, setSleepDurationHours, sleepDurationMinutes, setSleepDurationMinutes, ageInMonths, errors, disabled: false }} />
           )}
           {activity.type === "DIAPER" && (
-            <DiaperFormSection {...{ diaperType, setDiaperType, stoolCondition, setStoolCondition, errors, disabled: false }} />
+            <DiaperFormSection {...{ diaperType, setDiaperType, stoolCondition, setStoolCondition, errors, disabled: false, babyId: activity.babyId }} />
           )}
           {activity.type === "MEDICINE" && (
             <MedicineFormSection {...{ medicineName, setMedicineName, medicineAmount, setMedicineAmount, medicineUnit, setMedicineUnit, syrupConc, setSyrupConc, latestWeight, errors, disabled: false }} />

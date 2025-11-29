@@ -310,6 +310,7 @@ export function ActivityForm({
                   stoolCondition={state.stoolCondition}
                   setStoolCondition={state.setStoolCondition}
                   errors={errors}
+                  babyId={babyId}
                   disabled={isGuestMode}
                 />
               )}

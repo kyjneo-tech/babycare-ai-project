@@ -100,7 +100,7 @@ export function useActivityFormState(): UseActivityFormStateReturn {
   const [sleepType, setSleepType] = useState("nap");
   const [diaperType, setDiaperType] = useState("urine");
   const [stoolColor, setStoolColor] = useState("");
-  const [stoolCondition, setStoolCondition] = useState("");
+  const [stoolCondition, setStoolCondition] = useState("normal"); // 정상 대변이 기본값
   const [medicineName, setMedicineName] = useState("");
   const [medicineAmount, setMedicineAmount] = useState("");
   const [medicineUnit, setMedicineUnit] = useState("ml");
