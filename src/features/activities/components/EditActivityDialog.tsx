@@ -197,8 +197,7 @@ export function EditActivityDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className={cn(TYPOGRAPHY.h3, "flex items-center gap-2")}>
-            <span>{activityTypeLabels[activity.type]?.icon}</span>
-            {activityTypeLabels[activity.type]?.label} 수정
+            {activityTypeLabels[activity.type]} 수정
           </DialogTitle>
         </DialogHeader>
 

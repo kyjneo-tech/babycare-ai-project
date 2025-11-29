@@ -72,8 +72,6 @@ export function QuickRecordModal({
     setType,
     loading,
     error,
-    hours,
-    minutes,
     errors,
   } = state;
 
@@ -330,12 +328,9 @@ export function QuickRecordModal({
               <form onSubmit={handleSubmit} className={SPACING.space.md}>
                 {/* 시간 선택 */}
                 <TimeSelector
-                  hours={hours}
-                  minutes={minutes}
-                  onTimeChange={(h, m) => {
-                    state.setHours(h);
-                    state.setMinutes(m);
-                  }}
+                  value={state.startTime}
+                  onChange={state.setStartTime}
+                  label="시작 시간"
                   disabled={isGuestMode}
                 />
 
@@ -360,10 +355,8 @@ export function QuickRecordModal({
 
                 {selectedType === "SLEEP" && (
                   <SleepFormSection
-                    endTimeHours={state.endTimeHours}
-                    setEndTimeHours={state.setEndTimeHours}
-                    endTimeMinutes={state.endTimeMinutes}
-                    setEndTimeMinutes={state.setEndTimeMinutes}
+                    endTime={state.endTime}
+                    setEndTime={state.setEndTime}
                     sleepDurationHours={state.sleepDurationHours}
                     setSleepDurationHours={state.setSleepDurationHours}
                     sleepDurationMinutes={state.sleepDurationMinutes}

@@ -11,7 +11,7 @@ export type ActivityType =
   | "PLAY";
 
 // --- UseActivityFormStateReturn 인터페이스 수정 ---
-interface UseActivityFormStateReturn {
+export interface UseActivityFormStateReturn {
   type: ActivityType;
   setType: Dispatch<SetStateAction<ActivityType>>;
   loading: boolean;
