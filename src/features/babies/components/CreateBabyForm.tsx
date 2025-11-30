@@ -73,6 +73,8 @@ export function CreateBabyForm() {
   function handleDialogClose(open: boolean) {
     setShowScheduleDialog(open);
     if (!open && babyInfo?.id) {
+      // 서버 컴포넌트 캐시 갱신 (헤더 드롭다운 즉시 반영)
+      router.refresh();
       router.push(`/babies/${babyInfo.id}`);
     }
   }

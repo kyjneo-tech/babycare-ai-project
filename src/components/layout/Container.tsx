@@ -10,7 +10,7 @@ import { SPACING } from '@/design-system';
 interface ContainerProps {
   children: React.ReactNode;
   className?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  size?: 'mobile' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }
 
 export function Container({
@@ -19,10 +19,11 @@ export function Container({
   size = 'lg'
 }: ContainerProps) {
   const sizeClasses = {
-    sm: 'max-w-2xl',
-    md: 'max-w-4xl',
-    lg: 'max-w-6xl',
-    xl: 'max-w-7xl',
+    mobile: 'max-w-md',    // 448px - 모바일 최적화
+    sm: 'max-w-2xl',       // 672px
+    md: 'max-w-4xl',       // 896px
+    lg: 'max-w-6xl',       // 1152px
+    xl: 'max-w-7xl',       // 1280px
     full: 'max-w-full',
   };
 

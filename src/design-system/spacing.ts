@@ -43,4 +43,12 @@ export const SPACING = {
     lg: 'space-y-6',          // 24px
     xl: 'space-y-8',          // 32px
   },
+
+  // 모바일 최적화 spacing
+  mobile: {
+    container: 'px-4 py-6',   // 컨테이너 기본
+    card: 'p-4',              // 카드 내부
+    section: 'space-y-4',     // 섹션 간격
+    tight: 'space-y-2',       // 밀집 간격
+  },
 } as const;

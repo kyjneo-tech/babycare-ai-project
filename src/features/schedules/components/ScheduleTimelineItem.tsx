@@ -136,56 +136,54 @@ export function ScheduleTimelineItem({ schedule, babyId, onUpdate, onUpdateLocal
 
         {/* 콘텐츠 */}
         <div className="flex-1 bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow group">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              {/* 제목 & D-Day */}
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className={`font-semibold text-base ${optimisticCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
-                  {schedule.title}
-                </h3>
-                {dDayText && (
-                  <span className={`text-xs ${dDayColor} px-2 py-0.5 rounded-full ${daysUntil !== null && daysUntil <= 14 && !optimisticCompleted ? 'bg-red-50' : 'bg-gray-50'}`}>
-                    {dDayText}
-                  </span>
-                )}
-              </div>
-
-              {/* 날짜 */}
-              {scheduleDate && (
-                <p className="text-sm text-gray-500 mb-2">
-                  {format(scheduleDate, "yyyy년 M월 d일 (EEE)", { locale: ko })}
-                </p>
-              )}
-
-              {/* 내용 */}
-              {schedule.content && (
-                <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded-md">
-                  {schedule.content}
-                </p>
+          {/* 주요 콘텐츠 */}
+          <div className="mb-3">
+            {/* 제목 & D-Day */}
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h3 className={`font-semibold text-base ${optimisticCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                {schedule.title}
+              </h3>
+              {dDayText && (
+                <span className={`text-xs ${dDayColor} px-2 py-0.5 rounded-full ${daysUntil !== null && daysUntil <= 14 && !optimisticCompleted ? 'bg-red-50' : 'bg-gray-50'}`}>
+                  {dDayText}
+                </span>
               )}
             </div>
 
-            {/* 액션 버튼들 */}
-            {/* 액션 버튼들 */}
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleEdit}
-                className="h-8 w-8 p-0"
-              >
-                <Pencil className="h-4 w-4 text-gray-500 hover:text-blue-600" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="h-8 w-8 p-0"
-              >
-                <Trash2 className="h-4 w-4 text-gray-500 hover:text-red-600" />
-              </Button>
-            </div>
+            {/* 날짜 */}
+            {scheduleDate && (
+              <p className="text-sm text-gray-500 mb-2">
+                {format(scheduleDate, "yyyy년 M월 d일 (EEE)", { locale: ko })}
+              </p>
+            )}
+
+            {/* 내용 */}
+            {schedule.content && (
+              <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded-md whitespace-pre-wrap">
+                {schedule.content}
+              </p>
+            )}
+          </div>
+
+          {/* 액션 버튼들 - 하단 우측 배치 */}
+          <div className="flex items-center justify-end gap-1 pt-2 border-t border-gray-100">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleEdit}
+              className="h-8 w-8 p-0"
+            >
+              <Pencil className="h-4 w-4 text-gray-500 hover:text-blue-600" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="h-8 w-8 p-0"
+            >
+              <Trash2 className="h-4 w-4 text-gray-500 hover:text-red-600" />
+            </Button>
           </div>
         </div>
       </div>

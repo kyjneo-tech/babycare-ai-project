@@ -9,7 +9,7 @@ import { InviteCodeCard } from "./InviteCodeCard";
 import { FamilyMembersList } from "./FamilyMembersList";
 import { JoinFamilyForm } from "./JoinFamilyForm";
 import { EditMyProfileCard } from "./EditMyProfileCard";
-import { Container } from "@/components/layout/Container";
+import { MobileContainer } from "@/components/layout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -140,6 +140,8 @@ export function FamilyManagementPage() {
         setRefreshKey((prev) => prev + 1);
         // 서버 컴포넌트 캐시 갱신 (AppHeader 드롭다운 즉시 반영)
         router.refresh();
+        // 헤더 드롭다운 즉시 업데이트를 위한 이벤트 발생
+        window.dispatchEvent(new Event('baby-deleted'));
       } else {
         setError(result.error || "아기 삭제에 실패했습니다.");
       }
@@ -166,7 +168,7 @@ export function FamilyManagementPage() {
         description="가족원들을 관리하고 초대하세요."
       />
 
-      <Container size="md">
+      <MobileContainer>
         <div className={SPACING.space.lg}>
           {error && (
             <Alert variant="destructive">
@@ -298,7 +300,7 @@ export function FamilyManagementPage() {
             </div>
           )}
         </div>
-      </Container>
+      </MobileContainer>
 
       {/* 아기 수정 다이얼로그 */}
       {editingBaby && (

@@ -20,21 +20,24 @@ export function PageHeader({
   className = ''
 }: PageHeaderProps) {
   return (
-    <div className={cn(SPACING.space.lg, "px-4", className)}>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className={TYPOGRAPHY.h1}>{title}</h1>
-          {description && (
-            <p className={cn(TYPOGRAPHY.body.default, 'text-muted-foreground mt-1')}>
-              {description}
-            </p>
+    <div className={cn(SPACING.space.lg, className)}>
+      {/* MobileContainer와 동일한 정렬 */}
+      <div className="mx-auto w-full max-w-md px-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className={TYPOGRAPHY.h1}>{title}</h1>
+            {description && (
+              <p className={cn(TYPOGRAPHY.body.default, 'text-muted-foreground mt-1')}>
+                {description}
+              </p>
+            )}
+          </div>
+          {children && (
+            <div className="flex-shrink-0">
+              {children}
+            </div>
           )}
         </div>
-        {children && (
-          <div className="flex-shrink-0">
-            {children}
-          </div>
-        )}
       </div>
     </div>
   );

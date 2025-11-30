@@ -36,7 +36,9 @@ export default function AppHeader() {
       }
 
       try {
-        const response = await fetch("/api/families/my-family");
+        const response = await fetch("/api/families/my-family", {
+          cache: 'no-store', // 캐시 방지로 항상 최신 데이터 가져오기
+        });
         if (response.ok) {
           const data = await response.json();
           setBabies(data.babies || []);
@@ -50,6 +52,24 @@ export default function AppHeader() {
 
     fetchBabies();
   }, [session, isGuestMode, pathname]);
+
+  // 아기 삭제 시 드롭다운 즉시 업데이트를 위한 이벤트 리스너
+  useEffect(() => {
+    const handleBabyDeleted = () => {
+      // 아기 목록 재조회
+      if (session?.user?.id && !isGuestMode) {
+        fetch("/api/families/my-family", {
+          cache: 'no-store',
+        })
+          .then(res => res.json())
+          .then(data => setBabies(data.babies || []))
+          .catch(err => console.error("Failed to refresh babies:", err));
+      }
+    };
+
+    window.addEventListener('baby-deleted', handleBabyDeleted);
+    return () => window.removeEventListener('baby-deleted', handleBabyDeleted);
+  }, [session, isGuestMode]);
 
   return (
     <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-blue-50">

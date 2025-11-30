@@ -9,7 +9,7 @@ import { ActivityManagementClient } from "@/features/activities/components/Activ
 import { MeasurementCard } from "@/features/measurements/components/MeasurementCard";
 import { CompactScheduleCarousel } from "@/features/schedules/components/CompactScheduleCarousel";
 import { getRecentActivities } from "@/features/activities/actions";
-import { Container } from "@/components/layout/Container";
+import { MobileContainer } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -136,14 +136,14 @@ export default async function BabyDetailPage({
 
     if (!baby) {
       return (
-        <Container>
+        <MobileContainer>
           <Alert variant="destructive">
             <AlertTitle>아기를 찾을 수 없습니다.</AlertTitle>
             <AlertDescription>
               잘못된 접근이거나 아기가 삭제되었을 수 있습니다.
             </AlertDescription>
           </Alert>
-        </Container>
+        </MobileContainer>
       );
     }
   }
@@ -157,7 +157,7 @@ export default async function BabyDetailPage({
       : [];
 
   return (
-    <Container>
+    <MobileContainer>
       {/* 게스트 모드 안내 배너 */}
       {isGuestMode && (
         <Alert className="bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 border-purple-200">
@@ -225,7 +225,7 @@ export default async function BabyDetailPage({
           </Card>
         )}
       </div>
-    </Container>
+    </MobileContainer>
   );
 }
 

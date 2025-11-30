@@ -144,7 +144,7 @@ export function BabySchedulePreviewDialog({
                       ))}
                     {typeSchedules.length > 5 && (
                       <p className="text-xs text-muted-foreground ml-2">
-                        외 {typeSchedules.length - 5}개 더...
+                        외 {typeSchedules.length - 5}개
                       </p>
                     )}
                   </div>

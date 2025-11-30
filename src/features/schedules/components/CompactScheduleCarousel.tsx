@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { getUpcomingSchedules } from "@/features/notes/actions";
 import { Note } from "@prisma/client";
 import { getNoteTypeDetails } from "@/shared/utils/note-helpers";
@@ -68,6 +69,7 @@ export function CompactScheduleCarousel({
   babyId,
   limit = 6,
 }: CompactScheduleCarouselProps) {
+  const pathname = usePathname();
   const [schedules, setSchedules] = useState<ScheduleNote[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -84,7 +86,7 @@ export function CompactScheduleCarousel({
     };
 
     fetchSchedules();
-  }, [babyId, limit]);
+  }, [babyId, limit, pathname]); // pathname 추가로 페이지 이동 시 재조회
 
   if (isLoading) {
     return (
