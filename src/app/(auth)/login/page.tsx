@@ -192,7 +192,7 @@ export default function LoginPage() {
         {/* 왼쪽: 소개 섹션 */}
         <div className="space-y-8 animate-fade-in-up">
           <div>
-            <h1 className="text-6xl md:text-7xl font-black leading-tight mb-4">
+            <h1 className="text-5xl md:text-6xl font-black leading-tight mb-6">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-rose-500 via-pink-500 to-rose-500 animate-gradient-x inline-block">
                 따뜻한 육아,
               </span>
@@ -201,7 +201,7 @@ export default function LoginPage() {
                 Babycare AI
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-slate-600 leading-relaxed font-medium">
+            <p className="text-lg md:text-xl text-slate-600 leading-relaxed font-medium">
               초보 엄마아빠를 위한 든든한 AI 육아 동반자.
               <br />
               아이의 모든 순간을 기록하고 분석해드려요.
@@ -209,32 +209,32 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-start space-x-4 p-5 rounded-2xl bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border border-white/50 group animate-fade-in-up animation-delay-300">
+            <div className="flex items-start space-x-4 p-4 rounded-2xl bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border border-white/50 group animate-fade-in-up animation-delay-300">
               <div className="bg-gradient-to-br from-rose-100 to-pink-100 p-3 rounded-xl group-hover:scale-110 transition-transform">
                 <Baby className="w-7 h-7 text-rose-500 animate-wiggle" />
               </div>
               <div>
-                <p className="font-bold text-lg text-slate-800">수유 & 수면 패턴 스마트 분석</p>
+                <p className="font-bold text-base text-slate-800">수유 & 수면 패턴 스마트 분석</p>
                 <p className="text-sm text-slate-500 mt-1">AI가 아기의 패턴을 학습하고 예측해요</p>
               </div>
             </div>
 
-            <div className="flex items-start space-x-4 p-5 rounded-2xl bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border border-white/50 group animate-fade-in-up animation-delay-500">
+            <div className="flex items-start space-x-4 p-4 rounded-2xl bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border border-white/50 group animate-fade-in-up animation-delay-500">
               <div className="bg-gradient-to-br from-emerald-100 to-green-100 p-3 rounded-xl group-hover:scale-110 transition-transform">
                 <Bot className="w-7 h-7 text-emerald-500 animate-pulse" />
               </div>
               <div>
-                <p className="font-bold text-lg text-slate-800">24시간 AI 육아 상담</p>
+                <p className="font-bold text-base text-slate-800">24시간 AI 육아 상담</p>
                 <p className="text-sm text-slate-500 mt-1">언제 어디서나 궁금한 점을 물어보세요</p>
               </div>
             </div>
 
-            <div className="flex items-start space-x-4 p-5 rounded-2xl bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border border-white/50 group animate-fade-in-up animation-delay-700">
+            <div className="flex items-start space-x-4 p-4 rounded-2xl bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border border-white/50 group animate-fade-in-up animation-delay-700">
               <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-3 rounded-xl group-hover:scale-110 transition-transform">
                 <TrendingUp className="w-7 h-7 text-blue-500 animate-bounce-slow" />
               </div>
               <div>
-                <p className="font-bold text-lg text-slate-800">또래 대비 성장 발달 체크</p>
+                <p className="font-bold text-base text-slate-800">또래 대비 성장 발달 체크</p>
                 <p className="text-sm text-slate-500 mt-1">우리 아이의 성장을 한눈에 확인하세요</p>
               </div>
             </div>
