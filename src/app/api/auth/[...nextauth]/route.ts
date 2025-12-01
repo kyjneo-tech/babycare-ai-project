@@ -2,9 +2,12 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import KakaoProvider from "next-auth/providers/kakao";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
+import { OAuth2Client } from "google-auth-library";
 
 const prisma = new PrismaClient();
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -16,6 +19,57 @@ export const authOptions: AuthOptions = {
       clientId: process.env.KAKAO_CLIENT_ID!,
       clientSecret: process.env.KAKAO_CLIENT_SECRET!,
     }),
+    CredentialsProvider({
+      id: "google-native",
+      name: "Google Native",
+      credentials: {
+        id_token: { label: "ID Token", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.id_token) {
+          throw new Error("ID Token is missing");
+        }
+
+        try {
+          const ticket = await googleClient.verifyIdToken({
+            idToken: credentials.id_token,
+            audience: [
+              process.env.GOOGLE_CLIENT_ID!,
+              process.env.ANDROID_CLIENT_ID!, // 안드로이드 클라이언트 ID도 허용 (선택 사항)
+            ],
+          });
+          const payload = ticket.getPayload();
+
+          if (!payload || !payload.email) {
+            throw new Error("Invalid token payload");
+          }
+
+          // DB에서 사용자 찾기 또는 생성
+          let user = await prisma.user.findUnique({
+            where: { email: payload.email },
+          });
+
+          if (!user) {
+            user = await prisma.user.create({
+              data: {
+                email: payload.email,
+                name: payload.name || "사용자",
+                password: "",
+              },
+            });
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          };
+        } catch (error) {
+          console.error("Google Native Login Error:", error);
+          return null;
+        }
+      },
+    }),
   ],
   session: {
     strategy: "jwt",
@@ -25,15 +79,20 @@ export const authOptions: AuthOptions = {
       // 소셜 로그인 시 자동 회원가입 처리
       if (account?.provider === "google" || account?.provider === "kakao") {
         try {
+          if (!user.email) {
+            console.error("이메일 정보가 없습니다. (카카오 비즈니스 앱 설정 필요)");
+            return false;
+          }
+
           const existingUser = await prisma.user.findUnique({
-            where: { email: user.email! },
+            where: { email: user.email },
           });
 
           if (!existingUser) {
             // 새 사용자 생성 (소셜 로그인은 비밀번호 불필요)
             await prisma.user.create({
               data: {
-                email: user.email!,
+                email: user.email,
                 name: user.name || "사용자",
                 password: "", // 소셜 로그인은 비밀번호 미사용
               },

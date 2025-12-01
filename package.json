@@ -12,6 +12,10 @@
     "migrate": "dotenv -e ./.env -- npx prisma migrate dev"
   },
   "dependencies": {
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/cli": "^7.4.4",
+    "@capacitor/core": "^7.4.4",
+    "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.19.0",
@@ -36,6 +40,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.86.0",
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.6",
     "ai": "^5.0.98",
@@ -43,6 +48,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "google-auth-library": "^10.5.0",
     "lucide-react": "^0.554.0",
     "next": "16.0.3",
     "next-auth": "^4.24.13",

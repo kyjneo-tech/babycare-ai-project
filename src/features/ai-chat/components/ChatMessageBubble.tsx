@@ -8,9 +8,9 @@ import { TYPOGRAPHY } from "@/design-system";
 
 interface ChatMessageBubbleProps {
   message: {
-    role: "user" | "assistant";
+    role: "user" | "assistant" | "system";
     content: string;
-    createdAt: Date;
+    createdAt?: Date;
   };
 }
 
@@ -52,7 +52,7 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
         <span
           className={cn(TYPOGRAPHY.caption, "mt-1 px-2 inline-block")}
         >
-          {format(message.createdAt, "HH:mm")}
+          {format(message.createdAt || new Date(), "HH:mm")}
         </span>
       </div>
     </div>
