@@ -192,7 +192,7 @@ export default function LoginPage() {
         {/* 왼쪽: 소개 섹션 */}
         <div className="space-y-8 animate-fade-in-up">
           <div>
-            <h1 className="text-5xl md:text-6xl font-black leading-tight mb-6">
+            <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-rose-500 via-pink-500 to-rose-500 animate-gradient-x inline-block">
                 따뜻한 육아,
               </span>
