@@ -111,13 +111,11 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
   // Today 위치로 자동 스크롤 (컴포넌트 마운트 시 한 번만)
   useEffect(() => {
     if (!isLoading && schedules.length > 0 && !hasAutoScrolledRef.current) {
-      setTimeout(() => {
-        const targetRef = todayMarkerRef.current || firstItemRef.current;
-        if (targetRef) {
-          targetRef.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          hasAutoScrolledRef.current = true;
-        }
-      }, 1000);
+      const targetRef = todayMarkerRef.current || firstItemRef.current;
+      if (targetRef) {
+        targetRef.scrollIntoView({ behavior: 'auto', block: 'center' });
+        hasAutoScrolledRef.current = true;
+      }
     }
   }, [isLoading, schedules.length]);
 
