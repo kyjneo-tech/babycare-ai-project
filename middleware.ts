@@ -23,7 +23,8 @@ export async function middleware(req: NextRequest) {
 
   // 게스트 모드 허용 경로 (인증 불필요)
   const guestAllowedPaths = [
-    '/analytics/guest-baby-id', // Updated path
+    '/babies/guest-baby-id',
+    '/analytics/guest-baby-id',
   ];
 
   // 인증이 필요 없는 공개 경로 정의
