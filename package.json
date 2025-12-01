@@ -12,10 +12,6 @@
     "migrate": "dotenv -e ./.env -- npx prisma migrate dev"
   },
   "dependencies": {
-    "@capacitor/android": "^7.4.4",
-    "@capacitor/cli": "^7.4.4",
-    "@capacitor/core": "^7.4.4",
-    "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.19.0",
@@ -65,6 +61,12 @@
     "swiper": "^12.0.3",
     "tailwind-merge": "^3.4.0",
     "zod": "^3.25.76"
+  },
+  "optionalDependencies": {
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/cli": "^7.4.4",
+    "@capacitor/core": "^7.4.4",
+    "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",
