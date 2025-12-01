@@ -55,12 +55,12 @@ function LoginForm() {
   }
 
   return (
-    <Card className="relative shadow-2xl border-none bg-white/80 backdrop-blur-xl overflow-hidden group">
+    <Card className="relative shadow-2xl border-none bg-white/80 backdrop-blur-xl overflow-hidden group p-2">
       {/* 카드 테두리 애니메이션 효과 */}
       <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
       
       <div className="relative">
-        <CardHeader className="text-center pb-4">
+        <CardHeader className="text-center pb-6 pt-8 px-8">
           <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-primary animate-gradient-x">
             환영합니다! 👋
           </CardTitle>
@@ -69,7 +69,7 @@ function LoginForm() {
           </CardDescription>
         </CardHeader>
         
-        <CardContent className="space-y-6 pt-2">
+        <CardContent className="space-y-6 pt-2 px-8 pb-8">
           {error && (
             <Alert variant="destructive" className="rounded-2xl animate-shake">
               <AlertDescription className="flex items-center gap-2">
