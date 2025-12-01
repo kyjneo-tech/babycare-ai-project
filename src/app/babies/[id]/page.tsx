@@ -166,14 +166,9 @@ export default async function BabyDetailPage({
           </AlertTitle>
           <AlertDescription className="flex flex-col md:flex-row items-center justify-between gap-4 text-purple-700">
             <p>로그인하고 내 아기의 성장을 기록해보세요! ✨</p>
-            <div className="flex gap-3 mt-2 md:mt-0">
-              <Button asChild>
-                <Link href="/login">로그인 하기 🚀</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/signup">회원가입 하기</Link>
-              </Button>
-            </div>
+            <Button asChild className="mt-2 md:mt-0">
+              <Link href="/login">로그인 하기 🚀</Link>
+            </Button>
           </AlertDescription>
         </Alert>
       )}

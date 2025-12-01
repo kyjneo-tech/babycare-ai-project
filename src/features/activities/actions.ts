@@ -427,3 +427,73 @@ export async function getLastActivity(
     return { success: false, error: "마지막 활동 조회에 실패했습니다" };
   }
 }
+
+export async function endSleepActivity(
+  activityId: string,
+  endTime: Date
+): Promise<{ success: boolean; data?: Activity; error?: string }> {
+  try {
+    const activity = await prisma.activity.findUnique({
+      where: { id: activityId },
+    });
+
+    if (!activity) {
+      return { success: false, error: "활동 기록을 찾을 수 없습니다." };
+    }
+
+    if (activity.type !== "SLEEP") {
+      return { success: false, error: "수면 활동만 종료할 수 있습니다." };
+    }
+
+    const durationMinutes = Math.floor(
+      (endTime.getTime() - activity.startTime.getTime()) / (1000 * 60)
+    );
+
+    const updatedActivity = await prisma.activity.update({
+      where: { id: activityId },
+      data: {
+        endTime: endTime,
+        duration: durationMinutes > 0 ? durationMinutes : 0,
+        updatedAt: new Date(),
+      },
+    });
+
+    // Redis 캐시 무효화
+    await redis.del(`baby:${activity.babyId}:recent-activities:7-days`);
+
+    revalidatePath(`/babies/${activity.babyId}`);
+    revalidatePath("/");
+    revalidatePath(`/analytics/${activity.babyId}`);
+
+    return { success: true, data: updatedActivity };
+  } catch (error) {
+    console.error("수면 종료 처리 실패:", error);
+    return { success: false, error: "수면 종료 처리에 실패했습니다." };
+  }
+}
+
+export async function getOngoingSleep(
+  babyId: string
+): Promise<{ success: boolean; data?: Activity | null; error?: string }> {
+  if (babyId === 'guest-baby-id') {
+    return { success: true, data: null };
+  }
+
+  try {
+    const ongoingSleep = await prisma.activity.findFirst({
+      where: {
+        babyId,
+        type: "SLEEP",
+        endTime: null,
+      },
+      orderBy: {
+        startTime: "desc",
+      },
+    });
+
+    return { success: true, data: ongoingSleep };
+  } catch (error) {
+    console.error("진행 중인 수면 조회 실패:", error);
+    return { success: false, error: "진행 중인 수면 조회에 실패했습니다." };
+  }
+}

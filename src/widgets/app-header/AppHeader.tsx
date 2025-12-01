@@ -103,12 +103,6 @@ export default function AppHeader() {
                 >
                   로그인 하기
                 </Link>
-                <Link
-                  href="/signup"
-                  className="px-5 py-2.5 bg-white text-primary text-sm font-bold rounded-2xl border border-primary hover:bg-blue-50 transition-all hidden sm:block"
-                >
-                  회원가입
-                </Link>
               </>
             ) : (
               // 로그인 상태: 사용자 이름 + 로그아웃 버튼

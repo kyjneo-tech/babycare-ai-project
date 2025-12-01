@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Home,
   CalendarDays,
@@ -19,6 +20,8 @@ export function BottomNavBar({ currentBabyId }: BottomNavBarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tab = searchParams.get('tab');
+  const { status } = useSession();
+  const isGuestMode = status === "unauthenticated";
 
   const isBabyIdAvailable = !!currentBabyId;
 
@@ -26,7 +29,7 @@ export function BottomNavBar({ currentBabyId }: BottomNavBarProps) {
   // Home is active if we are on the baby page and no tab is selected (or tab is activities default)
   const isHomeActive = pathname === `/babies/${currentBabyId}` && (!tab || tab === 'activities');
   const isScheduleActive = tab === 'timeline';
-  const isAIActive = tab === 'ai-chat';
+  const isAIActive = tab === 'ai-chat' || pathname.startsWith('/ai-chat');
   const isStatsActive = tab === 'analytics';
   const isFamilyActive = pathname.startsWith("/family");
 
@@ -46,11 +49,11 @@ export function BottomNavBar({ currentBabyId }: BottomNavBarProps) {
       disabled: !isBabyIdAvailable,
     },
     {
-      href: `/babies/${currentBabyId}?tab=ai-chat`,
+      href: isGuestMode ? '/ai-chat/guest-baby-id' : `/babies/${currentBabyId}?tab=ai-chat`,
       icon: Sparkles,
       label: "AI상담",
       isActive: isAIActive,
-      disabled: !isBabyIdAvailable,
+      disabled: !isGuestMode && !isBabyIdAvailable,
       isCenter: true,
     },
     {

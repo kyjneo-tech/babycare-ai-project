@@ -119,13 +119,7 @@ export const CreateActivitySchema = z.object({
     }
   }
   if (data.type === 'SLEEP') {
-    if (!data.endTime) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: '수면 종료 시간은 필수입니다.',
-        path: ['endTime'],
-      });
-    }
+    // endTime은 선택 사항 (진행 중인 수면 허용)
     if (!data.sleepType) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { Button } from "@/components/ui/button";
 import { ScrollablePicker } from "./ScrollablePicker";
 import { MeasurementAnalysis } from "./MeasurementAnalysis";
+import { GuestModeDialog } from '@/components/common/GuestModeDialog';
 import {
   useMeasurementForm,
   weightOptions,
@@ -18,6 +21,10 @@ export function AddMeasurementForm({
   babyId,
   onSuccess,
 }: AddMeasurementFormProps) {
+  const { status } = useSession();
+  const isGuestMode = status === 'unauthenticated';
+  const [showGuestDialog, setShowGuestDialog] = useState(false);
+  
   const formState = useMeasurementForm(babyId, onSuccess);
 
   const handleWeightScroll = () => {
@@ -35,6 +42,16 @@ export function AddMeasurementForm({
     const value = parseFloat(heightOptions[index] || heightOptions[0]);
     formState.setSelectedHeight(value);
   };
+
+  const handleSaveClick = () => {
+    if (isGuestMode) {
+      setShowGuestDialog(true);
+      return;
+    }
+    formState.handleSave();
+  }
+
+  const isDisabled = formState.isSaving || isGuestMode;
 
   return (
     <div className="space-y-4">
@@ -91,7 +108,8 @@ export function AddMeasurementForm({
               scrollRef={formState.weightRef}
               onScroll={handleWeightScroll}
               onSyncScroll={formState.syncWeightScroll}
-              onSave={formState.handleSave}
+              onSave={handleSaveClick}
+              disabled={isDisabled}
             />
 
             <ScrollablePicker
@@ -106,7 +124,8 @@ export function AddMeasurementForm({
               scrollRef={formState.heightRef}
               onScroll={handleHeightScroll}
               onSyncScroll={formState.syncHeightScroll}
-              onSave={formState.handleSave}
+              onSave={handleSaveClick}
+              disabled={isDisabled}
             />
           </div>
 
@@ -147,8 +166,8 @@ export function AddMeasurementForm({
 
           {/* 저장 버튼 */}
           <Button
-            onClick={formState.handleSave}
-            disabled={formState.isSaving}
+            onClick={handleSaveClick}
+            disabled={isDisabled}
             className="w-full"
             size="lg"
           >
@@ -156,6 +175,7 @@ export function AddMeasurementForm({
           </Button>
         </>
       )}
+      <GuestModeDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} />
     </div>
   );
 }

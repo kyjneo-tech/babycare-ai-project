@@ -40,6 +40,7 @@ import { PlayFormSection } from "@/features/activities/components/forms/PlayForm
 // 기존 훅 재사용
 import { useActivityFormState, type ActivityType } from "@/features/activities/hooks/useActivityFormState";
 import { useActivitySubmit } from "@/features/activities/hooks/useActivitySubmit";
+import { GuestModeDialog } from "@/components/common/GuestModeDialog";
 
 interface QuickRecordModalProps {
   isOpen: boolean;
@@ -64,6 +65,7 @@ export function QuickRecordModal({
 }: QuickRecordModalProps) {
   const { data: session, status } = useSession();
   const isGuestMode = status === "unauthenticated";
+  const [showGuestDialog, setShowGuestDialog] = React.useState(false);
 
   // 기존 훅 재사용
   const state = useActivityFormState();
@@ -75,15 +77,18 @@ export function QuickRecordModal({
     errors,
   } = state;
 
+  const handleActivityCreated = (activity: Activity) => {
+    onActivityCreated?.(activity);
+    onClose();
+  };
+
   const { handleSubmit } = useActivitySubmit({
     babyId: babyId || "",
     userId: session?.user?.id,
     isGuestMode,
     state,
-    onActivityCreated: (activity) => {
-      onActivityCreated?.(activity);
-      onClose();
-    },
+    onActivityCreated: handleActivityCreated,
+    onGuestModeAttempt: () => setShowGuestDialog(true),
   });
 
   // 활동 타입 선택되지 않은 상태 (초기 화면)
@@ -225,7 +230,6 @@ export function QuickRecordModal({
                           "hover:border-primary/50 transition-all"
                         )}
                         onClick={() => handleTypeSelect(item.type)}
-                        disabled={isGuestMode || !babyId}
                       >
                         <span className="text-3xl">{item.icon}</span>
                         <span className="text-[10px] font-medium leading-tight">
@@ -355,6 +359,8 @@ export function QuickRecordModal({
 
                 {selectedType === "SLEEP" && (
                   <SleepFormSection
+                    startTime={state.startTime}
+                    setStartTime={state.setStartTime}
                     endTime={state.endTime}
                     setEndTime={state.setEndTime}
                     sleepDurationHours={state.sleepDurationHours}
@@ -470,6 +476,8 @@ export function QuickRecordModal({
           </>
         )}
       </BottomSheetContent>
+
+      <GuestModeDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} />
     </BottomSheet>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Activity } from "@prisma/client";
 import { differenceInMonths } from "date-fns";
@@ -27,6 +27,7 @@ import { PlayFormSection } from "@/features/activities/components/forms/PlayForm
 
 import { useActivityFormState } from "@/features/activities/hooks/useActivityFormState";
 import { useActivitySubmit } from "@/features/activities/hooks/useActivitySubmit";
+import { GuestModeDialog } from "@/components/common/GuestModeDialog";
 
 export function ActivityForm({
   babyId,
@@ -37,6 +38,7 @@ export function ActivityForm({
 }) {
   const { data: session, status } = useSession();
   const isGuestMode = status === "unauthenticated";
+  const [showGuestDialog, setShowGuestDialog] = useState(false);
 
   const formRef = useRef<HTMLFormElement>(null);
   const state = useActivityFormState();
@@ -63,6 +65,7 @@ export function ActivityForm({
     isGuestMode,
     state,
     onActivityCreated,
+    onGuestModeAttempt: () => setShowGuestDialog(true),
   });
 
   // Load baby info and latest weight
@@ -132,6 +135,94 @@ export function ActivityForm({
     }
   }, [type, showDetail, babyId, state.setFeedingType, state.setFeedingAmount, state.setBreastSide, state.setFeedingDuration]);
 
+  // 수면 타이머 상태 관리
+  const [isSleeping, setIsSleeping] = useState(false);
+  const [ongoingSleepId, setOngoingSleepId] = useState<string | null>(null);
+  const [timerLoading, setTimerLoading] = useState(false);
+
+  // 초기 로드 시 진행 중인 수면 확인
+  useEffect(() => {
+    const checkOngoingSleep = async () => {
+      if (babyId) {
+        try {
+          const { getOngoingSleep } = await import("@/features/activities/actions");
+          const result = await getOngoingSleep(babyId);
+          if (result.success && result.data) {
+            setIsSleeping(true);
+            setOngoingSleepId(result.data.id);
+            setStartTime(new Date(result.data.startTime));
+          }
+        } catch (error) {
+          console.error("진행 중인 수면 확인 실패:", error);
+        }
+      }
+    };
+    checkOngoingSleep();
+  }, [babyId, setStartTime]);
+
+  const handleStartSleep = async () => {
+    if (isGuestMode) {
+      setShowGuestDialog(true);
+      return;
+    }
+    if (!babyId || !session?.user?.id) return;
+    setTimerLoading(true);
+    try {
+      const { createActivity } = await import("@/features/activities/actions");
+      const now = new Date();
+      const result = await createActivity({
+        babyId,
+        type: "SLEEP",
+        startTime: now,
+        sleepType: "nap", // 기본값
+        // endTime 없음 (진행 중)
+      }, session.user.id);
+
+      if (result.success && result.data) {
+        setIsSleeping(true);
+        setOngoingSleepId(result.data.id);
+        setStartTime(now);
+        onActivityCreated?.(result.data);
+      } else {
+        alert(result.error || "수면 시작 기록 실패");
+      }
+    } catch (error) {
+      console.error("수면 시작 오류:", error);
+      alert("오류가 발생했습니다.");
+    } finally {
+      setTimerLoading(false);
+    }
+  };
+
+  const handleEndSleep = async () => {
+    if (isGuestMode) {
+      setShowGuestDialog(true);
+      return;
+    }
+    if (!ongoingSleepId) return;
+    setTimerLoading(true);
+    try {
+      const { endSleepActivity } = await import("@/features/activities/actions");
+      const now = new Date();
+      const result = await endSleepActivity(ongoingSleepId, now);
+
+      if (result.success && result.data) {
+        setIsSleeping(false);
+        setOngoingSleepId(null);
+        state.setEndTime(now);
+        onActivityCreated?.(result.data);
+        // 폼 초기화 또는 알림 표시
+      } else {
+        alert(result.error || "수면 종료 기록 실패");
+      }
+    } catch (error) {
+      console.error("수면 종료 오류:", error);
+      alert("오류가 발생했습니다.");
+    } finally {
+      setTimerLoading(false);
+    }
+  };
+
   return (
     <div className={SPACING.space.lg}>
       {/* Quick Record Panel */}
@@ -193,7 +284,6 @@ export function ActivityForm({
                       setType(item.type as any);
                       setShowDetail(true);
                     }}
-                    disabled={isGuestMode}
                   >
                     <span className="text-3xl">{item.icon}</span>
                     <span className="text-[10px] font-medium leading-tight">{item.label}</span>
@@ -291,6 +381,8 @@ export function ActivityForm({
 
               {type === "SLEEP" && (
                 <SleepFormSection
+                  startTime={state.startTime}
+                  setStartTime={state.setStartTime}
                   endTime={state.endTime}
                   setEndTime={state.setEndTime}
                   sleepDurationHours={state.sleepDurationHours}
@@ -300,6 +392,10 @@ export function ActivityForm({
                   ageInMonths={ageInMonths}
                   errors={errors}
                   disabled={isGuestMode}
+                  isSleeping={isSleeping}
+                  onStartSleep={handleStartSleep}
+                  onEndSleep={handleEndSleep}
+                  timerLoading={timerLoading}
                 />
               )}
 
@@ -411,6 +507,8 @@ export function ActivityForm({
           </CardContent>
         </Card>
       )}
+
+      <GuestModeDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} />
     </div>
   );
 }

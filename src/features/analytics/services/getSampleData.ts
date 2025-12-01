@@ -13,11 +13,12 @@ const getRelativeDate = (dayOffset: number, hour: number, minute: number): Date 
 // 1. Sample Activities
 export const getSampleActivities = (date: Date): Activity[] => {
   const dayOffset = Math.floor((date.getTime() - new Date().setHours(0, 0, 0, 0)) / (1000 * 60 * 60 * 24));
+  const datePrefix = date.toISOString().split('T')[0];
   
   const activities: Activity[] = [
     // 밤 수면 (전날 밤 ~ 아침)
     {
-      id: 'sample-sleep-night',
+      id: `${datePrefix}-sample-sleep-night`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.SLEEP,
@@ -47,7 +48,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 아침 수유 #1
     {
-      id: 'sample-feeding-1',
+      id: `${datePrefix}-sample-feeding-1`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.FEEDING,
@@ -77,7 +78,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 배변 #1
     {
-      id: 'sample-diaper-1',
+      id: `${datePrefix}-sample-diaper-1`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.DIAPER,
@@ -107,7 +108,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 오전 낮잠 #1
     {
-      id: 'sample-sleep-1',
+      id: `${datePrefix}-sample-sleep-1`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.SLEEP,
@@ -137,7 +138,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 수유 #2
     {
-      id: 'sample-feeding-2',
+      id: `${datePrefix}-sample-feeding-2`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.FEEDING,
@@ -167,7 +168,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 배변 #2
     {
-      id: 'sample-diaper-2',
+      id: `${datePrefix}-sample-diaper-2`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.DIAPER,
@@ -197,7 +198,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 낮잠 #2
     {
-      id: 'sample-sleep-2',
+      id: `${datePrefix}-sample-sleep-2`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.SLEEP,
@@ -227,7 +228,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 수유 #3
     {
-      id: 'sample-feeding-3',
+      id: `${datePrefix}-sample-feeding-3`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.FEEDING,
@@ -257,7 +258,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 배변 #3
     {
-      id: 'sample-diaper-3',
+      id: `${datePrefix}-sample-diaper-3`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.DIAPER,
@@ -287,7 +288,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 체온 측정
     {
-      id: 'sample-temp-1',
+      id: `${datePrefix}-sample-temp-1`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.TEMPERATURE,
@@ -317,7 +318,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 낮잠 #3
     {
-      id: 'sample-sleep-3',
+      id: `${datePrefix}-sample-sleep-3`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.SLEEP,
@@ -347,7 +348,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 수유 #4
     {
-      id: 'sample-feeding-4',
+      id: `${datePrefix}-sample-feeding-4`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.FEEDING,
@@ -377,7 +378,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 배변 #4
     {
-      id: 'sample-diaper-4',
+      id: `${datePrefix}-sample-diaper-4`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.DIAPER,
@@ -407,7 +408,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 수유 #5
     {
-      id: 'sample-feeding-5',
+      id: `${datePrefix}-sample-feeding-5`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.FEEDING,
@@ -437,7 +438,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 배변 #5
     {
-      id: 'sample-diaper-5',
+      id: `${datePrefix}-sample-diaper-5`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.DIAPER,
@@ -467,7 +468,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 약 복용
     {
-      id: 'sample-medicine-1',
+      id: `${datePrefix}-sample-medicine-1`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.MEDICINE,
@@ -497,7 +498,7 @@ export const getSampleActivities = (date: Date): Activity[] => {
     },
     // 수유 #6 (밤 수유)
     {
-      id: 'sample-feeding-6',
+      id: `${datePrefix}-sample-feeding-6`,
       babyId: 'guest-baby-id',
       userId: 'guest-user-id',
       type: ActivityType.FEEDING,

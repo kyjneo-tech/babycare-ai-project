@@ -37,16 +37,19 @@ function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, currentBabyId]);
 
-  const authRoutes = ['/login', '/signup', '/join'];
+  const authRoutes = ['/login', '/join'];
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
 
-  const noNavRoutes = ['/login', '/signup', '/join', '/add-baby'];
-  const shouldShowNav = status !== 'loading' && session && !noNavRoutes.some(route => pathname.startsWith(route));
-
-  if (status === 'loading' || isAuthRoute || !session) {
+  // 로그인 상태와 관계 없이 Nav를 보여주지 않을 경로
+  const noNavRoutes = ['/login', '/join', '/add-baby'];
+  const shouldHideNav = noNavRoutes.some(route => pathname.startsWith(route));
+  
+  // 로딩 중이거나 인증 관련 경로이면 children만 렌더링
+  if (status === 'loading' || isAuthRoute) {
     return <>{children}</>;
   }
   
+  // 게스트/인증 사용자 모두에게 기본 쉘 제공
   return (
     <div className="min-h-[100dvh] flex flex-col">
       <AppHeader />
@@ -54,7 +57,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      {shouldShowNav && <BottomNavBar currentBabyId={currentBabyId} />}
+      {!shouldHideNav && <BottomNavBar currentBabyId={currentBabyId} />}
 
       <QuickRecordModal
         isOpen={isQuickRecordOpen}

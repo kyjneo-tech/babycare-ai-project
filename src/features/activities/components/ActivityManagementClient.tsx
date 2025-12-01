@@ -16,8 +16,14 @@ export function ActivityManagementClient({
 
   // ActivityForm에서 호출될 콜백 함수
   const handleActivityCreated = useCallback((newActivity: Activity) => {
-    // 낙관적 업데이트: 새 활동을 즉시 목록에 추가 (맨 위)
-    setActivities((prev) => [newActivity, ...prev]);
+    // 낙관적 업데이트: 이미 존재하는 활동이면 업데이트, 아니면 추가
+    setActivities((prev) => {
+      const exists = prev.some((a) => a.id === newActivity.id);
+      if (exists) {
+        return prev.map((a) => (a.id === newActivity.id ? newActivity : a));
+      }
+      return [newActivity, ...prev];
+    });
   }, []);
 
   // ActivityList에서 삭제 발생 시 호출될 콜백 함수 (Supabase Realtime과는 별개)

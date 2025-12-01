@@ -26,6 +26,7 @@ import { MedicineFormSection } from "@/features/activities/components/forms/Medi
 import { TemperatureFormSection } from "@/features/activities/components/forms/TemperatureFormSection";
 import { BathFormSection } from "@/features/activities/components/forms/BathFormSection";
 import { PlayFormSection } from "@/features/activities/components/forms/PlayFormSection";
+import { GuestModeDialog } from "@/components/common/GuestModeDialog";
 import { SPACING, TYPOGRAPHY } from "@/design-system";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +43,10 @@ export function EditActivityDialog({
   onOpenChange,
   onUpdate,
 }: EditActivityDialogProps) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const isGuestMode = status === "unauthenticated";
+  const [showGuestDialog, setShowGuestDialog] = useState(false);
+
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -128,6 +132,10 @@ export function EditActivityDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isGuestMode) {
+      setShowGuestDialog(true);
+      return;
+    }
     if (!session?.user?.id) {
       alert("로그인이 필요합니다.");
       return;
@@ -192,61 +200,67 @@ export function EditActivityDialog({
     setPlayType(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
   };
 
+  const formDisabled = isSaving || isGuestMode;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className={cn(TYPOGRAPHY.h3, "flex items-center gap-2")}>
-            {activityTypeLabels[activity.type]} 수정
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className={cn(TYPOGRAPHY.h3, "flex items-center gap-2")}>
+              {activityTypeLabels[activity.type]} 수정
+            </DialogTitle>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} className={SPACING.space.md}>
-          {activity.type !== "SLEEP" && (
-            <div className="mb-4">
-              <TimeSelector
-                value={startTime}
-                onChange={setStartTime}
-                label="시작 시간"
-              />
+          <form onSubmit={handleSubmit} className={SPACING.space.md}>
+            {activity.type !== "SLEEP" && (
+              <div className="mb-4">
+                <TimeSelector
+                  value={startTime}
+                  onChange={setStartTime}
+                  label="시작 시간"
+                  disabled={formDisabled}
+                />
+              </div>
+            )}
+
+            {activity.type === "FEEDING" && (
+              <FeedingFormSection {...{ feedingType, setFeedingType, feedingAmount, setFeedingAmount, feedingDuration, setFeedingDuration, breastSide, setBreastSide, latestWeight, ageInMonths, errors, disabled: formDisabled }} />
+            )}
+            {activity.type === "SLEEP" && (
+              <SleepFormSection {...{ startTime, setStartTime, endTime, setEndTime, sleepDurationHours, setSleepDurationHours, sleepDurationMinutes, setSleepDurationMinutes, ageInMonths, errors, disabled: formDisabled }} />
+            )}
+            {activity.type === "DIAPER" && (
+              <DiaperFormSection {...{ diaperType, setDiaperType, stoolCondition, setStoolCondition, errors, disabled: formDisabled, babyId: activity.babyId }} />
+            )}
+            {activity.type === "MEDICINE" && (
+              <MedicineFormSection {...{ medicineName, setMedicineName, medicineAmount, setMedicineAmount, medicineUnit, setMedicineUnit, syrupConc, setSyrupConc, latestWeight, errors, disabled: formDisabled }} />
+            )}
+            {activity.type === "TEMPERATURE" && (
+              <TemperatureFormSection {...{ temperature, setTemperature, errors, disabled: formDisabled }} />
+            )}
+             {activity.type === "BATH" && (
+              <BathFormSection bathType={bathType} setBathType={setBathType} bathTemp={bathTemp} setBathTemp={setBathTemp} reaction={reaction} setReaction={setReaction} disabled={formDisabled} />
+            )}
+            {activity.type === "PLAY" && (
+              <PlayFormSection playLocation={playLocation} setPlayLocation={setPlayLocation} playType={playType} togglePlayType={togglePlayType} reaction={reaction} setReaction={setReaction} disabled={formDisabled} />
+            )}
+
+            <div className={cn("p-3 bg-muted rounded-lg", SPACING.space.sm)}>
+              <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>
+                💬 메모 (선택)
+              </Label>
+              <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="💡 메모는 AI 상담에 반영되어 더 정확한 답변을 받을 수 있어요" rows={2} className={TYPOGRAPHY.body.small} disabled={formDisabled} />
             </div>
-          )}
 
-          {activity.type === "FEEDING" && (
-            <FeedingFormSection {...{ feedingType, setFeedingType, feedingAmount, setFeedingAmount, feedingDuration, setFeedingDuration, breastSide, setBreastSide, latestWeight, ageInMonths, errors, disabled: false }} />
-          )}
-          {activity.type === "SLEEP" && (
-            <SleepFormSection {...{ endTime, setEndTime, sleepDurationHours, setSleepDurationHours, sleepDurationMinutes, setSleepDurationMinutes, ageInMonths, errors, disabled: false }} />
-          )}
-          {activity.type === "DIAPER" && (
-            <DiaperFormSection {...{ diaperType, setDiaperType, stoolCondition, setStoolCondition, errors, disabled: false, babyId: activity.babyId }} />
-          )}
-          {activity.type === "MEDICINE" && (
-            <MedicineFormSection {...{ medicineName, setMedicineName, medicineAmount, setMedicineAmount, medicineUnit, setMedicineUnit, syrupConc, setSyrupConc, latestWeight, errors, disabled: false }} />
-          )}
-          {activity.type === "TEMPERATURE" && (
-            <TemperatureFormSection {...{ temperature, setTemperature, errors, disabled: false }} />
-          )}
-           {activity.type === "BATH" && (
-            <BathFormSection bathType={bathType} setBathType={setBathType} bathTemp={bathTemp} setBathTemp={setBathTemp} reaction={reaction} setReaction={setReaction} disabled={false} />
-          )}
-          {activity.type === "PLAY" && (
-            <PlayFormSection playLocation={playLocation} setPlayLocation={setPlayLocation} playType={playType} togglePlayType={togglePlayType} reaction={reaction} setReaction={setReaction} disabled={false} />
-          )}
-
-          <div className={cn("p-3 bg-muted rounded-lg", SPACING.space.sm)}>
-            <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>
-              💬 메모 (선택)
-            </Label>
-            <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="💡 메모는 AI 상담에 반영되어 더 정확한 답변을 받을 수 있어요" rows={2} className={TYPOGRAPHY.body.small} />
-          </div>
-
-          <DialogFooter className="gap-2 sm:gap-0 mt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>취소</Button>
-            <Button type="submit" disabled={isSaving}>{isSaving ? "저장 중..." : "저장"}</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <DialogFooter className="gap-2 sm:gap-0 mt-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>취소</Button>
+              <Button type="submit" disabled={formDisabled}>{isSaving ? "저장 중..." : "저장"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <GuestModeDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} />
+    </>
   );
 }

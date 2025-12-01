@@ -7,6 +7,7 @@ interface UseActivitySubmitProps {
   isGuestMode: boolean;
   state: UseActivityFormStateReturn;
   onActivityCreated?: (activity: any) => void;
+  onGuestModeAttempt?: () => void;
 }
 
 export function useActivitySubmit({
@@ -15,6 +16,7 @@ export function useActivitySubmit({
   isGuestMode,
   state,
   onActivityCreated,
+  onGuestModeAttempt,
 }: UseActivitySubmitProps) {
   const {
     type,
@@ -51,7 +53,7 @@ export function useActivitySubmit({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isGuestMode) {
-      alert("로그인 후 활동을 기록할 수 있습니다.");
+      onGuestModeAttempt?.();
       return;
     }
 

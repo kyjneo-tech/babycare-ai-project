@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { Note, NoteType } from "@prisma/client";
 import { getAllSchedulesForBaby } from "@/features/notes/actions";
+import { getSampleSchedules } from "@/features/schedules/services/getSampleData";
 import { Loader2, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
 import { ScheduleTimelineItem } from "./ScheduleTimelineItem";
 import { ScheduleDetailModal } from "./ScheduleDetailModal";
+import { GuestModeDialog } from "@/components/common/GuestModeDialog";
 import { useInView } from "react-intersection-observer";
 import {
   Select,
@@ -23,9 +26,13 @@ interface InteractiveScheduleTimelineProps {
 }
 
 export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimelineProps) {
+  const { status } = useSession();
+  const isGuestMode = status === 'unauthenticated' || babyId === 'guest-baby-id';
+
   const [schedules, setSchedules] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showGuestDialog, setShowGuestDialog] = useState(false);
 
   // 필터 & 검색 상태
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "completed">("all");
@@ -51,49 +58,14 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
     rootMargin: '100px',
   });
 
-  // 초기 로드
-  useEffect(() => {
-    fetchSchedules(true);
-  }, [babyId]);
-
-  // Today 위치로 자동 스크롤 (컴포넌트 마운트 시 한 번만)
-  useEffect(() => {
-    if (!isLoading && schedules.length > 0 && !hasAutoScrolledRef.current) {
-      console.log('🔍 Auto-scroll check:', {
-        isLoading,
-        schedulesLength: schedules.length,
-        hasTodayRef: !!todayMarkerRef.current,
-        hasFirstRef: !!firstItemRef.current,
-        hasAutoScrolled: hasAutoScrolledRef.current
-      });
-
-      setTimeout(() => {
-        // Today 마커가 있으면 그곳으로, 없으면 첫 번째 항목으로 스크롤
-        const targetRef = todayMarkerRef.current || firstItemRef.current;
-
-        if (targetRef) {
-          console.log('✅ Auto-scrolling to:', todayMarkerRef.current ? 'Today marker' : 'First item');
-          targetRef.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-          });
-          hasAutoScrolledRef.current = true;
-          console.log('📍 Auto-scroll completed');
-        } else {
-          console.log('❌ No scroll target found');
-        }
-      }, 1000);
-    }
-  }, [isLoading, schedules.length]);
-
-  // 스크롤로 추가 로드
-  useEffect(() => {
-    if (inView && hasMore && !isLoadingMore && !isLoading) {
-      fetchSchedules(false);
-    }
-  }, [inView, hasMore, isLoadingMore, isLoading]);
-
   const fetchSchedules = async (reset: boolean = false, showLoading: boolean = true) => {
+    if (isGuestMode) {
+      setSchedules(getSampleSchedules());
+      setHasMore(false);
+      setIsLoading(false);
+      return;
+    }
+
     if (reset) {
       if (showLoading) setIsLoading(true);
       setOffset(0);
@@ -129,9 +101,43 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
     if (showLoading) setIsLoading(false);
     setIsLoadingMore(false);
   };
+  
+  // 초기 로드
+  useEffect(() => {
+    fetchSchedules(true);
+  }, [babyId, isGuestMode]);
+
+
+  // Today 위치로 자동 스크롤 (컴포넌트 마운트 시 한 번만)
+  useEffect(() => {
+    if (!isLoading && schedules.length > 0 && !hasAutoScrolledRef.current) {
+      setTimeout(() => {
+        const targetRef = todayMarkerRef.current || firstItemRef.current;
+        if (targetRef) {
+          targetRef.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          hasAutoScrolledRef.current = true;
+        }
+      }, 1000);
+    }
+  }, [isLoading, schedules.length]);
+
+  // 스크롤로 추가 로드
+  useEffect(() => {
+    if (inView && hasMore && !isLoadingMore && !isLoading) {
+      fetchSchedules(false);
+    }
+  }, [inView, hasMore, isLoadingMore, isLoading]);
 
   const handleScheduleUpdated = (silent: boolean = false) => {
     fetchSchedules(true, !silent);
+  };
+  
+  const handleAddClick = () => {
+    if (isGuestMode) {
+      setShowGuestDialog(true);
+    } else {
+      setShowAddModal(true);
+    }
   };
 
   const updateScheduleLocally = (scheduleId: string, updates: Partial<Note>) => {
@@ -228,11 +234,11 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
     );
   }
 
-  if (schedules.length === 0) {
+  if (schedules.length === 0 && !isGuestMode) {
     return (
       <div className="text-center py-10">
         <p className="text-gray-500 mb-4">생성된 일정이 없습니다.</p>
-        <Button onClick={() => setShowAddModal(true)} size="sm">
+        <Button onClick={handleAddClick} size="sm">
           <Plus className="h-4 w-4 mr-2" />
           첫 일정 추가하기
         </Button>
@@ -373,7 +379,7 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
       <FloatingActionButton
         icon={<Plus className="h-5 w-5" />}
         label="새 일정"
-        onClick={() => setShowAddModal(true)}
+        onClick={handleAddClick}
         position="bottom-right"
       />
 
@@ -386,6 +392,8 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
           onSuccess={handleScheduleUpdated}
         />
       )}
+      
+      <GuestModeDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} />
     </div>
   );
 }

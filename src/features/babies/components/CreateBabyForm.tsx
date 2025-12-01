@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { createBaby } from '@/features/babies/actions';
 import { getAllSchedulesForBaby } from '@/features/notes/actions';
 import { FormField, FormInput, FormSelect } from '@/components/form';
@@ -11,18 +12,28 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SPACING, TYPOGRAPHY } from '@/design-system';
 import { cn } from '@/lib/utils';
 import { BabySchedulePreviewDialog } from './BabySchedulePreviewDialog';
+import { GuestModeDialog } from '@/components/common/GuestModeDialog';
 import { Note } from '@prisma/client';
 
 export function CreateBabyForm() {
   const router = useRouter();
+  const { status } = useSession();
+  const isGuestMode = status === "unauthenticated";
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const [showGuestDialog, setShowGuestDialog] = useState(false);
   const [schedules, setSchedules] = useState<Note[]>([]);
   const [babyInfo, setBabyInfo] = useState<{ id: string; name: string } | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (isGuestMode) {
+      setShowGuestDialog(true);
+      return;
+    }
+    
     setLoading(true);
     setError('');
 
@@ -78,6 +89,8 @@ export function CreateBabyForm() {
       router.push(`/babies/${babyInfo.id}`);
     }
   }
+  
+  const formDisabled = loading || isGuestMode;
 
   return (
     <>
@@ -95,6 +108,7 @@ export function CreateBabyForm() {
             type="text"
             placeholder="예: 김철수"
             required
+            disabled={formDisabled}
           />
         </FormField>
 
@@ -107,6 +121,7 @@ export function CreateBabyForm() {
               { value: 'male', label: '남아' },
               { value: 'female', label: '여아' },
             ]}
+            disabled={formDisabled}
           />
         </FormField>
 
@@ -117,6 +132,7 @@ export function CreateBabyForm() {
               name="birthDate"
               type="date"
               required
+              disabled={formDisabled}
             />
           </FormField>
 
@@ -126,13 +142,14 @@ export function CreateBabyForm() {
               name="birthTime"
               type="time"
               required
+              disabled={formDisabled}
             />
           </FormField>
         </div>
 
         <Button
           type="submit"
-          disabled={loading}
+          disabled={formDisabled}
           className="w-full"
           size="lg"
         >
@@ -149,6 +166,8 @@ export function CreateBabyForm() {
           babyName={babyInfo.name}
         />
       )}
+      
+      <GuestModeDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} />
     </>
   );
 }

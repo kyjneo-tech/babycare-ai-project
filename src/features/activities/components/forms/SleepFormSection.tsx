@@ -1,14 +1,14 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { GuidelinePanel } from "../ui/GuidelinePanel";
 import { SPACING, TYPOGRAPHY } from "@/design-system";
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
+import { useEffect } from "react";
 import { TimeSelector } from "@/components/common/TimeSelector";
-import { format } from "date-fns";
+import { differenceInMinutes } from "date-fns";
+import { SleepTimer } from "../SleepTimer";
 
 interface SleepFormSectionProps {
+  startTime: Date;
+  setStartTime: (value: Date) => void;
   endTime: Date;
   setEndTime: (value: Date) => void;
   sleepDurationHours: string;
@@ -18,9 +18,16 @@ interface SleepFormSectionProps {
   ageInMonths: number;
   errors: Record<string, string>;
   disabled?: boolean;
+  // Sleep Timer Props
+  isSleeping?: boolean;
+  onStartSleep?: () => void;
+  onEndSleep?: () => void;
+  timerLoading?: boolean;
 }
 
 export function SleepFormSection({
+  startTime,
+  setStartTime,
   endTime,
   setEndTime,
   sleepDurationHours,
@@ -30,121 +37,86 @@ export function SleepFormSection({
   ageInMonths,
   errors,
   disabled = false,
+  isSleeping = false,
+  onStartSleep,
+  onEndSleep,
+  timerLoading = false,
 }: SleepFormSectionProps) {
-  
-  const handleDurationQuickButton = (totalMinutes: number) => {
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    setSleepDurationHours(hours.toString());
-    setSleepDurationMinutes(minutes.toString());
-  };
-
-  // Calculate start time based on end time and duration
-  const calculatedTimes = useMemo(() => {
-    const durH = parseInt(sleepDurationHours) || 0;
-    const durM = parseInt(sleepDurationMinutes) || 0;
-
-    if (!endTime || (durH === 0 && durM === 0)) {
-      return null;
+  // StartTime이나 EndTime이 변경되면 Duration을 자동 계산하여 업데이트
+  useEffect(() => {
+    if (startTime && endTime) {
+      const diff = differenceInMinutes(endTime, startTime);
+      if (diff >= 0) {
+        const hours = Math.floor(diff / 60);
+        const minutes = diff % 60;
+        // 현재 입력된 값과 다를 때만 업데이트 (무한 루프 방지)
+        if (parseInt(sleepDurationHours || '0') !== hours || parseInt(sleepDurationMinutes || '0') !== minutes) {
+          setSleepDurationHours(hours.toString());
+          setSleepDurationMinutes(minutes.toString());
+        }
+      }
     }
+  }, [startTime, endTime, setSleepDurationHours, setSleepDurationMinutes]);
 
-    const durationMs = (durH * 60 + durM) * 60 * 1000;
-    const startTime = new Date(endTime.getTime() - durationMs);
 
-    const isYesterday = startTime.getDate() !== endTime.getDate();
-    
-    return {
-      startTime,
-      endTime,
-      isYesterday,
-      totalHours: durH + durM / 60
-    };
-  }, [endTime, sleepDurationHours, sleepDurationMinutes]);
 
   return (
     <div className={SPACING.space.md}>
-      {/* 언제 일어났나요? */}
-      <TimeSelector
-        value={endTime}
-        onChange={setEndTime}
-        label="😴 언제 일어났나요? "
-        disabled={disabled}
-      />
-      
-      {errors.endTime && (
-        <p className={cn(TYPOGRAPHY.caption, "text-destructive -mt-2 mb-2")}>{errors.endTime}</p>
+      {/* 1. 수면 타이머 (최상단) */}
+      {onStartSleep && onEndSleep && (
+        <div className="mb-6">
+          <SleepTimer
+            isSleeping={isSleeping}
+            startTime={isSleeping ? startTime : null}
+            onStartSleep={onStartSleep}
+            onEndSleep={onEndSleep}
+            loading={timerLoading}
+            disabled={disabled}
+          />
+        </div>
       )}
 
-      {/* 얼마나 잤나요? */}
-      <div className={SPACING.space.sm}>
-        <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>
-          얼마나 잤나요?
-        </Label>
-        
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          {[60, 120, 180, 480, 600, 720].map((min) => (
-            <Button
-              key={min}
-              type="button"
-              variant="outline"
-              className="h-10 text-sm"
-              onClick={() => handleDurationQuickButton(min)}
-              disabled={disabled}
-            >
-              {min < 60 ? `${min}분` : `${min / 60}시간`}
-            </Button>
-          ))}
+      {/* 구분선 및 안내 문구 (수면 중이 아닐 때만 표시) */}
+      {!isSleeping && (
+        <div className="relative flex items-center justify-center my-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-slate-200" />
+          </div>
+          <span className="relative bg-white px-4 text-xs text-slate-500 font-medium">
+            아까 잠들었다면?
+          </span>
         </div>
+      )}
 
-        <Label className="text-xs text-muted-foreground mb-1 block">또는 직접 입력:</Label>
-        <div className={cn("grid grid-cols-2", SPACING.gap.sm)}>
-          <div className={SPACING.space.xs}>
-            <Label className="text-xs text-muted-foreground mb-1 block">시간</Label>
-            <Input
-              type="number"
-              min="0"
-              max="24"
-              placeholder="시간"
-              value={sleepDurationHours}
-              onChange={(e) => setSleepDurationHours(e.target.value)}
-              className="text-lg text-center h-12"
+      {/* 2. 수동 입력 폼 (수면 중이 아닐 때만 표시) */}
+      {!isSleeping && (
+        <div className="space-y-6 animate-in slide-in-from-top-2 duration-300">
+          {/* 언제 잠들었나요? (Start Time) */}
+          <TimeSelector
+            value={startTime}
+            onChange={setStartTime}
+            label="🌙 언제 잠들었나요?"
+            disabled={disabled}
+          />
+
+          {/* 언제 일어났나요? (End Time) */}
+          <div className="relative">
+            <TimeSelector
+              value={endTime}
+              onChange={setEndTime}
+              label="☀️ 언제 일어났나요?"
               disabled={disabled}
             />
+            {differenceInMinutes(endTime, startTime) < 0 && (
+              <p className="text-destructive text-sm mt-1">
+                일어난 시간은 잠든 시간보다 뒤여야 합니다.
+              </p>
+            )}
+            {errors.endTime && (
+              <p className={cn(TYPOGRAPHY.caption, "text-destructive mt-1")}>{errors.endTime}</p>
+            )}
           </div>
-          <div className={SPACING.space.xs}>
-            <Label className="text-xs text-muted-foreground mb-1 block">분</Label>
-            <Input
-              type="number"
-              min="0"
-              max="59"
-              placeholder="분"
-              value={sleepDurationMinutes}
-              onChange={(e) => setSleepDurationMinutes(e.target.value)}
-              className="text-lg text-center h-12"
-              disabled={disabled}
-            />
-          </div>
-        </div>
-      </div>
 
-      {/* 계산 결과 표시 */}
-      {calculatedTimes && (
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-          <div className="text-center">
-            <p className="text-xs text-muted-foreground mb-1">📊 자동 계산 결과</p>
-            <p className="text-base font-semibold text-primary">
-              🌙 {calculatedTimes.isYesterday && "어제 "}
-              {calculatedTimes.startTime.getHours().toString().padStart(2, '0')}:
-              {calculatedTimes.startTime.getMinutes().toString().padStart(2, '0')}
-              {" → "}
-              ☀️ {calculatedTimes.endTime.getFullYear() !== calculatedTimes.startTime.getFullYear() || calculatedTimes.endTime.getMonth() !== calculatedTimes.startTime.getMonth() || calculatedTimes.endTime.getDate() !== calculatedTimes.startTime.getDate() ? format(calculatedTimes.endTime, "M월 d일") : ""}
-              {calculatedTimes.endTime.getHours().toString().padStart(2, '0')}:
-              {calculatedTimes.endTime.getMinutes().toString().padStart(2, '0')}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              (총 {calculatedTimes.totalHours.toFixed(1)}시간)
-            </p>
-          </div>
         </div>
       )}
 

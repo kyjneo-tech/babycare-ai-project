@@ -10,7 +10,9 @@ import { TYPOGRAPHY, SPACING, COLORS } from "@/design-system";
 import { cn } from "@/lib/utils";
 import { Bot } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 
 export function AIChatView({ babyId }: { babyId: string }) {
   const { messages, isLoading, handleSend, isGuestMode } = useChat(babyId);
@@ -51,17 +53,19 @@ export function AIChatView({ babyId }: { babyId: string }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
       <div className={cn("border-t", SPACING.card.small)}>
         {isGuestMode ? (
           <Alert>
-            <AlertDescription className="text-center">
+            <AlertDescription className="text-center space-y-3">
               <p className={TYPOGRAPHY.body.default}>
-                💡 게스트 모드에서는 AI 상담 입력이 제한됩니다.
+                💡 이것은 샘플 대화입니다.
               </p>
-              <p className={cn(TYPOGRAPHY.caption, "mt-1")}>
-                전체 기능을 사용하려면 로그인해주세요.
+              <p className={cn(TYPOGRAPHY.caption, "text-muted-foreground")}>
+                실제 아기 데이터 기반 AI 상담을 이용하려면 로그인해주세요.
               </p>
+              <Button asChild className="w-full sm:w-auto">
+                <Link href="/login">로그인하고 AI 상담 시작하기 🚀</Link>
+              </Button>
             </AlertDescription>
           </Alert>
         ) : (

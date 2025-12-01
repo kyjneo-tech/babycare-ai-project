@@ -137,7 +137,11 @@ export function ActivityList({
       if (result.success && result.data) {
         const newActivities = result.data.activities;
         setHasMore(result.data.hasMore);
-        setActivities((prev) => [...prev, ...newActivities]);
+        setActivities((prev) => {
+          const existingIds = new Set(prev.map((a) => a.id));
+          const uniqueNewActivities = newActivities.filter((a) => !existingIds.has(a.id));
+          return [...prev, ...uniqueNewActivities];
+        });
         setCursor(result.data.nextCursor);
       } else {
         setHasMore(false);

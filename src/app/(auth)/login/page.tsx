@@ -139,12 +139,6 @@ function LoginForm() {
           게스트로 둘러보기 👀
         </Button>
 
-        <p className="text-center text-sm text-muted-foreground mt-4">
-          계정이 없으신가요?{" "}
-          <Link href="/signup" className="text-primary font-bold hover:underline">
-            회원가입
-          </Link>
-        </p>
       </CardContent>
     </Card>
   );

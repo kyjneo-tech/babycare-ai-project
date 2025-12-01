@@ -15,6 +15,7 @@ interface ScrollablePickerProps {
   onScroll: () => void;
   onSyncScroll: (value: number) => void;
   onSave?: () => void;
+  disabled?: boolean;
 }
 
 export function ScrollablePicker({
@@ -30,6 +31,7 @@ export function ScrollablePicker({
   onScroll,
   onSyncScroll,
   onSave,
+  disabled = false,
 }: ScrollablePickerProps) {
   const colorStyles = {
     blue: {
@@ -88,7 +90,7 @@ export function ScrollablePicker({
         <div className="absolute inset-x-0 top-1/2 -mt-[25px] h-[50px] flex items-center justify-center z-20 pointer-events-none">
           <div
             className="pointer-events-auto flex items-center justify-center gap-1 cursor-text"
-            onClick={() => onEditingChange(true)}
+            onClick={() => !disabled && onEditingChange(true)}
           >
             {isEditing ? (
               <input
@@ -111,6 +113,7 @@ export function ScrollablePicker({
                   }
                 }}
                 className={`w-24 text-center text-2xl font-bold ${styles.text} bg-transparent border-none focus:ring-0 p-0`}
+                disabled={disabled}
               />
             ) : (
               <span className={`text-2xl font-bold ${styles.text}`}>
