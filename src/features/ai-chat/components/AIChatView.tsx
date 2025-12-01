@@ -20,7 +20,7 @@ export function AIChatView({ babyId }: { babyId: string }) {
 
   // 메시지가 추가되거나 로딩 상태가 변경될 때마다 스크롤을 맨 아래로
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messages, isLoading]);
 
   return (
