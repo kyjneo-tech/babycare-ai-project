@@ -141,9 +141,6 @@ export function FamilyManagementPage() {
         // 삭제 전 아기 수 확인
         const wasLastBaby = familyData?.babies?.length === 1;
         
-        // 세션 업데이트 (mainBabyId 재계산)
-        await updateSession();
-        
         if (wasLastBaby) {
           // 마지막 아기를 삭제한 경우 아기 등록 페이지로 리다이렉트
           router.push("/add-baby");
@@ -152,8 +149,6 @@ export function FamilyManagementPage() {
           setRefreshKey((prev) => prev + 1);
           // 서버 컴포넌트 캐시 갱신 (AppHeader 드롭다운 즉시 반영)
           router.refresh();
-          // 헤더 드롭다운 즉시 업데이트를 위한 이벤트 발생
-          window.dispatchEvent(new Event('baby-deleted'));
         }
       } else {
         setError(result.error || "아기 삭제에 실패했습니다.");

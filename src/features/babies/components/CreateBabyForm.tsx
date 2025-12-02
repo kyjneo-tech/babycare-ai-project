@@ -84,9 +84,14 @@ export function CreateBabyForm() {
   // Dialog가 닫히면 아기 페이지로 이동
   function handleDialogClose(open: boolean) {
     setShowScheduleDialog(open);
-    if (!open && babyInfo?.id) {
-      // 새로 만든 아기의 페이지로 직접 이동 (세션 업데이트는 페이지에서 처리)
-      router.push(`/babies/${babyInfo.id}`);
+    if (!open) {
+      // 다이얼로그가 닫히면 무조건 아기 페이지로 이동
+      if (babyInfo?.id) {
+        router.push(`/babies/${babyInfo.id}`);
+      } else {
+        // babyInfo가 없으면 홈으로
+        router.push('/');
+      }
     }
   }
   
