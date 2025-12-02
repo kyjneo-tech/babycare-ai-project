@@ -6,6 +6,8 @@ declare module "next-auth" {
       id: string;
       name: string;
       email: string;
+      mainBabyId?: string;
+      familyId?: string;
     } & DefaultSession["user"];
   }
 
@@ -21,5 +23,7 @@ declare module "next-auth/jwt" {
     id: string;
     name: string;
     email: string;
+    mainBabyId?: string;
+    familyId?: string;
   }
 }

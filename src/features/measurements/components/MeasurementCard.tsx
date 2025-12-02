@@ -3,7 +3,10 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { LineChart, Scale } from "lucide-react";
+import { BabyMeasurement } from "@prisma/client";
 import { AddMeasurementForm } from "./AddMeasurementForm";
+import { EditMeasurementForm } from "./EditMeasurementForm";
+import { MeasurementHistoryList } from "./MeasurementHistoryList";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -29,9 +32,24 @@ interface MeasurementCardProps {
 export function MeasurementCard({ babyId }: MeasurementCardProps) {
   const [showInputDialog, setShowInputDialog] = useState(false);
   const [showChartDialog, setShowChartDialog] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [editingMeasurement, setEditingMeasurement] = useState<BabyMeasurement | null>(null);
 
   const handleMeasurementAdded = () => {
-    setShowInputDialog(false);
+    setRefreshKey(prev => prev + 1); // 목록 새로고침 트리거
+  };
+
+  const handleEdit = (measurement: BabyMeasurement) => {
+    setEditingMeasurement(measurement);
+  };
+
+  const handleEditSuccess = () => {
+    setEditingMeasurement(null);
+    setRefreshKey(prev => prev + 1);
+  };
+
+  const handleEditCancel = () => {
+    setEditingMeasurement(null);
   };
 
   return (
@@ -69,12 +87,35 @@ export function MeasurementCard({ babyId }: MeasurementCardProps) {
       <Dialog open={showInputDialog} onOpenChange={setShowInputDialog}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>키&체중 기록하기</DialogTitle>
+            <DialogTitle>
+              {editingMeasurement ? "키&체중 수정하기" : "키&체중 기록하기"}
+            </DialogTitle>
           </DialogHeader>
-          <AddMeasurementForm
-            babyId={babyId}
-            onSuccess={handleMeasurementAdded}
-          />
+          
+          {editingMeasurement ? (
+            <EditMeasurementForm
+              measurement={editingMeasurement}
+              onSuccess={handleEditSuccess}
+              onCancel={handleEditCancel}
+            />
+          ) : (
+            <>
+              <AddMeasurementForm
+                babyId={babyId}
+                onSuccess={handleMeasurementAdded}
+              />
+              
+              {/* 구분선 */}
+              <div className="border-t border-gray-200 my-4"></div>
+              
+              {/* 최근 활동 목록 */}
+              <MeasurementHistoryList
+                babyId={babyId}
+                onEdit={handleEdit}
+                refreshTrigger={refreshKey}
+              />
+            </>
+          )}
         </DialogContent>
       </Dialog>
 

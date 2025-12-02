@@ -39,7 +39,13 @@ export async function createBaby(input: CreateBabyInput) {
     revalidatePath("/");
     revalidatePath("/schedules"); // 스케줄 페이지도 무효화
 
-    return { success: true, data: result };
+    return { 
+      success: true, 
+      data: { 
+        ...result, 
+        schedulesCount: scheduleResult.success ? scheduleResult.data.count : 0 
+      } 
+    };
   } catch (error: any) {
     // 6. 에러 처리
     if (error instanceof ZodError) {

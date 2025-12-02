@@ -118,6 +118,80 @@ export const authOptions: AuthOptions = {
           token.email = dbUser.email;
         }
       }
+
+      // mainBabyId가 있는 경우, 해당 아기가 실제로 존재하는지 확인
+      if (token.id && token.mainBabyId) {
+        try {
+          const baby = await prisma.baby.findUnique({
+            where: { id: token.mainBabyId as string }
+          });
+
+          // 아기가 삭제되었으면 mainBabyId 재계산
+          if (!baby) {
+            console.log("Detected deleted baby, recalculating mainBabyId...");
+            
+            const familyMember = await prisma.familyMember.findFirst({
+              where: { userId: token.id },
+              include: {
+                Family: {
+                  include: {
+                    Babies: {
+                      take: 1,
+                      orderBy: { createdAt: 'desc' } // 가장 최근 아기 선택
+                    }
+                  }
+                }
+              }
+            });
+
+            if (familyMember?.Family) {
+              token.familyId = familyMember.Family.id;
+              if (familyMember.Family.Babies.length > 0) {
+                token.mainBabyId = familyMember.Family.Babies[0].id;
+              } else {
+                // 아기가 하나도 없으면 mainBabyId 제거
+                token.mainBabyId = undefined;
+              }
+            } else {
+              // 가족도 없으면 둘 다 제거
+              token.familyId = undefined;
+              token.mainBabyId = undefined;
+            }
+          }
+        } catch (error) {
+          console.error("Error validating mainBabyId:", error);
+        }
+      }
+
+      // 매 요청마다 최신 가족/아기 정보 확인 (또는 토큰에 없을 때만)
+      if (token.id && (!token.mainBabyId || !token.familyId)) {
+        try {
+          // 사용자가 속한 첫 번째 가족 찾기
+          const familyMember = await prisma.familyMember.findFirst({
+            where: { userId: token.id },
+            include: {
+              Family: {
+                include: {
+                  Babies: {
+                    take: 1, // 가장 최근에 만든 아기 선택
+                    orderBy: { createdAt: 'desc' }
+                  }
+                }
+              }
+            }
+          });
+
+          if (familyMember && familyMember.Family) {
+            token.familyId = familyMember.Family.id;
+            if (familyMember.Family.Babies.length > 0) {
+              token.mainBabyId = familyMember.Family.Babies[0].id;
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching family info for token:", error);
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -125,6 +199,8 @@ export const authOptions: AuthOptions = {
         session.user.id = token.id as string;
         session.user.name = token.name as string;
         session.user.email = token.email as string;
+        session.user.mainBabyId = token.mainBabyId as string | undefined;
+        session.user.familyId = token.familyId as string | undefined;
       }
       return session;
     },

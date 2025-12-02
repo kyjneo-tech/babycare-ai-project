@@ -14,6 +14,19 @@ export class PrismaMeasurementRepository implements IMeasurementRepository {
     });
   }
 
+  async update(id: string, data: Partial<CreateMeasurementData>): Promise<BabyMeasurement> {
+    return await prisma.babyMeasurement.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async delete(id: string): Promise<BabyMeasurement> {
+    return await prisma.babyMeasurement.delete({
+      where: { id },
+    });
+  }
+
   async findLatest(babyId: string): Promise<BabyMeasurement | null> {
     return await prisma.babyMeasurement.findFirst({
       where: { babyId },
@@ -25,6 +38,12 @@ export class PrismaMeasurementRepository implements IMeasurementRepository {
     return await prisma.babyMeasurement.findMany({
       where: { babyId },
       orderBy: { measuredAt: "desc" },
+    });
+  }
+
+  async findById(id: string): Promise<BabyMeasurement | null> {
+    return await prisma.babyMeasurement.findUnique({
+      where: { id },
     });
   }
 }

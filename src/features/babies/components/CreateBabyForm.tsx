@@ -1,7 +1,7 @@
 // src/app/(dashboard)/components/CreateBabyForm.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { createBaby } from '@/features/babies/actions';
@@ -17,7 +17,7 @@ import { Note } from '@prisma/client';
 
 export function CreateBabyForm() {
   const router = useRouter();
-  const { status } = useSession();
+  const { status, update } = useSession();
   const isGuestMode = status === "unauthenticated";
   
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ export function CreateBabyForm() {
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [showGuestDialog, setShowGuestDialog] = useState(false);
   const [schedules, setSchedules] = useState<Note[]>([]);
-  const [babyInfo, setBabyInfo] = useState<{ id: string; name: string } | null>(null);
+  const [babyInfo, setBabyInfo] = useState<{ id: string; name: string; schedulesCount?: number } | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -58,8 +58,9 @@ export function CreateBabyForm() {
       // 성공 시 생성된 일정 조회
       const babyId = result.data.baby.id;
       const babyName = result.data.baby.name;
+      const schedulesCount = result.data.schedulesCount;
 
-      setBabyInfo({ id: babyId, name: babyName });
+      setBabyInfo({ id: babyId, name: babyName, schedulesCount });
 
       // 일정 조회 (1초 대기 - DB 커밋 시간 확보)
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -69,7 +70,7 @@ export function CreateBabyForm() {
         setSchedules(schedulesResult.data.schedules);
         setShowScheduleDialog(true);
       } else {
-        // 일정이 없어도 아기 페이지로 이동
+        // 일정이 없으면 바로 아기 페이지로 이동
         router.push(`/babies/${babyId}`);
       }
 
@@ -84,8 +85,7 @@ export function CreateBabyForm() {
   function handleDialogClose(open: boolean) {
     setShowScheduleDialog(open);
     if (!open && babyInfo?.id) {
-      // 서버 컴포넌트 캐시 갱신 (헤더 드롭다운 즉시 반영)
-      router.refresh();
+      // 새로 만든 아기의 페이지로 직접 이동 (세션 업데이트는 페이지에서 처리)
       router.push(`/babies/${babyInfo.id}`);
     }
   }
@@ -94,7 +94,8 @@ export function CreateBabyForm() {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className={SPACING.space.md}>
+      {/* Force hydration fix */}
+      <form onSubmit={handleSubmit} className={SPACING.space.lg}>
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -164,6 +165,7 @@ export function CreateBabyForm() {
           onOpenChange={handleDialogClose}
           schedules={schedules}
           babyName={babyInfo.name}
+          totalCount={babyInfo.schedulesCount}
         />
       )}
       

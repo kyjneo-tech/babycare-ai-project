@@ -9,6 +9,8 @@ import { PrismaMeasurementRepository } from "./repositories/PrismaMeasurementRep
 import { createMeasurementService } from "./services/createMeasurementService";
 import { getLatestMeasurementService } from "./services/getLatestMeasurementService";
 import { getMeasurementHistoryService } from "./services/getMeasurementHistoryService";
+import { updateMeasurementService } from "./services/updateMeasurementService";
+import { deleteMeasurementService } from "./services/deleteMeasurementService";
 import { CreateMeasurementData } from "./repositories/IMeasurementRepository";
 
 const repository = new PrismaMeasurementRepository();
@@ -91,5 +93,46 @@ export async function getMeasurementHistory(
   } catch (error: unknown) {
     console.error("측정값 이력 조회 실패:", error);
     return { success: false, error: "측정값 이력 조회에 실패했습니다" };
+  }
+}
+
+export async function updateMeasurement(
+  id: string,
+  data: Partial<CreateMeasurementData>
+): Promise<{ success: boolean; data?: BabyMeasurement; error?: string }> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return { success: false, error: "로그인 사용자만 측정 기록을 수정할 수 있습니다." };
+  }
+
+  try {
+    // TODO: 권한 검사 로직 추가 (activity actions 참고)
+    
+    const updatedMeasurement = await updateMeasurementService(repository, id, data);
+    revalidatePath(`/babies/${updatedMeasurement.babyId}`);
+    return { success: true, data: updatedMeasurement };
+  } catch (error: any) {
+    console.error("측정 기록 수정 실패:", error);
+    return { success: false, error: error.message || "측정 기록 수정에 실패했습니다" };
+  }
+}
+
+export async function deleteMeasurement(
+  id: string
+): Promise<{ success: boolean; message?: string; error?: string }> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return { success: false, error: "로그인 사용자만 측정 기록을 삭제할 수 있습니다." };
+  }
+
+  try {
+    // TODO: 권한 검사 로직 추가
+    
+    const deletedMeasurement = await deleteMeasurementService(repository, id);
+    revalidatePath(`/babies/${deletedMeasurement.babyId}`);
+    return { success: true, message: "측정 기록이 삭제되었습니다." };
+  } catch (error: any) {
+    console.error("측정 기록 삭제 실패:", error);
+    return { success: false, error: error.message || "측정 기록 삭제에 실패했습니다" };
   }
 }

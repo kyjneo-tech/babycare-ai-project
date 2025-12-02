@@ -105,6 +105,20 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
   // 초기 로드
   useEffect(() => {
     fetchSchedules(true);
+    
+    // URL 파라미터 확인 (action=addSchedule)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('action') === 'addSchedule') {
+      if (isGuestMode) {
+        setShowGuestDialog(true);
+      } else {
+        setShowAddModal(true);
+      }
+      
+      // URL 정리 (파라미터 제거)
+      const newUrl = window.location.pathname + window.location.search.replace(/([&?])action=addSchedule/, '').replace(/\?$/, '');
+      window.history.replaceState({}, '', newUrl);
+    }
   }, [babyId, isGuestMode]);
 
 

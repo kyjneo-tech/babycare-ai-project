@@ -12,7 +12,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 
 interface CompactScheduleCarouselProps {
   babyId: string;
@@ -118,20 +118,25 @@ export function CompactScheduleCarousel({
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-3">
-      {/* 헤더 - 간결하게 */}
+      {/* 헤더: 제목 + 일정 추가 버튼 */}
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-          📅 다음 일정
-        </h3>
-        <Link
-          href={`/babies/${babyId}?tab=timeline`}
-          className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-0.5"
-        >
-          전체
-          <ChevronRight className="h-3 w-3" />
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-gray-900">📅 다음 일정</h3>
+          <Link href={`/babies/${babyId}?tab=timeline`}>
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+              전체
+              <ChevronRight className="w-3 h-3 ml-0.5" />
+            </Button>
+          </Link>
+        </div>
+        {/* 일정 추가 버튼 */}
+        <Link href={`/babies/${babyId}?tab=timeline&action=addSchedule`}>
+          <Button variant="outline" size="sm" className="h-7 px-2 text-xs">
+            <Plus className="w-3 h-3 mr-1" />
+            일정 추가
+          </Button>
         </Link>
       </div>
-
       {/* 캐러셀 - 항상 1개씩만 표시 */}
       {schedules.length === 1 ? (
         // 1개만 있을 때는 캐러셀 없이 바로 표시

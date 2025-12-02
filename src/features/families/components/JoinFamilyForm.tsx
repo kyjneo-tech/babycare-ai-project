@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { joinFamily } from "@/features/families/actions";
+import { useSession } from "next-auth/react";
 
 interface JoinFamilyFormProps {
   onSuccess: () => void;
@@ -29,6 +30,7 @@ export function JoinFamilyForm({ onSuccess }: JoinFamilyFormProps) {
     role: "parent",
     relation: "mother",
   });
+  const { update } = useSession();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -52,6 +54,7 @@ export function JoinFamilyForm({ onSuccess }: JoinFamilyFormProps) {
       );
 
       if (result.success) {
+        await update(); // 세션 업데이트 (familyId 갱신)
         setFormData({ inviteCode: "", role: "parent", relation: "mother" });
         onSuccess();
       } else {

@@ -12,6 +12,9 @@ export interface CreateMeasurementData {
 
 export interface IMeasurementRepository {
   create(data: CreateMeasurementData): Promise<BabyMeasurement>;
+  update(id: string, data: Partial<CreateMeasurementData>): Promise<BabyMeasurement>;
+  delete(id: string): Promise<BabyMeasurement>;
   findLatest(babyId: string): Promise<BabyMeasurement | null>;
   findByBabyId(babyId: string): Promise<BabyMeasurement[]>;
+  findById(id: string): Promise<BabyMeasurement | null>;
 }

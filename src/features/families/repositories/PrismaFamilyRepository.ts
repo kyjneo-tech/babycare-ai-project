@@ -93,6 +93,7 @@ export class PrismaFamilyRepository implements IFamilyRepository {
               userId,
               role: 'parent',
               relation: 'parent',
+              permission: 'owner',
             },
           },
         },

@@ -61,6 +61,17 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
+    // 로그인했지만 mainBabyId가 없는 경우 (가족/아기 미등록 상태)
+    // /add-baby, /family, /api/auth/signout 경로는 허용
+    const isSetupPath = ['/add-baby', '/family'].some(path => pathname === path || pathname.startsWith(`${path}/`));
+    const isSignOut = pathname === '/api/auth/signout';
+    
+    if (!token.mainBabyId && !isSetupPath && !isSignOut) {
+      console.log("🚫 Authenticated but no baby/family:", pathname);
+      console.log("   Redirecting to /add-baby...");
+      return NextResponse.redirect(new URL('/add-baby', req.url));
+    }
+
     console.log("✅ Authenticated access to:", pathname);
   }
 

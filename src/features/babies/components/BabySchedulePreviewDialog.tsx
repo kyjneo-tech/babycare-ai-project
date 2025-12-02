@@ -23,6 +23,7 @@ interface BabySchedulePreviewDialogProps {
   onOpenChange: (open: boolean) => void;
   schedules: Note[];
   babyName: string;
+  totalCount?: number;
 }
 
 // 일정 타입별 아이콘
@@ -69,6 +70,7 @@ export function BabySchedulePreviewDialog({
   onOpenChange,
   schedules,
   babyName,
+  totalCount,
 }: BabySchedulePreviewDialogProps) {
   // 타입별로 그룹화
   const groupedSchedules = schedules.reduce((acc, schedule) => {
@@ -88,6 +90,8 @@ export function BabySchedulePreviewDialog({
     "SLEEP_REGRESSION",
   ];
 
+  const displayCount = totalCount || schedules.length;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] sm:max-w-xl p-0 gap-0 max-h-[85vh] flex flex-col">
@@ -97,7 +101,7 @@ export function BabySchedulePreviewDialog({
             <span className="break-words">{babyName}의 2년간 일정이 생성되었습니다!</span>
           </DialogTitle>
           <DialogDescription className="text-sm">
-            예방접종, 건강검진, 이유식 단계 등 총 {schedules.length}개의 일정이 자동으로 추가되었습니다.
+            예방접종, 건강검진, 이유식 단계 등 총 {displayCount}개의 일정이 자동으로 추가되었습니다.
           </DialogDescription>
         </DialogHeader>
 
@@ -156,7 +160,7 @@ export function BabySchedulePreviewDialog({
 
         <div className="flex justify-end gap-2 px-4 sm:px-6 py-3 sm:py-4 border-t flex-shrink-0">
           <Button onClick={() => onOpenChange(false)} variant="default" size="sm">
-            확인
+            기록 화면으로 이동
           </Button>
         </div>
       </DialogContent>

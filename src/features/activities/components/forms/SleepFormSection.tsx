@@ -83,7 +83,7 @@ export function SleepFormSection({
             <span className="w-full border-t border-slate-200" />
           </div>
           <span className="relative bg-white px-4 text-xs text-slate-500 font-medium">
-            아까 잠들었다면?
+            수면 후 기상한 상태라면?
           </span>
         </div>
       )}
