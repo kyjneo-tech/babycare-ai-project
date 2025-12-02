@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { joinFamily } from "@/features/families/actions";
 import { useSession } from "next-auth/react";
 
@@ -25,6 +26,7 @@ const relationOptions = [
 ];
 
 export function JoinFamilyForm({ onSuccess }: JoinFamilyFormProps) {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     inviteCode: "",
     role: "parent",
@@ -57,6 +59,9 @@ export function JoinFamilyForm({ onSuccess }: JoinFamilyFormProps) {
         await update(); // 세션 업데이트 (familyId 갱신)
         setFormData({ inviteCode: "", role: "parent", relation: "mother" });
         onSuccess();
+        // 가족 참여 성공 후 홈으로 리다이렉션
+        // 홈 페이지에서 가족의 첫 번째 아기 페이지로 자동 리다이렉션됨
+        router.push('/');
       } else {
         setError(result.error || "가족 참여에 실패했습니다.");
       }
