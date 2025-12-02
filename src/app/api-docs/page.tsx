@@ -12,9 +12,18 @@ const SwaggerUI = dynamic(() => import('swagger-ui-react'), {
 
 function ApiDocsPage() {
   const [spec, setSpec] = useState(null);
+  const [isProduction, setIsProduction] = useState(false);
 
   useEffect(() => {
-    // API 스펙 로드
+    // 환경 확인
+    const isDev = process.env.NODE_ENV === 'development';
+    setIsProduction(!isDev);
+
+    if (!isDev) {
+      return; // 프로덕션에서는 스펙을 로드하지 않음
+    }
+
+    // API 스펙 로드 (개발 환경에서만)
     async function loadSpec() {
       try {
         const spec = await fetch('/api-doc').then((res) => res.json());
@@ -25,6 +34,34 @@ function ApiDocsPage() {
     }
     loadSpec();
   }, []);
+
+  // 프로덕션 환경에서는 접근 불가 메시지 표시
+  if (isProduction) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="max-w-md p-8 bg-white rounded-lg shadow-lg text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            접근 불가
+          </h1>
+          <p className="text-gray-600 mb-4">
+            API 문서는 개발 환경에서만 접근할 수 있습니다.
+          </p>
+          <p className="text-sm text-gray-500">
+            보안을 위해 프로덕션 환경에서는 비활성화되었습니다.
+          </p>
+          <div className="mt-6">
+            <a
+              href="/"
+              className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            >
+              홈으로 돌아가기
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!spec) {
     return (
