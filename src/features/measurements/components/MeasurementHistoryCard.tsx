@@ -37,6 +37,10 @@ export function MeasurementHistoryCard({
     try {
       const result = await deleteMeasurement(measurement.id);
       if (result.success) {
+        // ✨ Zustand Store 업데이트 (즉시 반영!)
+        const { useMeasurementStore } = await import('@/stores');
+        useMeasurementStore.getState().deleteMeasurement(measurement.babyId, measurement.id);
+        
         onDelete(measurement.id);
         setShowDeleteDialog(false);
       } else {

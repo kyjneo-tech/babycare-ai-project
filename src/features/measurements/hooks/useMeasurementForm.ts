@@ -183,9 +183,10 @@ export function useMeasurementForm(babyId: string, onSuccess: () => void) {
       const result = await createMeasurement(validated);
       console.log("서버 응답:", result);
 
-      if (result.success) {
-        // 클라이언트 캐시 갱신 (ActivityForm 등에서 최신 체중 정보 반영)
-        router.refresh();
+      if (result.success && result.data) {
+        // ✨ Zustand Store 업데이트 (즉시 반영!)
+        const { useMeasurementStore } = await import('@/stores');
+        useMeasurementStore.getState().addMeasurement(babyId, result.data);
 
         // 백분위 및 가이드 계산
         if (babyInfo) {

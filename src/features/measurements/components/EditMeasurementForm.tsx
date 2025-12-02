@@ -170,9 +170,10 @@ export function EditMeasurementForm({
         height: selectedHeight,
       });
 
-      if (result.success) {
-        // 클라이언트 캐시 갱신 (ActivityForm 등에서 최신 체중 정보 반영)
-        router.refresh();
+      if (result.success && result.data) {
+        // ✨ Zustand Store 업데이트 (즉시 반영!)
+        const { useMeasurementStore } = await import('@/stores');
+        useMeasurementStore.getState().updateMeasurement(measurement.id, result.data);
 
         // 성장 분석 결과 표시
         if (babyInfo) {
