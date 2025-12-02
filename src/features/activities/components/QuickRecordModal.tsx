@@ -379,6 +379,7 @@ export function QuickRecordModal({
                     breastSide={state.breastSide}
                     setBreastSide={state.setBreastSide}
 
+                    babyId={babyId || ""}
                     latestWeight={state.latestWeight}
                     ageInMonths={state.ageInMonths}
                     errors={errors}
@@ -416,6 +417,7 @@ export function QuickRecordModal({
 
                 {selectedType === "MEDICINE" && (
                   <MedicineFormSection
+                    babyId={babyId || ""}
                     medicineName={state.medicineName}
                     setMedicineName={state.setMedicineName}
                     medicineAmount={state.medicineAmount}

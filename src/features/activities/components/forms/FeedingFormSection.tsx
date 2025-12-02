@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +17,8 @@ interface FeedingFormSectionProps {
   setFeedingDuration: (value: string) => void;
   breastSide: string;
   setBreastSide: (value: string) => void;
-  latestWeight: number | null;
+  babyId: string; // ✨ Store 구독을 위해 babyId 필요
+  latestWeight: number | null; // 폴백용으로 유지
   ageInMonths?: number;
   errors: Record<string, string>;
   disabled?: boolean;
@@ -30,11 +34,34 @@ export function FeedingFormSection({
   breastSide,
   setBreastSide,
 
-  latestWeight,
+  babyId,
+  latestWeight: initialWeight,
   ageInMonths,
   errors,
   disabled = false,
 }: FeedingFormSectionProps) {
+  // ✨ Zustand Store에서 실시간 체중 가져오기
+  const [latestWeight, setLatestWeight] = useState<number | null>(initialWeight);
+
+  useEffect(() => {
+    const { useMeasurementStore } = require('@/stores');
+    
+    // 초기 로드
+    const latest = useMeasurementStore.getState().getLatestMeasurement(babyId);
+    if (latest) {
+      setLatestWeight(latest.weight);
+    }
+
+    // Store 구독 - 체중 변경 시 즉시 업데이트!
+    const unsubscribe = useMeasurementStore.subscribe(() => {
+      const updated = useMeasurementStore.getState().getLatestMeasurement(babyId);
+      if (updated) {
+        setLatestWeight(updated.weight);
+      }
+    });
+
+    return unsubscribe;
+  }, [babyId]);
   return (
     <div className={SPACING.space.md}>
       <div className={SPACING.space.sm}>

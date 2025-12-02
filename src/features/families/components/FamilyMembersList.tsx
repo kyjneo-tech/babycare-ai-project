@@ -6,18 +6,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 
-interface FamilyMember {
-  userId: string;
-  name: string;
-  email: string;
-  permission?: string;
-  role: string;
-  relation: string;
-  joinedAt: Date;
-}
+import { ExtendedFamilyMember } from "@/stores/useFamilyStore";
 
 interface FamilyMembersListProps {
-  members: FamilyMember[];
+  members: ExtendedFamilyMember[];
   onRemoveMember: (memberId: string) => void;
   currentUserId?: string;
   currentUserPermission?: string;
@@ -112,7 +104,7 @@ export function FamilyMembersList({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-2 mb-1 flex-wrap gap-1">
                   <p className="font-semibold text-gray-900 truncate">
-                    {member.name}
+                    {member.name || "이름 없음"}
                     {isCurrentUser && (
                       <span className="ml-2 text-xs text-blue-600">(나)</span>
                     )}
@@ -127,12 +119,12 @@ export function FamilyMembersList({
                   </span>
                   {/* Role Badge */}
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 flex-shrink-0">
-                    {roleLabels[member.role] || member.role}
+                    {member.role ? (roleLabels[member.role] || member.role) : "역할 없음"}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 truncate">{member.email}</p>
+                <p className="text-xs text-gray-500 truncate">{member.email || "이메일 없음"}</p>
                 <p className="text-xs text-gray-400 mt-1">
-                  역할: {relationLabels[member.relation] || member.relation}
+                  역할: {member.relation ? (relationLabels[member.relation] || member.relation) : "관계 없음"}
                 </p>
 
                 {/* Permission Change Dropdown (Owner only, not for self or other owners) */}

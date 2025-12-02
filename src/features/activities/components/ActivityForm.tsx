@@ -398,6 +398,7 @@ export function ActivityForm({
                   breastSide={state.breastSide}
                   setBreastSide={state.setBreastSide}
 
+                  babyId={babyId}
                   latestWeight={latestWeight}
                   ageInMonths={ageInMonths}
                   errors={errors}
@@ -439,6 +440,7 @@ export function ActivityForm({
 
               {type === "MEDICINE" && (
                 <MedicineFormSection
+                  babyId={babyId}
                   medicineName={state.medicineName}
                   setMedicineName={state.setMedicineName}
                   medicineAmount={state.medicineAmount}

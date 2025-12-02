@@ -19,6 +19,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SPACING, TYPOGRAPHY } from '@/design-system';
 import { cn } from '@/lib/utils';
+import { useNoteStore } from '@/stores';
+import { getNotesAction } from '@/features/notes/actions';
 
 
 type FamilyTodoWidgetProps = {
@@ -31,8 +33,16 @@ type TodoWithUser = Note & {
 };
 
 export function FamilyTodoWidget({ babyId, userId }: FamilyTodoWidgetProps) {
-  const [todos, setTodos] = useState<TodoWithUser[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { 
+    getTodoList, 
+    setNotes, 
+    addNote, 
+    updateNote, 
+    deleteNote,
+    isLoading 
+  } = useNoteStore();
+  
+  const todos = getTodoList(babyId);
   const [showCompleted, setShowCompleted] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<Note | null>(null);
   const pathname = usePathname();
@@ -40,24 +50,47 @@ export function FamilyTodoWidget({ babyId, userId }: FamilyTodoWidgetProps) {
 
   const fetchTodos = useCallback(async () => {
     try {
-      const response = await fetch(`/api/notes?babyId=${babyId}&type=TODO`);
-      if (response.ok) {
-        const data = await response.json();
-        setTodos(Array.isArray(data) ? data : (data.notes || []));
+      const result = await getNotesAction(babyId, 'TODO');
+      if (result.success) {
+        // 기존 노트들과 합치거나 교체해야 하는데, 여기서는 TODO만 가져오므로
+        // store 구조상 setNotes는 해당 baby의 모든 노트를 덮어쓰는게 아니라면 조심해야 함.
+        // useNoteStore의 setNotes는 전체 교체임.
+        // 따라서 기존 다른 타입의 노트가 있다면 유지해야 함.
+        // 하지만 현재 useNoteStore 구현을 보면 setNotes는 해당 babyId의 배열을 통째로 교체함.
+        // 다른 타입의 노트가 날아갈 수 있음.
+        // 일단 addNote 등을 사용하거나, store에 merge 기능을 추가해야 함.
+        // 또는 getNotesAction에서 모든 타입을 가져오도록 하거나.
+        // 여기서는 일단 TODO만 다루므로, TODO만 가져와서 기존 것과 merge하는 로직이 필요함.
+        // 하지만 간단하게 하기 위해, store에 setNotesByType 같은게 있으면 좋겠지만 없음.
+        // 임시로 기존 notes를 가져와서 합치는 건 store 내부에서 해야 함.
+        // useNoteStore.ts를 다시 보면:
+        // setNotes: (babyId, notes) => set((state) => ({ notes: { ...state.notes, [babyId]: notes } })),
+        // 이건 덮어쓰기임.
+        
+        // 해결책: useNoteStore에 mergeNotes 추가하거나, 여기서 기존 notes를 읽어서 합침.
+        // 하지만 getTodoList는 selector라서 전체 notes를 가져오려면 state.notes[babyId] 접근 필요.
+        
+        // 일단은 TODO만 관리하는 위젯이라 가정하고, 
+        // 다른 컴포넌트에서 다른 타입의 노트를 로드하면 덮어씌워질 위험이 있음.
+        // 안전하게 하려면 'mergeNotes' 액션을 store에 추가하는 것이 좋음.
+        // 지금은 일단 직접 구현.
+        
+        const currentNotes = useNoteStore.getState().notes[babyId] || [];
+        const otherNotes = currentNotes.filter(n => n.type !== 'TODO');
+        const newNotes = [...otherNotes, ...result.data];
+        setNotes(babyId, newNotes);
       }
     } catch (error) {
       console.error('Failed to fetch todos:', error);
-    } finally {
-      setLoading(false);
     }
-  }, [babyId]);
+  }, [babyId, setNotes]);
 
   useEffect(() => {
     fetchTodos();
   }, [fetchTodos]);
 
   // 정렬: 완료 여부 > 우선순위 > 마감일
-  const sortedTodos = Array.isArray(todos) ? [...todos].sort((a, b) => {
+  const sortedTodos = [...todos].sort((a, b) => {
     if (a.completed !== b.completed) {
       return a.completed ? 1 : -1;
     }
@@ -72,7 +105,7 @@ export function FamilyTodoWidget({ babyId, userId }: FamilyTodoWidgetProps) {
     if (a.dueDate) return -1;
     if (b.dueDate) return 1;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  }) : [];
+  });
 
   const activeTodos = sortedTodos.filter((todo) => !todo.completed);
   const completedTodos = sortedTodos.filter((todo) => todo.completed);
@@ -83,22 +116,21 @@ export function FamilyTodoWidget({ babyId, userId }: FamilyTodoWidgetProps) {
   const normalTodos = activeTodos.filter((t) => t.priority === 'MEDIUM' || t.priority === 'LOW');
 
   const handleOptimisticAdd = (tempTodo: any) => {
-    setTodos((prev) => [tempTodo, ...prev]);
+    addNote(babyId, tempTodo);
   };
 
-  // TodoItem 내부에서 서버 요청을 처리하므로, 여기서는 로컬 상태만 업데이트
   const handleOptimisticToggle = (id: string) => {
-    setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
-    );
+    const todo = todos.find(t => t.id === id);
+    if (todo) {
+      updateNote(id, { completed: !todo.completed });
+    }
   };
 
-  // 삭제 시 로컬 상태에서 즉시 제거
   const handleOptimisticDelete = (id: string) => {
-    setTodos((prev) => prev.filter((t) => t.id !== id));
+    deleteNote(id);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card className="h-full border-none shadow-sm bg-white/50 backdrop-blur-sm">
         <CardHeader className={SPACING.card.medium}>

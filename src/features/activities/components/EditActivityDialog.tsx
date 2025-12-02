@@ -225,7 +225,7 @@ export function EditActivityDialog({
             )}
 
             {activity.type === "FEEDING" && (
-              <FeedingFormSection {...{ feedingType, setFeedingType, feedingAmount, setFeedingAmount, feedingDuration, setFeedingDuration, breastSide, setBreastSide, latestWeight, ageInMonths, errors, disabled: formDisabled }} />
+              <FeedingFormSection {...{ feedingType, setFeedingType, feedingAmount, setFeedingAmount, feedingDuration, setFeedingDuration, breastSide, setBreastSide, babyId: activity.babyId, latestWeight, ageInMonths, errors, disabled: formDisabled }} />
             )}
             {activity.type === "SLEEP" && (
               <SleepFormSection {...{ startTime, setStartTime, endTime, setEndTime, sleepDurationHours, setSleepDurationHours, sleepDurationMinutes, setSleepDurationMinutes, ageInMonths, errors, disabled: formDisabled }} />
@@ -234,7 +234,7 @@ export function EditActivityDialog({
               <DiaperFormSection {...{ diaperType, setDiaperType, stoolCondition, setStoolCondition, errors, disabled: formDisabled, babyId: activity.babyId }} />
             )}
             {activity.type === "MEDICINE" && (
-              <MedicineFormSection {...{ medicineName, setMedicineName, medicineAmount, setMedicineAmount, medicineUnit, setMedicineUnit, syrupConc, setSyrupConc, latestWeight, errors, disabled: formDisabled }} />
+              <MedicineFormSection {...{ medicineName, setMedicineName, medicineAmount, setMedicineAmount, medicineUnit, setMedicineUnit, syrupConc, setSyrupConc, latestWeight, errors, disabled: formDisabled, babyId: activity.babyId }} />
             )}
             {activity.type === "TEMPERATURE" && (
               <TemperatureFormSection {...{ temperature, setTemperature, errors, disabled: formDisabled }} />

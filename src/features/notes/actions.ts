@@ -586,3 +586,33 @@ export async function getAllSchedulesForBaby(
     return { success: false, error: 'Failed to fetch schedules' };
   }
 }
+
+/**
+ * 노트 목록 조회 액션
+ */
+export async function getNotesAction(
+  babyId: string,
+  type?: NoteType
+): Promise<ActionResult<Note[]>> {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const notes = await prisma.note.findMany({
+      where: {
+        babyId,
+        type: type ? type : undefined,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return { success: true, data: notes };
+  } catch (error) {
+    console.error('getNotesAction error:', error);
+    return { success: false, error: 'Failed to fetch notes' };
+  }
+}
