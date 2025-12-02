@@ -16,7 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { updateNoteAction } from '@/features/notes/actions';
 import { useRouter } from 'next/navigation';
 import { getCategoryIcon, getCategoryLabel, getPriorityLabel } from '@/shared/utils/todo-helpers';
-import { Calendar } from 'lucide-react';
+import { Calendar, AlertCircle } from 'lucide-react';
+
+const MAX_TITLE_LENGTH = 200;
+const MAX_CONTENT_LENGTH = 5000;
 
 type TodoDetailModalProps = {
   todo: Note;
@@ -42,7 +45,37 @@ export function TodoDetailModal({ todo, babyId, userId, onClose }: TodoDetailMod
     todo.dueDate ? new Date(todo.dueDate).toISOString().split('T')[0] : ''
   );
 
+  // 글자수 계산
+  const titleLength = title.length;
+  const contentLength = content.length;
+  const titleRemaining = MAX_TITLE_LENGTH - titleLength;
+  const contentRemaining = MAX_CONTENT_LENGTH - contentLength;
+  const isTitleOverLimit = titleRemaining < 0;
+  const isContentOverLimit = contentRemaining < 0;
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    // 글자수 제한 초과 시 입력 차단
+    if (newValue.length <= MAX_TITLE_LENGTH) {
+      setTitle(newValue);
+    }
+  };
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    // 글자수 제한 초과 시 입력 차단
+    if (newValue.length <= MAX_CONTENT_LENGTH) {
+      setContent(newValue);
+    }
+  };
+
   const handleSave = async () => {
+    // 글자수 제한 체크
+    if (isTitleOverLimit || isContentOverLimit) {
+      alert('글자수 제한을 초과했습니다.');
+      return;
+    }
+
     setLoading(true);
     try {
       await updateNoteAction(todo.id, {
@@ -56,7 +89,7 @@ export function TodoDetailModal({ todo, babyId, userId, onClose }: TodoDetailMod
           assigneeId: userId,
         },
       });
-      
+
       router.refresh();
       onClose();
     } catch (error) {
@@ -81,9 +114,21 @@ export function TodoDetailModal({ todo, babyId, userId, onClose }: TodoDetailMod
             <Input
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={handleTitleChange}
               placeholder="할 일을 입력하세요"
+              className={isTitleOverLimit ? 'border-red-500 focus-visible:ring-red-500' : ''}
             />
+            <div className={`text-xs ${
+              titleRemaining < 20 ? (isTitleOverLimit ? 'text-red-500' : 'text-orange-500') : 'text-gray-500'
+            }`}>
+              {titleLength} / {MAX_TITLE_LENGTH}자
+              {titleRemaining < 20 && titleRemaining >= 0 && (
+                <span className="ml-1">({titleRemaining}자 남음)</span>
+              )}
+              {isTitleOverLimit && (
+                <span className="ml-1 font-medium">({Math.abs(titleRemaining)}자 초과)</span>
+              )}
+            </div>
           </div>
 
           {/* 우선순위 */}
@@ -141,10 +186,33 @@ export function TodoDetailModal({ todo, babyId, userId, onClose }: TodoDetailMod
             <Textarea
               id="content"
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={handleContentChange}
               placeholder="상세 내용을 입력하세요 (선택사항)"
               rows={4}
+              className={isContentOverLimit ? 'border-red-500 focus-visible:ring-red-500' : ''}
             />
+            <div className={`text-xs ${
+              contentRemaining < 500 ? (isContentOverLimit ? 'text-red-500' : 'text-orange-500') : 'text-gray-500'
+            }`}>
+              {contentLength} / {MAX_CONTENT_LENGTH}자
+              {contentRemaining < 500 && contentRemaining >= 0 && (
+                <span className="ml-1">({contentRemaining}자 남음)</span>
+              )}
+              {isContentOverLimit && (
+                <span className="ml-1 font-medium">({Math.abs(contentRemaining)}자 초과)</span>
+              )}
+            </div>
+            {isContentOverLimit && (
+              <div className="flex items-start gap-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+                <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium">글자수 제한 초과</p>
+                  <p className="text-xs mt-0.5">
+                    메모는 최대 {MAX_CONTENT_LENGTH.toLocaleString()}자까지 입력 가능합니다.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -159,7 +227,7 @@ export function TodoDetailModal({ todo, babyId, userId, onClose }: TodoDetailMod
           </Button>
           <Button
             onClick={handleSave}
-            disabled={loading || !title.trim()}
+            disabled={loading || !title.trim() || isTitleOverLimit || isContentOverLimit}
           >
             {loading ? '저장 중...' : '저장'}
           </Button>

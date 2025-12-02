@@ -21,14 +21,28 @@ type TodoQuickAddInputProps = {
 };
 
 const PRIORITIES: Priority[] = ['URGENT', 'HIGH', 'MEDIUM', 'LOW'];
+const MAX_TITLE_LENGTH = 200;
 
 export function TodoQuickAddInput({ babyId, userId, onOptimisticAdd }: TodoQuickAddInputProps) {
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<Priority>('MEDIUM');
   const [loading, setLoading] = useState(false);
 
+  // 글자수 계산
+  const titleLength = title.length;
+  const titleRemaining = MAX_TITLE_LENGTH - titleLength;
+  const isTitleOverLimit = titleRemaining < 0;
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    // 글자수 제한 초과 시 입력 차단
+    if (newValue.length <= MAX_TITLE_LENGTH) {
+      setTitle(newValue);
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!title.trim() || loading) return;
+    if (!title.trim() || loading || isTitleOverLimit) return;
 
     const tempId = `temp-${Date.now()}`;
     const tempTodo = {
@@ -91,32 +105,49 @@ export function TodoQuickAddInput({ babyId, userId, onOptimisticAdd }: TodoQuick
   };
 
   return (
-    <div className="flex gap-2">
-      <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
-        <SelectTrigger className="w-32">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {PRIORITIES.map((p) => (
-            <SelectItem key={p} value={p}>
-              {getPriorityLabel(p)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      
-      <Input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        onKeyPress={handleKeyPress}
-        placeholder="새로운 할 일을 입력하세요..."
-        disabled={loading}
-        className="flex-1"
-      />
-      
-      <Button onClick={handleSubmit} disabled={loading || !title.trim()} size="icon">
-        <Plus className="h-4 w-4" />
-      </Button>
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
+          <SelectTrigger className="w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PRIORITIES.map((p) => (
+              <SelectItem key={p} value={p}>
+                {getPriorityLabel(p)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Input
+          value={title}
+          onChange={handleTitleChange}
+          onKeyPress={handleKeyPress}
+          placeholder="새로운 할 일을 입력하세요..."
+          disabled={loading}
+          className={`flex-1 ${isTitleOverLimit ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+        />
+
+        <Button onClick={handleSubmit} disabled={loading || !title.trim() || isTitleOverLimit} size="icon">
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* 글자수 카운터 */}
+      {title.length > 0 && (
+        <div className={`text-xs px-1 ${
+          titleRemaining < 20 ? (isTitleOverLimit ? 'text-red-500' : 'text-orange-500') : 'text-gray-500'
+        }`}>
+          {titleLength} / {MAX_TITLE_LENGTH}자
+          {titleRemaining < 20 && titleRemaining >= 0 && (
+            <span className="ml-1">({titleRemaining}자 남음)</span>
+          )}
+          {isTitleOverLimit && (
+            <span className="ml-1 font-medium">({Math.abs(titleRemaining)}자 초과)</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

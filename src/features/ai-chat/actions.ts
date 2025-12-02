@@ -13,6 +13,16 @@ import {
   getRecommendedSleepDuration,
   getMedicationDosageGuideline,
 } from "./services/babyRecommendationService"; // 새로 추가된 임포트
+import { z } from "zod";
+
+// AI Chat 메시지 검증 스키마
+const chatMessageSchema = z.object({
+  message: z
+    .string()
+    .min(1, "메시지를 입력해주세요.")
+    .max(1500, "메시지는 최대 1,500자까지 입력 가능합니다.")
+    .trim(),
+});
 
 interface ActivitySummary {
   feeding: {
@@ -195,6 +205,17 @@ export async function sendChatMessage(
   data?: { reply: string | null; summary?: any };
   error?: string;
 }> {
+  // 입력 검증
+  const validation = chatMessageSchema.safeParse({ message });
+  if (!validation.success) {
+    return {
+      success: false,
+      error: validation.error.errors[0].message,
+    };
+  }
+
+  const validatedMessage = validation.data.message;
+
   if (babyId === "guest-baby-id") {
     return {
       success: true,
@@ -216,8 +237,8 @@ export async function sendChatMessage(
     if (!success) {
       const { logger } = await import('@/shared/lib/logger');
       logger.warn('AI 채팅 rate limit 초과', { userId });
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: "너무 많은 요청입니다. 잠시 후 다시 시도해주세요."
       };
     }
@@ -438,16 +459,16 @@ ${exclusionNote}
     // 3. 스마트 대화 기록 조회
     // 건강/질병 관련 질문은 더 많은 맥락 필요
     const healthKeywords = ['아프', '열', '체온', '증상', '병', '토', '설사', '기침', '콧물', '구토', '통증', '울', '보채'];
-    const isHealthRelated = healthKeywords.some(keyword => message.includes(keyword));
-    
+    const isHealthRelated = healthKeywords.some(keyword => validatedMessage.includes(keyword));
+
     const historyCount = isHealthRelated ? 5 : 3;
-    
+
     const recentMessages = await prisma.chatMessage.findMany({
       where: { babyId },
       orderBy: { createdAt: "desc" },
       take: historyCount,
     });
-    
+
     // 시간순 정렬 (과거 -> 현재)
     const historyContext = recentMessages
       .reverse()
@@ -456,12 +477,12 @@ ${exclusionNote}
 
     const finalPrompt = `
     ${systemPrompt}
-    
+
     [이전 대화 기록]
     ${historyContext ? historyContext : "없음"}
-    
+
     [현재 질문]
-    User: ${message}
+    User: ${validatedMessage}
     AI:
     `;
     
@@ -529,7 +550,7 @@ ${exclusionNote}
         data: {
           babyId,
           userId: userId,
-          message,
+          message: validatedMessage,
           reply: reply || "",
           summary: JSON.stringify(simpleSummary),
         },
