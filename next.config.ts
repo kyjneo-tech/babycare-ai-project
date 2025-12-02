@@ -47,6 +47,8 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  transpilePackages: ['swagger-ui-react'],
 };
 
 export default nextConfig;

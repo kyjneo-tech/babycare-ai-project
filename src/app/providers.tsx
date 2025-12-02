@@ -41,14 +41,22 @@ function AppShell({ children }: { children: React.ReactNode }) {
     }
 
     // 2. 유효성 검사 및 자동 전환 (아기 목록이 로드된 경우에만)
-    if (!isBabiesLoading && babies.length > 0) {
-      const isValidBaby = babies.some(b => b.id === newBabyIdToSet);
-      
-      if (!isValidBaby && newBabyIdToSet !== 'guest-baby-id') {
-        // 선택된 아기가 유효하지 않으면(삭제됨 등) 첫 번째 아기로 전환
-        const firstBabyId = babies[0].id;
-        newBabyIdToSet = firstBabyId;
-        localStorage.setItem('lastBabyId', firstBabyId);
+    if (!isBabiesLoading) {
+      if (babies.length > 0) {
+        const isValidBaby = babies.some(b => b.id === newBabyIdToSet);
+        
+        if (!isValidBaby && newBabyIdToSet !== 'guest-baby-id') {
+          // 선택된 아기가 유효하지 않으면(삭제됨 등) 첫 번째 아기로 전환
+          const firstBabyId = babies[0].id;
+          newBabyIdToSet = firstBabyId;
+          localStorage.setItem('lastBabyId', firstBabyId);
+        }
+      } else {
+        // 아기가 한 명도 없으면 선택된 아기 해제
+        if (newBabyIdToSet !== 'guest-baby-id') {
+          newBabyIdToSet = undefined;
+          localStorage.removeItem('lastBabyId');
+        }
       }
     }
 

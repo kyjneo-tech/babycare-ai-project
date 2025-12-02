@@ -5,6 +5,60 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/shared/lib/prisma";
 import { isOwner, getMyPermission } from "@/features/families/utils/permissions";
 
+/**
+ * @swagger
+ * /api/families/members/{memberId}:
+ *   delete:
+ *     summary: 가족 구성원 제거
+ *     description: |
+ *       가족 구성원을 제거합니다. Owner 권한만 가능하며, Owner 본인과 자기 자신은 제거할 수 없습니다.
+ *
+ *       **테스트 방법:**
+ *       1. `Authorize` 버튼으로 JWT 토큰 입력
+ *       2. `Try it out` 버튼 클릭
+ *       3. memberId와 familyId 입력
+ *       4. `Execute` 버튼으로 실행
+ *     tags: [Families]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: memberId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 제거할 구성원의 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - familyId
+ *             properties:
+ *               familyId:
+ *                 type: string
+ *                 description: 가족 ID
+ *     responses:
+ *       '200':
+ *         description: 구성원 제거 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       '400':
+ *         description: 잘못된 요청 (Owner나 자기 자신을 제거하려는 경우)
+ *       '401':
+ *         description: 인증되지 않은 사용자
+ *       '403':
+ *         description: 권한 없음 (Owner가 아닌 경우)
+ *       '500':
+ *         description: 서버 내부 오류
+ */
 // 가족 구성원 제거
 export async function DELETE(
   request: NextRequest,
@@ -81,6 +135,78 @@ export async function DELETE(
   }
 }
 
+/**
+ * @swagger
+ * /api/families/members/{memberId}:
+ *   patch:
+ *     summary: 가족 구성원 권한 변경
+ *     description: |
+ *       가족 구성원의 권한을 변경합니다. Owner 권한만 가능하며, Owner의 권한과 자신의 권한은 변경할 수 없습니다.
+ *
+ *       **테스트 방법:**
+ *       1. `Authorize` 버튼으로 JWT 토큰 입력
+ *       2. `Try it out` 버튼 클릭
+ *       3. memberId, familyId, newPermission 입력
+ *       4. `Execute` 버튼으로 실행
+ *     tags: [Families]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: memberId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 권한을 변경할 구성원의 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - familyId
+ *               - newPermission
+ *             properties:
+ *               familyId:
+ *                 type: string
+ *                 description: 가족 ID
+ *               newPermission:
+ *                 type: string
+ *                 description: 새로운 권한 (owner, admin, member 등)
+ *                 example: admin
+ *     responses:
+ *       '200':
+ *         description: 권한 변경 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 member:
+ *                   type: object
+ *                   properties:
+ *                     userId:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     permission:
+ *                       type: string
+ *                     relation:
+ *                       type: string
+ *       '400':
+ *         description: 잘못된 요청 (Owner의 권한이나 자신의 권한을 변경하려는 경우)
+ *       '401':
+ *         description: 인증되지 않은 사용자
+ *       '403':
+ *         description: 권한 없음 (Owner가 아닌 경우)
+ *       '500':
+ *         description: 서버 내부 오류
+ */
 // 가족 구성원 권한 변경 (역할 role이 아니라 permission을 변경해야 하지만, 일단 기존 로직 유지)
 export async function PATCH(
   request: NextRequest,

@@ -1,5 +1,5 @@
 /**
- * Baby Schedules Auto-generation API 
+ * Baby Schedules Auto-generation API
  * POST: 아기의 모든 일정 자동 생성 (예방접종, 건강검진, 마일스톤 등)
  */
 
@@ -9,6 +9,84 @@ import { prisma } from '@/shared/lib/prisma';
 import { NoteService, CreateNoteData } from '@/features/notes/services/noteService';
 import { generateAllSchedules } from '@/features/notes/services/scheduleGeneratorService';
 
+/**
+ * @swagger
+ * /api/babies/{babyId}/schedules:
+ *   post:
+ *     summary: 아기 일정 자동 생성
+ *     description: |
+ *       아기의 생년월일을 기준으로 예방접종, 건강검진, 마일스톤, 원더윅스, 수면 퇴행, 이유식 단계 등의 일정을 자동으로 생성합니다.
+ *
+ *       **테스트 방법:**
+ *       1. `Authorize` 버튼으로 JWT 토큰 입력
+ *       2. `Try it out` 버튼 클릭
+ *       3. babyId 입력 및 생성할 일정 유형 선택 (모두 true가 기본값)
+ *       4. `Execute` 버튼으로 실행
+ *       5. 생성된 일정 개수 확인
+ *     tags: [Babies]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: babyId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 아기 ID
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               includeVaccination:
+ *                 type: boolean
+ *                 default: true
+ *                 description: 예방접종 일정 포함 여부
+ *               includeHealthCheck:
+ *                 type: boolean
+ *                 default: true
+ *                 description: 건강검진 일정 포함 여부
+ *               includeMilestone:
+ *                 type: boolean
+ *                 default: true
+ *                 description: 마일스톤 일정 포함 여부
+ *               includeWonderWeeks:
+ *                 type: boolean
+ *                 default: true
+ *                 description: 원더윅스 일정 포함 여부
+ *               includeSleepRegression:
+ *                 type: boolean
+ *                 default: true
+ *                 description: 수면 퇴행 일정 포함 여부
+ *               includeFeedingStage:
+ *                 type: boolean
+ *                 default: true
+ *                 description: 이유식 단계 일정 포함 여부
+ *     responses:
+ *       '200':
+ *         description: 일정 생성 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                   description: 생성된 일정 개수
+ *                 message:
+ *                   type: string
+ *                   example: 50개의 일정이 생성되었습니다.
+ *       '401':
+ *         description: 인증되지 않은 사용자
+ *       '404':
+ *         description: 아기 또는 사용자를 찾을 수 없음
+ *       '500':
+ *         description: 서버 내부 오류
+ */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ babyId: string }> }

@@ -176,6 +176,11 @@ export function FamilyManagementPage() {
       if (result.success) {
         deleteBaby(babyId); // Store update
         setRefreshKey((prev) => prev + 1);
+        
+        // 마지막 아기를 삭제한 경우 아기 등록 페이지로 이동
+        if (babies.length === 1) {
+          router.push("/add-baby");
+        }
       } else {
         setError(result.error || "아기 삭제에 실패했습니다.");
       }

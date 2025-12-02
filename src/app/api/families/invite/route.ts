@@ -15,6 +15,69 @@ function generateInviteCode(): string {
   return code;
 }
 
+/**
+ * @swagger
+ * /api/families/invite:
+ *   post:
+ *     summary: 가족 초대 코드 생성/재생성
+ *     description: |
+ *       가족 초대 코드를 생성하거나 재생성합니다. Admin 또는 Owner 권한이 필요합니다.
+ *       초대 코드는 7일 후 자동 만료됩니다.
+ *
+ *       **테스트 방법:**
+ *       1. `Authorize` 버튼으로 JWT 토큰 입력
+ *       2. `Try it out` 버튼 클릭
+ *       3. familyId 입력
+ *       4. `Execute` 버튼으로 실행
+ *       5. 생성된 초대 코드 및 URL 확인
+ *     tags: [Families]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - familyId
+ *             properties:
+ *               familyId:
+ *                 type: string
+ *                 description: 가족 ID
+ *                 example: clx1234567890
+ *     responses:
+ *       '200':
+ *         description: 초대 코드 생성 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 inviteCode:
+ *                   type: string
+ *                   example: ABC123
+ *                 inviteUrl:
+ *                   type: string
+ *                   example: http://localhost:3000/join?code=ABC123
+ *                 expiresAt:
+ *                   type: string
+ *                   format: date-time
+ *                 familyName:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *       '400':
+ *         description: familyId가 필요합니다
+ *       '401':
+ *         description: 인증되지 않은 사용자
+ *       '403':
+ *         description: 초대 코드 생성 권한 없음
+ *       '429':
+ *         description: 너무 많은 요청
+ *       '500':
+ *         description: 서버 내부 오류
+ */
 // 초대 코드 생성 또는 재생성
 export async function POST(request: NextRequest) {
   try {
@@ -117,6 +180,69 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/families/invite:
+ *   get:
+ *     summary: 초대 코드로 가족 정보 조회
+ *     description: |
+ *       초대 코드를 사용하여 가족 정보를 조회합니다.
+ *       초대 코드가 만료되었는지 확인하고, 가족 구성원 및 아기 정보를 반환합니다.
+ *
+ *       **테스트 방법:**
+ *       1. `Try it out` 버튼 클릭
+ *       2. code 파라미터에 초대 코드 입력 (예: ABC123)
+ *       3. `Execute` 버튼으로 실행
+ *       4. 가족 정보 및 구성원 목록 확인
+ *     tags: [Families]
+ *     security: []
+ *     parameters:
+ *       - in: query
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 초대 코드 (6자리)
+ *         example: ABC123
+ *     responses:
+ *       '200':
+ *         description: 가족 정보 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 familyId:
+ *                   type: string
+ *                 familyName:
+ *                   type: string
+ *                 memberCount:
+ *                   type: integer
+ *                 babyCount:
+ *                   type: integer
+ *                 expiresAt:
+ *                   type: string
+ *                   format: date-time
+ *                 members:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                       role:
+ *                         type: string
+ *                       relation:
+ *                         type: string
+ *       '400':
+ *         description: 초대 코드가 필요합니다
+ *       '404':
+ *         description: 유효하지 않은 초대 코드
+ *       '410':
+ *         description: 만료된 초대 코드
+ *       '500':
+ *         description: 서버 내부 오류
+ */
 // 초대 코드로 가족 정보 조회
 export async function GET(request: NextRequest) {
   try {
