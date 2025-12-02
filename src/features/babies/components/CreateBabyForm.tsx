@@ -98,8 +98,8 @@ export function CreateBabyForm() {
   // 기록 화면으로 직접 이동
   function handleNavigateToRecording() {
     if (babyInfo?.id) {
+      // 페이지 이동 시 컴포넌트가 unmount되므로 다이얼로그를 명시적으로 닫을 필요 없음
       router.push(`/babies/${babyInfo.id}`);
-      setShowScheduleDialog(false);
     }
   }
   
