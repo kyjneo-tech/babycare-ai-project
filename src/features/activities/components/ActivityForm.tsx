@@ -68,7 +68,7 @@ export function ActivityForm({
     onGuestModeAttempt: () => setShowGuestDialog(true),
   });
 
-  // Load baby info and latest weight
+  // Load baby info and subscribe to latest weight from Store
   useEffect(() => {
     const loadBabyData = async () => {
       try {
@@ -84,18 +84,44 @@ export function ActivityForm({
           );
           setAgeInMonths(months);
         }
-
-        const measurementResult = await getLatestMeasurement(babyId);
-        if (measurementResult.success && measurementResult.data) {
-          setLatestWeight(measurementResult.data.weight);
-        }
       } catch (error) {
         console.error("아기 정보 로드 실패:", error);
       }
     };
 
     loadBabyData();
-  }, [babyId, setBabyInfo, setAgeInMonths, setLatestWeight]);
+  }, [babyId, setBabyInfo, setAgeInMonths]);
+
+  // ✨ Zustand Store 구독 - 체중 실시간 업데이트!
+  useEffect(() => {
+    const { useMeasurementStore } = require('@/stores');
+    const latestMeasurement = useMeasurementStore.getState().getLatestMeasurement(babyId);
+    
+    if (latestMeasurement) {
+      setLatestWeight(latestMeasurement.weight);
+    } else {
+      // Store에 없으면 서버에서 로드
+      const loadMeasurement = async () => {
+        const measurementResult = await getLatestMeasurement(babyId);
+        if (measurementResult.success && measurementResult.data) {
+          setLatestWeight(measurementResult.data.weight);
+          // Store에도 추가
+          useMeasurementStore.getState().addMeasurement(babyId, measurementResult.data);
+        }
+      };
+      loadMeasurement();
+    }
+
+    // Store 구독
+    const unsubscribe = useMeasurementStore.subscribe(() => {
+      const latest = useMeasurementStore.getState().getLatestMeasurement(babyId);
+      if (latest) {
+        setLatestWeight(latest.weight);
+      }
+    });
+
+    return unsubscribe;
+  }, [babyId, setLatestWeight]);
 
   // Smart Defaults: Load last feeding data
   useEffect(() => {

@@ -94,7 +94,7 @@ export function QuickRecordModal({
   // 활동 타입 선택되지 않은 상태 (초기 화면)
   const [selectedType, setSelectedType] = React.useState<ActivityType | null>(null);
 
-  // 아기 정보 및 최신 체중 로드 (ActivityForm과 동일)
+  // 아기 정보 로드 (QuickRecordModal)
   useEffect(() => {
     const loadBabyData = async () => {
       if (!babyId) return;
@@ -112,11 +112,6 @@ export function QuickRecordModal({
           );
           state.setAgeInMonths(months);
         }
-
-        const measurementResult = await getLatestMeasurement(babyId);
-        if (measurementResult.success && measurementResult.data) {
-          state.setLatestWeight(measurementResult.data.weight);
-        }
       } catch (error) {
         console.error("아기 정보 로드 실패:", error);
       }
@@ -125,6 +120,40 @@ export function QuickRecordModal({
     loadBabyData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [babyId]); // ✅ babyId만 의존성으로
+
+  // ✨ Zustand Store 구독 - 체중 실시간 업데이트!
+  useEffect(() => {
+    if (!babyId) return;
+
+    const { useMeasurementStore } = require('@/stores');
+    const latestMeasurement = useMeasurementStore.getState().getLatestMeasurement(babyId);
+    
+    if (latestMeasurement) {
+      state.setLatestWeight(latestMeasurement.weight);
+    } else {
+      // Store에 없으면 서버에서 로드
+      const loadMeasurement = async () => {
+        const measurementResult = await getLatestMeasurement(babyId);
+        if (measurementResult.success && measurementResult.data) {
+          state.setLatestWeight(measurementResult.data.weight);
+          // Store에도 추가
+          useMeasurementStore.getState().addMeasurement(babyId, measurementResult.data);
+        }
+      };
+      loadMeasurement();
+    }
+
+    // Store 구독
+    const unsubscribe = useMeasurementStore.subscribe(() => {
+      const latest = useMeasurementStore.getState().getLatestMeasurement(babyId);
+      if (latest) {
+        state.setLatestWeight(latest.weight);
+      }
+    });
+
+    return unsubscribe;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [babyId]);
 
   // Smart Defaults: Load last feeding data
   useEffect(() => {
