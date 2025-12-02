@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BabyMeasurement } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { MeasurementAnalysis } from "./MeasurementAnalysis";
+import { ScrollablePicker } from "./ScrollablePicker";
 import { updateMeasurement } from "../actions";
-import { AnalysisResult } from "../hooks/useMeasurementForm";
+import {
+  AnalysisResult,
+  weightOptions,
+  heightOptions,
+} from "../hooks/useMeasurementForm";
 import {
   getWeightPercentile,
   getHeightPercentile,
@@ -28,6 +33,8 @@ export function EditMeasurementForm({
 }: EditMeasurementFormProps) {
   const [selectedWeight, setSelectedWeight] = useState(measurement.weight);
   const [selectedHeight, setSelectedHeight] = useState(measurement.height);
+  const [isEditingWeight, setIsEditingWeight] = useState(false);
+  const [isEditingHeight, setIsEditingHeight] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -36,7 +43,10 @@ export function EditMeasurementForm({
     gender: "male" | "female";
   } | null>(null);
 
-  // 아기 정보 로드
+  const weightRef = useRef<HTMLDivElement>(null);
+  const heightRef = useRef<HTMLDivElement>(null);
+
+  // 아기 정보 로드 및 스크롤 위치 초기화
   useEffect(() => {
     const loadBabyInfo = async () => {
       try {
@@ -55,7 +65,27 @@ export function EditMeasurementForm({
     };
 
     loadBabyInfo();
-  }, [measurement.babyId]);
+
+    // 스크롤 위치 조정
+    setTimeout(() => {
+      if (weightRef.current) {
+        const weightIndex = weightOptions.findIndex(
+          (w) => Math.abs(parseFloat(w) - measurement.weight) < 0.05
+        );
+        if (weightIndex !== -1) {
+          weightRef.current.scrollTop = weightIndex * 50;
+        }
+      }
+      if (heightRef.current) {
+        const heightIndex = heightOptions.findIndex(
+          (h) => Math.abs(parseFloat(h) - measurement.height) < 0.25
+        );
+        if (heightIndex !== -1) {
+          heightRef.current.scrollTop = heightIndex * 50;
+        }
+      }
+    }, 100);
+  }, [measurement.babyId, measurement.weight, measurement.height]);
 
   const handleAnalyze = () => {
     if (!babyInfo) return;
@@ -88,6 +118,46 @@ export function EditMeasurementForm({
       weight: selectedWeight,
     });
     setShowResult(true);
+  };
+
+  // 스크롤 핸들러
+  const handleWeightScroll = () => {
+    if (!weightRef.current) return;
+    const scrollTop = weightRef.current.scrollTop;
+    const index = Math.round(scrollTop / 50);
+    const value = parseFloat(weightOptions[index] || weightOptions[0]);
+    setSelectedWeight(value);
+  };
+
+  const handleHeightScroll = () => {
+    if (!heightRef.current) return;
+    const scrollTop = heightRef.current.scrollTop;
+    const index = Math.round(scrollTop / 50);
+    const value = parseFloat(heightOptions[index] || heightOptions[0]);
+    setSelectedHeight(value);
+  };
+
+  // 스크롤 위치 동기화
+  const syncWeightScroll = (value: number) => {
+    if (weightRef.current) {
+      const index = weightOptions.findIndex(
+        (w) => Math.abs(parseFloat(w) - value) < 0.05
+      );
+      if (index !== -1) {
+        weightRef.current.scrollTop = index * 50;
+      }
+    }
+  };
+
+  const syncHeightScroll = (value: number) => {
+    if (heightRef.current) {
+      const index = heightOptions.findIndex(
+        (h) => Math.abs(parseFloat(h) - value) < 0.25
+      );
+      if (index !== -1) {
+        heightRef.current.scrollTop = index * 50;
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -152,31 +222,39 @@ export function EditMeasurementForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
-            체중 (kg)
-          </label>
-          <input
-            type="number"
-            step="0.1"
-            value={selectedWeight}
-            onChange={(e) => setSelectedWeight(parseFloat(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
-            키 (cm)
-          </label>
-          <input
-            type="number"
-            step="0.1"
-            value={selectedHeight}
-            onChange={(e) => setSelectedHeight(parseFloat(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-          />
-        </div>
+      {/* 체중/키 선택 그리드 */}
+      <div className="grid grid-cols-1 gap-4">
+        <ScrollablePicker
+          options={weightOptions}
+          value={selectedWeight}
+          onChange={setSelectedWeight}
+          label="스크롤로 선택"
+          unit="kg"
+          color="blue"
+          isEditing={isEditingWeight}
+          onEditingChange={setIsEditingWeight}
+          scrollRef={weightRef}
+          onScroll={handleWeightScroll}
+          onSyncScroll={syncWeightScroll}
+          onSave={handleSave}
+          disabled={isSaving}
+        />
+
+        <ScrollablePicker
+          options={heightOptions}
+          value={selectedHeight}
+          onChange={setSelectedHeight}
+          label="스크롤로 선택"
+          unit="cm"
+          color="green"
+          isEditing={isEditingHeight}
+          onEditingChange={setIsEditingHeight}
+          scrollRef={heightRef}
+          onScroll={handleHeightScroll}
+          onSyncScroll={syncHeightScroll}
+          onSave={handleSave}
+          disabled={isSaving}
+        />
       </div>
 
       <div className="flex gap-2">
