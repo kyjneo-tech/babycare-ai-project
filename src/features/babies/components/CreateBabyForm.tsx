@@ -94,6 +94,14 @@ export function CreateBabyForm() {
       }
     }
   }
+
+  // 기록 화면으로 직접 이동
+  function handleNavigateToRecording() {
+    if (babyInfo?.id) {
+      router.push(`/babies/${babyInfo.id}`);
+      setShowScheduleDialog(false);
+    }
+  }
   
   const formDisabled = loading || isGuestMode;
 
@@ -168,6 +176,7 @@ export function CreateBabyForm() {
         <BabySchedulePreviewDialog
           open={showScheduleDialog}
           onOpenChange={handleDialogClose}
+          onNavigate={handleNavigateToRecording}
           schedules={schedules}
           babyName={babyInfo.name}
           totalCount={babyInfo.schedulesCount}

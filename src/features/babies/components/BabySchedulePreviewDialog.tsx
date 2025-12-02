@@ -21,6 +21,7 @@ import { ko } from "date-fns/locale";
 interface BabySchedulePreviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onNavigate?: () => void;
   schedules: Note[];
   babyName: string;
   totalCount?: number;
@@ -68,6 +69,7 @@ const typeLabels: Record<NoteType, string> = {
 export function BabySchedulePreviewDialog({
   open,
   onOpenChange,
+  onNavigate,
   schedules,
   babyName,
   totalCount,
@@ -159,7 +161,17 @@ export function BabySchedulePreviewDialog({
         </div>
 
         <div className="flex justify-end gap-2 px-4 sm:px-6 py-3 sm:py-4 border-t flex-shrink-0">
-          <Button onClick={() => onOpenChange(false)} variant="default" size="sm">
+          <Button
+            onClick={() => {
+              if (onNavigate) {
+                onNavigate();
+              } else {
+                onOpenChange(false);
+              }
+            }}
+            variant="default"
+            size="sm"
+          >
             기록 화면으로 이동
           </Button>
         </div>
