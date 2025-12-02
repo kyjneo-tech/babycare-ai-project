@@ -12,14 +12,6 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   title: "BabyCare AI - 따뜻한 육아 동반자",
   description: "AI 기반 맞춤형 육아 가이드",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "BabyCare AI",
-  },
-  formatDetection: {
-    telephone: false,
-  },
 };
 
 export const viewport: Viewport = {
@@ -27,7 +19,6 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#FB7185", // New Primary color (Soft Coral)
 };
 
 import Providers from './providers';
