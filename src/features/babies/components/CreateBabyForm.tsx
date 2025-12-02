@@ -15,17 +15,20 @@ import { BabySchedulePreviewDialog } from './BabySchedulePreviewDialog';
 import { GuestModeDialog } from '@/components/common/GuestModeDialog';
 import { Note } from '@prisma/client';
 
+const MAX_NAME_LENGTH = 50;
+
 export function CreateBabyForm() {
   const router = useRouter();
   const { status, update } = useSession();
   const isGuestMode = status === "unauthenticated";
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [showGuestDialog, setShowGuestDialog] = useState(false);
   const [schedules, setSchedules] = useState<Note[]>([]);
   const [babyInfo, setBabyInfo] = useState<{ id: string; name: string; schedulesCount?: number } | null>(null);
+  const [babyName, setBabyName] = useState('');
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -120,14 +123,43 @@ export function CreateBabyForm() {
         )}
 
         <FormField label="아기 이름" htmlFor="name" required>
-          <FormInput
-            id="name"
-            name="name"
-            type="text"
-            placeholder="예: 김철수"
-            required
-            disabled={formDisabled}
-          />
+          <div className="space-y-1">
+            <FormInput
+              id="name"
+              name="name"
+              type="text"
+              placeholder="예: 김철수"
+              value={babyName}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                if (newValue.length <= MAX_NAME_LENGTH) {
+                  setBabyName(newValue);
+                }
+              }}
+              required
+              disabled={formDisabled}
+              className={cn(
+                babyName.length > MAX_NAME_LENGTH * 0.9 ? 'border-orange-500' : '',
+                babyName.length >= MAX_NAME_LENGTH ? 'border-red-500' : ''
+              )}
+            />
+            {babyName.length > 0 && (
+              <div className={cn(
+                "text-xs",
+                babyName.length >= MAX_NAME_LENGTH ? 'text-red-500' :
+                babyName.length > MAX_NAME_LENGTH * 0.9 ? 'text-orange-500' :
+                'text-gray-500'
+              )}>
+                {babyName.length} / {MAX_NAME_LENGTH}자
+                {babyName.length > MAX_NAME_LENGTH * 0.9 && babyName.length < MAX_NAME_LENGTH && (
+                  <span className="ml-1">({MAX_NAME_LENGTH - babyName.length}자 남음)</span>
+                )}
+                {babyName.length >= MAX_NAME_LENGTH && (
+                  <span className="ml-1 font-medium">최대 글자수 도달</span>
+                )}
+              </div>
+            )}
+          </div>
         </FormField>
 
         <FormField label="성별" htmlFor="gender" required>

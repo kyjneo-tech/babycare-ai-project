@@ -36,7 +36,9 @@ export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 
 // Baby 스키마 (아기 생성/업데이트 시 유효성 검사)
 export const CreateBabySchema = z.object({
-  name: z.string().min(1, '아기 이름을 입력해주세요.'),
+  name: z.string()
+    .min(1, '아기 이름을 입력해주세요.')
+    .max(50, '아기 이름은 50자 이내로 입력해주세요.'),
   gender: z.string().min(1, '성별을 선택해주세요.'), // 'male' | 'female' 등으로 제한 가능
   birthDate: z.preprocess((arg) => {
     if (typeof arg == 'string' || arg instanceof Date) return new Date(arg);
@@ -155,7 +157,7 @@ export const CreateMeasurementSchema = z.object({
   babyId: z.string().min(1, '아기 ID는 필수입니다.'),
   weight: z.number().positive('체중은 0보다 커야 합니다.'),
   height: z.number().positive('키는 0보다 커야 합니다.'),
-  note: z.string().optional(),
+  note: z.string().max(500, '메모는 500자 이내로 작성해주세요.').optional(),
 });
 
 export type CreateMeasurementInput = z.infer<typeof CreateMeasurementSchema>;

@@ -29,6 +29,8 @@ import { useActivityFormState } from "@/features/activities/hooks/useActivityFor
 import { useActivitySubmit } from "@/features/activities/hooks/useActivitySubmit";
 import { GuestModeDialog } from "@/components/common/GuestModeDialog";
 
+const MAX_NOTE_LENGTH = 1000;
+
 export function ActivityForm({
   babyId,
   onActivityCreated,
@@ -39,6 +41,7 @@ export function ActivityForm({
   const { data: session, status } = useSession();
   const isGuestMode = status === "unauthenticated";
   const [showGuestDialog, setShowGuestDialog] = useState(false);
+  const [note, setNote] = useState("");
 
   const formRef = useRef<HTMLFormElement>(null);
   const state = useActivityFormState();
@@ -496,11 +499,38 @@ export function ActivityForm({
                 </Label>
                 <Textarea
                   name="note"
+                  value={note}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    if (newValue.length <= MAX_NOTE_LENGTH) {
+                      setNote(newValue);
+                    }
+                  }}
                   placeholder="💡 메모도 AI 상담에 반영되어 더 정확한 답변을 받을 수 있어요"
                   rows={2}
-                  className={TYPOGRAPHY.body.small}
+                  className={cn(
+                    TYPOGRAPHY.body.small,
+                    note.length > MAX_NOTE_LENGTH * 0.9 ? 'border-orange-500' : '',
+                    note.length >= MAX_NOTE_LENGTH ? 'border-red-500' : ''
+                  )}
                   disabled={isGuestMode}
                 />
+                {note.length > 0 && (
+                  <div className={cn(
+                    "text-xs mt-1",
+                    note.length >= MAX_NOTE_LENGTH ? 'text-red-500' :
+                    note.length > MAX_NOTE_LENGTH * 0.9 ? 'text-orange-500' :
+                    'text-gray-500'
+                  )}>
+                    {note.length} / {MAX_NOTE_LENGTH}자
+                    {note.length > MAX_NOTE_LENGTH * 0.9 && note.length < MAX_NOTE_LENGTH && (
+                      <span className="ml-1">({MAX_NOTE_LENGTH - note.length}자 남음)</span>
+                    )}
+                    {note.length >= MAX_NOTE_LENGTH && (
+                      <span className="ml-1 font-medium">최대 글자수 도달</span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* SuggestionsPanel */}
