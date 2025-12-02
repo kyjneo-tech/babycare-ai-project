@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createMeasurement } from "@/features/measurements/actions";
 import { CreateMeasurementSchema } from "@/shared/types/schemas";
 import {
@@ -41,6 +42,8 @@ export interface LatestMeasurement {
 }
 
 export function useMeasurementForm(babyId: string, onSuccess: () => void) {
+  const router = useRouter();
+
   // 상태 관리
   const [selectedWeight, setSelectedWeight] = useState(3.3);
   const [selectedHeight, setSelectedHeight] = useState(50);
@@ -181,6 +184,9 @@ export function useMeasurementForm(babyId: string, onSuccess: () => void) {
       console.log("서버 응답:", result);
 
       if (result.success) {
+        // 클라이언트 캐시 갱신 (ActivityForm 등에서 최신 체중 정보 반영)
+        router.refresh();
+
         // 백분위 및 가이드 계산
         if (babyInfo) {
           handleAnalyze();

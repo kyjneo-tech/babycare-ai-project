@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { BabyMeasurement } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { MeasurementAnalysis } from "./MeasurementAnalysis";
@@ -31,6 +32,7 @@ export function EditMeasurementForm({
   onSuccess,
   onCancel,
 }: EditMeasurementFormProps) {
+  const router = useRouter();
   const [selectedWeight, setSelectedWeight] = useState(measurement.weight);
   const [selectedHeight, setSelectedHeight] = useState(measurement.height);
   const [isEditingWeight, setIsEditingWeight] = useState(false);
@@ -169,6 +171,9 @@ export function EditMeasurementForm({
       });
 
       if (result.success) {
+        // 클라이언트 캐시 갱신 (ActivityForm 등에서 최신 체중 정보 반영)
+        router.refresh();
+
         // 성장 분석 결과 표시
         if (babyInfo) {
           handleAnalyze();
