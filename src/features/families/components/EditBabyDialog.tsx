@@ -22,6 +22,8 @@ import {
 import { TYPOGRAPHY } from "@/design-system";
 import { cn } from "@/lib/utils";
 
+const MAX_NAME_LENGTH = 50;
+
 interface EditBabyDialogProps {
   baby: Baby;
   open: boolean;
@@ -83,10 +85,35 @@ export function EditBabyDialog({
             <Input
               id="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                if (newValue.length <= MAX_NAME_LENGTH) {
+                  setName(newValue);
+                }
+              }}
               placeholder="아기 이름"
               required
+              className={cn(
+                name.length > MAX_NAME_LENGTH * 0.9 ? 'border-orange-500' : '',
+                name.length >= MAX_NAME_LENGTH ? 'border-red-500' : ''
+              )}
             />
+            {name.length > 0 && (
+              <div className={cn(
+                "text-xs",
+                name.length >= MAX_NAME_LENGTH ? 'text-red-500' :
+                name.length > MAX_NAME_LENGTH * 0.9 ? 'text-orange-500' :
+                'text-gray-500'
+              )}>
+                {name.length} / {MAX_NAME_LENGTH}자
+                {name.length > MAX_NAME_LENGTH * 0.9 && name.length < MAX_NAME_LENGTH && (
+                  <span className="ml-1">({MAX_NAME_LENGTH - name.length}자 남음)</span>
+                )}
+                {name.length >= MAX_NAME_LENGTH && (
+                  <span className="ml-1 font-medium">최대 글자수 도달</span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
