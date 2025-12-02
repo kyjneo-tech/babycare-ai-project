@@ -138,17 +138,19 @@ export function FamilyManagementPage() {
       const { deleteBaby } = await import("@/features/babies/actions");
       const result = await deleteBaby(babyId);
       if (result.success) {
-        // 삭제 전 아기 수 확인
-        const wasLastBaby = familyData?.babies?.length === 1;
+        // ✨ Zustand Store 업데이트 (즉시 반영)
+        const { useBabyStore } = await import('@/stores');
+        useBabyStore.getState().deleteBaby(babyId);
         
-        if (wasLastBaby) {
+        // Store에서 남은 아기 확인
+        const remainingBabies = useBabyStore.getState().babies;
+        
+        if (remainingBabies.length === 0) {
           // 마지막 아기를 삭제한 경우 아기 등록 페이지로 리다이렉트
           router.push("/add-baby");
         } else {
           // 로컬 상태 업데이트
           setRefreshKey((prev) => prev + 1);
-          // 서버 컴포넌트 캐시 갱신 (AppHeader 드롭다운 즉시 반영)
-          router.refresh();
         }
       } else {
         setError(result.error || "아기 삭제에 실패했습니다.");

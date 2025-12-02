@@ -7,6 +7,7 @@ import Link from 'next/link';
 import AppHeader from '@/widgets/app-header/AppHeader';
 import { QuickRecordModal } from '@/features/activities/components/QuickRecordModal';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
+import { StoreInitializer } from '@/components/providers/StoreInitializer';
 
 
 function AppShell({ children }: { children: React.ReactNode }) {
@@ -74,7 +75,9 @@ function AppShell({ children }: { children: React.ReactNode }) {
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <AppShell>{children}</AppShell>
+      <StoreInitializer>
+        <AppShell>{children}</AppShell>
+      </StoreInitializer>
     </SessionProvider>
   );
 }

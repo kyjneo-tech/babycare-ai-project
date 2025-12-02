@@ -62,6 +62,10 @@ export function CreateBabyForm() {
 
       setBabyInfo({ id: babyId, name: babyName, schedulesCount });
 
+      // ✨ Zustand Store 업데이트 (즉시 반영)
+      const { useBabyStore } = await import('@/stores');
+      useBabyStore.getState().addBaby(result.data.baby);
+
       // 일정 조회 (1초 대기 - DB 커밋 시간 확보)
       await new Promise(resolve => setTimeout(resolve, 1000));
       const schedulesResult = await getAllSchedulesForBaby(babyId);

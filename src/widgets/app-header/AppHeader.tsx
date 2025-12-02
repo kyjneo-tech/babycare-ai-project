@@ -6,14 +6,15 @@ import { usePathname, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { BabySwitcher } from "@/components/common/BabySwitcher";
 import LogoutButton from "./LogoutButton";
-import { useEffect, useState } from "react";
+import { useBabyStore } from "@/stores";
 
 export default function AppHeader() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const params = useParams();
-  const [babies, setBabies] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // ✨ Zustand Store 구독 (자동 업데이트!)
+  const babies = useBabyStore((state) => state.babies);
 
   // 게스트 모드 확인
   const isGuestMode = pathname?.includes("guest-baby-id") || false;
@@ -28,49 +29,6 @@ export default function AppHeader() {
       ? `/babies/${babies[0].id}?tab=activities`
       : "/";
 
-  useEffect(() => {
-    async function fetchBabies() {
-      if (!session?.user?.id || isGuestMode) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch("/api/families/my-family", {
-          cache: 'no-store', // 캐시 방지로 항상 최신 데이터 가져오기
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setBabies(data.babies || []);
-        }
-      } catch (error) {
-        console.error("Failed to fetch babies:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchBabies();
-  }, [session, isGuestMode, pathname]);
-
-  // 아기 삭제 시 드롭다운 즉시 업데이트를 위한 이벤트 리스너
-  useEffect(() => {
-    const handleBabyDeleted = () => {
-      // 아기 목록 재조회
-      if (session?.user?.id && !isGuestMode) {
-        fetch("/api/families/my-family", {
-          cache: 'no-store',
-        })
-          .then(res => res.json())
-          .then(data => setBabies(data.babies || []))
-          .catch(err => console.error("Failed to refresh babies:", err));
-      }
-    };
-
-    window.addEventListener('baby-deleted', handleBabyDeleted);
-    return () => window.removeEventListener('baby-deleted', handleBabyDeleted);
-  }, [session, isGuestMode]);
-
   return (
     <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-blue-50">
       <nav className="container mx-auto px-[clamp(12px,4vw,24px)]">
@@ -83,7 +41,7 @@ export default function AppHeader() {
               <span className="hidden sm:inline">🍼 Babycare AI</span>
               <span className="sm:hidden text-[clamp(24px,6vw,32px)]">🍼</span>
             </Link>
-            {!loading && babies.length > 0 && !isGuestMode && (
+            {babies.length > 0 && !isGuestMode && (
               <div className="min-w-[7rem] max-w-[10rem]">
                 <BabySwitcher babies={babies} />
               </div>
