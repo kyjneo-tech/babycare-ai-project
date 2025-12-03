@@ -62,7 +62,7 @@ export function EditMyProfileCard({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pt-6">
         <CardTitle className="flex items-center gap-2">
           <User className="h-5 w-5" />
           내 프로필

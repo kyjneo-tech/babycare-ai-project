@@ -275,7 +275,7 @@ export function FamilyManagementPage() {
 
               {/* 가족 나가기 / 삭제 버튼 */}
               <Card>
-                <CardHeader>
+                <CardHeader className="pt-6">
                   <CardTitle className={TYPOGRAPHY.h3}>⚙️ 가족 관리</CardTitle>
                 </CardHeader>
                 <CardContent className={SPACING.card.medium}>
@@ -313,7 +313,7 @@ export function FamilyManagementPage() {
               {/* 아기 목록 */}
               {babies && babies.length > 0 && (
                 <Card>
-                  <CardHeader>
+                  <CardHeader className="pt-6">
                     <CardTitle className={TYPOGRAPHY.h3}>👶 우리 아기들</CardTitle>
                   </CardHeader>
                 <CardContent className={SPACING.card.medium}>
