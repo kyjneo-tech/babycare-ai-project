@@ -278,7 +278,7 @@ export function FamilyManagementPage() {
                 <CardHeader>
                   <CardTitle className={TYPOGRAPHY.h3}>⚙️ 가족 관리</CardTitle>
                 </CardHeader>
-                <CardContent className={SPACING.space.sm}>
+                <CardContent className={SPACING.card.medium}>
                   {/* 가족 나가기 */}
                   {currentUserPermission !== "owner" && (
                     <Button
@@ -316,7 +316,7 @@ export function FamilyManagementPage() {
                   <CardHeader>
                     <CardTitle className={TYPOGRAPHY.h3}>👶 우리 아기들</CardTitle>
                   </CardHeader>
-                <CardContent className={SPACING.space.sm}>
+                <CardContent className={SPACING.card.medium}>
                   {babies.map((baby: any) => (
                     <BabyCard
                       key={baby.id}

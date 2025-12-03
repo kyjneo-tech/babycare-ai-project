@@ -68,7 +68,7 @@ export function EditMyProfileCard({
           내 프로필
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 py-4">
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
