@@ -163,15 +163,13 @@ export function BabySchedulePreviewDialog({
         <div className="flex justify-end gap-2 px-4 sm:px-6 py-3 sm:py-4 border-t flex-shrink-0">
           <Button
             onClick={() => {
-              // Dialog 먼저 닫기
-              onOpenChange(false);
-              // 그 다음 페이지 이동
+              // 🔥 즉시 페이지 이동 (Dialog는 자동으로 unmount됨)
+              // 배포 환경에서 Dialog 애니메이션 지연으로 인한 간헐적 이동 실패 방지
               if (onNavigate) {
-                // 약간의 지연을 두어 Dialog가 완전히 닫힌 후 이동
-                setTimeout(() => {
-                  onNavigate();
-                }, 100);
+                onNavigate();
               }
+              // Dialog도 닫기 (페이지 이동 중에도 깔끔하게)
+              onOpenChange(false);
             }}
             variant="default"
             size="sm"
