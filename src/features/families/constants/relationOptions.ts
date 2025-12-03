@@ -23,6 +23,9 @@ export const relationOptions: RelationOption[] = [
 
 // 레이블 조회 헬퍼
 export function getRelationLabel(value: string): string {
+  // 'other'는 선택지로는 유지하되, AI 호칭 시에는 "보호자"로 변환
+  if (value === 'other') return '보호자';
+
   return relationOptions.find(opt => opt.value === value)?.label || '보호자'; // 기본값을 "보호자"로 변경
 }
 
