@@ -152,34 +152,26 @@ export function FamilyManagementPage() {
 
   const handleDeleteBaby = async (babyId: string) => {
     if (!confirm("정말 이 아기를 삭제하시겠습니까?")) return;
-    // Note: deleteBaby action needs to be imported or implemented in useBabyStore
-    // Assuming useBabyStore has deleteBaby action or we use server action
-    // useBabyStore definition says: deleteBaby: (babyId: string) => void;
-    // But we also need to call server action.
-    
-    // Let's check if there is a server action for deleting baby.
-    // Usually it's in features/babies/actions.ts
-    // I'll assume there is one or I should use the one from props if passed, but here we are in page.
-    // Let's use the store's deleteBaby for optimistic update and call server action if available.
-    
-    // Actually, looking at previous code, it might have used a server action.
-    // I'll check imports.
-    // There is no deleteBaby imported from actions.
-    // I should check features/babies/actions.ts later.
-    // For now, I will just use the store method if it handles API, or call API then store.
-    // useBabyStore usually just updates state.
-    
-    // Let's try to import deleteBaby from features/babies/actions
+
+    // 🔥 삭제 전에 마지막 아기인지 확인 (타이밍 이슈 방지)
+    const isLastBaby = babies.length === 1;
+    console.log('[FamilyManagementPage] Deleting baby:', babyId, 'isLastBaby:', isLastBaby, 'currentLength:', babies.length);
+
     try {
       const { deleteBaby: deleteBabyAction } = await import("@/features/babies/actions");
       const result = await deleteBabyAction(babyId);
+
       if (result.success) {
-        deleteBaby(babyId); // Store update
-        setRefreshKey((prev) => prev + 1);
-        
-        // 마지막 아기를 삭제한 경우 아기 등록 페이지로 이동
-        if (babies.length === 1) {
+        // Store 업데이트
+        deleteBaby(babyId);
+
+        // 🔥 마지막 아기였다면 즉시 아기 등록 페이지로 이동
+        if (isLastBaby) {
+          console.log('[FamilyManagementPage] Last baby deleted, redirecting to /add-baby');
           router.push("/add-baby");
+        } else {
+          // 다른 아기가 남아있으면 페이지만 새로고침
+          setRefreshKey((prev) => prev + 1);
         }
       } else {
         setError(result.error || "아기 삭제에 실패했습니다.");
