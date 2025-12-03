@@ -37,9 +37,16 @@ export function AIChatView({ babyId }: { babyId: string }) {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 max-w-[75%]">
-              <div className={cn("rounded-2xl px-4 py-3 bg-muted")}>
-                <Skeleton className="h-4 w-12" />
-              </div>
+                <div className={cn("rounded-2xl px-4 py-3 bg-muted")}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground animate-pulse">아기 기록 분석중...</span>
+                    <div className="flex gap-1">
+                      <Skeleton className="h-2 w-2 rounded-full" />
+                      <Skeleton className="h-2 w-2 rounded-full" />
+                      <Skeleton className="h-2 w-2 rounded-full" />
+                    </div>
+                  </div>
+                </div>
             </div>
           </div>
         )}
