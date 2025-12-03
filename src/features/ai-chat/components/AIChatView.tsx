@@ -2,7 +2,6 @@
 
 import { ChatMessageBubble } from "@/features/ai-chat/components/ChatMessageBubble";
 import { ChatInput } from "@/features/ai-chat/components/ChatInput";
-import { AIChatSettings } from "./AIChatSettings";
 import { useChat } from "./useChat";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -25,11 +24,6 @@ export function AIChatView({ babyId }: { babyId: string }) {
 
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] max-w-3xl mx-auto">
-      {/* Header with Settings */}
-      <div className="border-b bg-muted sticky top-0 z-10">
-        <AIChatSettings babyId={babyId} />
-      </div>
-
       {/* Messages Area */}
       <div className={cn("flex-1 overflow-y-auto space-y-4", SPACING.card.medium)}>
         {messages.map((message, index) => (
