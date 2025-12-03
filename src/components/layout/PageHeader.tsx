@@ -20,7 +20,7 @@ export function PageHeader({
   className = ''
 }: PageHeaderProps) {
   return (
-    <div className={cn(SPACING.space.lg, className)}>
+    <div className={cn(SPACING.space.lg, "pt-6", className)}>
       {/* MobileContainer와 동일한 정렬 */}
       <div className="mx-auto w-full max-w-md px-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
