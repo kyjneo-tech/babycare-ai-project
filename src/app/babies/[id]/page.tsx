@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { BabyStoreInitializer } from "@/features/babies/components/BabyStoreInitializer";
 
 // 동적 import로 변경하여 초기 번들 크기 최적화
 const BabyAnalyticsView = dynamic(
@@ -93,15 +94,15 @@ export default async function BabyDetailPage({
   
   // 게스트 모드 체크
   const isGuestMode = babyId === "guest-baby-id";
-  
+
+  // 세션 가져오기
+  const session = !isGuestMode ? await getServerSession(authOptions) : null;
+
   // 게스트 모드가 아닐 경우에만 세션 체크
-  if (!isGuestMode) {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      // 현재 페이지 URL을 callbackUrl로 전달
-      const currentPath = `/babies/${babyId}${searchParams.tab ? `?tab=${searchParams.tab}` : ''}`;
-      redirect(`/login?callbackUrl=${encodeURIComponent(currentPath)}`);
-    }
+  if (!isGuestMode && !session?.user?.id) {
+    // 현재 페이지 URL을 callbackUrl로 전달
+    const currentPath = `/babies/${babyId}${searchParams.tab ? `?tab=${searchParams.tab}` : ''}`;
+    redirect(`/login?callbackUrl=${encodeURIComponent(currentPath)}`);
   }
 
 
@@ -114,8 +115,11 @@ export default async function BabyDetailPage({
 
   // 게스트 모드일 경우 샘플 데이터 사용
   let baby: Baby | null;
+  let allBabies: Baby[] = [];
+
   if (isGuestMode) {
     baby = guestBaby;
+    allBabies = [guestBaby];
   } else {
     // 아기 정보 가져오기 (필요한 필드만 select)
     baby = await prisma.baby.findUnique({
@@ -146,6 +150,36 @@ export default async function BabyDetailPage({
         </MobileContainer>
       );
     }
+
+    // 🔥 현재 사용자의 모든 babies 가져오기 (AppHeader BabySwitcher용)
+    if (session?.user?.id) {
+      allBabies = await prisma.baby.findMany({
+        where: {
+          Family: {
+            FamilyMembers: {
+              some: {
+                userId: session.user.id,
+              },
+            },
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          birthDate: true,
+          birthTime: true,
+          gender: true,
+          familyId: true,
+          photoUrl: true,
+          createdAt: true,
+          updatedAt: true,
+          aiSettings: true,
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+    }
   }
 
   // 최근 활동 기록 가져오기 (activities 탭에서만 필요)
@@ -158,6 +192,11 @@ export default async function BabyDetailPage({
 
   return (
     <MobileContainer>
+      {/* 🔥 Zustand Store 초기화 (AppHeader BabySwitcher용) */}
+      {!isGuestMode && allBabies.length > 0 && (
+        <BabyStoreInitializer babies={allBabies} currentBabyId={babyId} />
+      )}
+
       {/* 게스트 모드 안내 배너 */}
       {isGuestMode && (
         <Alert className="bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 border-purple-200">
