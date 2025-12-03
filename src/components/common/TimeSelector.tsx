@@ -70,7 +70,7 @@ export function TimeSelector({
       </Label>
       
       <div className="space-y-3 p-4 border rounded-lg bg-gray-50">
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide p-1">
           <Button
             type="button"
             onClick={() => handleDatePartChange(startOfToday())}

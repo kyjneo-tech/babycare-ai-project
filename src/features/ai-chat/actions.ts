@@ -448,6 +448,11 @@ export async function sendChatMessage(
     User: ${validatedMessage}
     AI:
     `;
+
+    console.log("---------------------------------------------------");
+    console.log("AI Prompt Debugging:");
+    console.log(finalPrompt);
+    console.log("---------------------------------------------------");
     
         // 4. Gemini API 호출 (Retry Logic 적용)
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });    let reply = "";
