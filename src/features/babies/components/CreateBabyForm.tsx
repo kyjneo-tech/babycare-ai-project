@@ -29,6 +29,7 @@ export function CreateBabyForm() {
   const [schedules, setSchedules] = useState<Note[]>([]);
   const [babyInfo, setBabyInfo] = useState<{ id: string; name: string; schedulesCount?: number } | null>(null);
   const [babyName, setBabyName] = useState('');
+  const [createdBabyId, setCreatedBabyId] = useState<string | null>(null); // 생성된 아기 ID 직접 관리
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -63,6 +64,8 @@ export function CreateBabyForm() {
       const babyName = result.data.baby.name;
       const schedulesCount = result.data.schedulesCount;
 
+      // 생성된 아기 ID를 즉시 저장 (Dialog 이동에 사용)
+      setCreatedBabyId(babyId);
       setBabyInfo({ id: babyId, name: babyName, schedulesCount });
 
       // ✨ Zustand Store 업데이트 (즉시 반영)
@@ -91,22 +94,18 @@ export function CreateBabyForm() {
   // Dialog가 닫히면 아기 페이지로 이동
   function handleDialogClose(open: boolean) {
     setShowScheduleDialog(open);
-    if (!open) {
-      // 다이얼로그가 닫히면 무조건 아기 페이지로 이동
-      if (babyInfo?.id) {
-        router.push(`/babies/${babyInfo.id}`);
-      } else {
-        // babyInfo가 없으면 홈으로
-        router.push('/');
-      }
+    if (!open && createdBabyId) {
+      // 다이얼로그가 닫히면 무조건 생성된 아기 페이지로 이동
+      console.log('[CreateBabyForm] Navigating to baby page:', createdBabyId);
+      router.push(`/babies/${createdBabyId}?tab=activities`);
     }
   }
 
   // 기록 화면으로 직접 이동
   function handleNavigateToRecording() {
-    if (babyInfo?.id) {
-      // 페이지 이동 시 컴포넌트가 unmount되므로 다이얼로그를 명시적으로 닫을 필요 없음
-      router.push(`/babies/${babyInfo.id}`);
+    if (createdBabyId) {
+      console.log('[CreateBabyForm] Navigating to recording:', createdBabyId);
+      router.push(`/babies/${createdBabyId}?tab=activities`);
     }
   }
   

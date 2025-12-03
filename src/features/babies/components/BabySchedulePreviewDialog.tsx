@@ -163,10 +163,14 @@ export function BabySchedulePreviewDialog({
         <div className="flex justify-end gap-2 px-4 sm:px-6 py-3 sm:py-4 border-t flex-shrink-0">
           <Button
             onClick={() => {
+              // Dialog 먼저 닫기
+              onOpenChange(false);
+              // 그 다음 페이지 이동
               if (onNavigate) {
-                onNavigate();
-              } else {
-                onOpenChange(false);
+                // 약간의 지연을 두어 Dialog가 완전히 닫힌 후 이동
+                setTimeout(() => {
+                  onNavigate();
+                }, 100);
               }
             }}
             variant="default"
