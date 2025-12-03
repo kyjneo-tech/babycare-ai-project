@@ -18,13 +18,16 @@ export default function AppHeader() {
   // ✨ Zustand Store 구독 (자동 업데이트!)
   const babies = useBabyStore((state) => state.babies);
 
-  // ⚠️ CRITICAL: 세션 변경 감지 (로그아웃 시 자동 Store 초기화)
+  // ⚠️ CRITICAL: 세션 사용자 변경 감지 (다른 사용자 로그인 또는 로그아웃 시 자동 Store 초기화)
   useEffect(() => {
     const currentUserId = session?.user?.id || null;
 
-    // 세션이 있다가 없어진 경우 (로그아웃)
-    if (prevSessionRef.current && !currentUserId) {
-      console.log('[SECURITY] Session lost - Clearing all stores');
+    // 이전 세션과 현재 세션이 다른 경우 (사용자 변경 또는 로그아웃)
+    // - 사용자 A → 사용자 B 로그인: Store 초기화
+    // - 사용자 A → 로그아웃: Store 초기화
+    // - 최초 마운트 시에는 prevSessionRef.current가 null이므로 실행 안됨
+    if (prevSessionRef.current !== null && prevSessionRef.current !== currentUserId) {
+      console.log(`[SECURITY] User session changed (${prevSessionRef.current} → ${currentUserId}) - Clearing all stores`);
 
       // 모든 Store 초기화 (다른 사용자 데이터 유출 방지)
       const clearAllStores = async () => {
@@ -38,7 +41,7 @@ export default function AppHeader() {
           useNoteStore.getState().clearNotes();
           useChatStore.getState().clearMessages();
 
-          console.log('[SECURITY] All stores cleared after session loss');
+          console.log('[SECURITY] All stores cleared after user session change');
         } catch (error) {
           console.error('[SECURITY] Failed to clear stores:', error);
         }
