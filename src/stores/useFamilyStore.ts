@@ -32,6 +32,7 @@ interface FamilyState {
   setCurrentUserPermission: (permission: string) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  clearFamily: () => void; // 전체 초기화 (로그아웃 시 사용)
 
   // Computed Selectors
   canManageFamily: () => boolean; // owner 또는 admin
@@ -73,6 +74,14 @@ export const useFamilyStore = create<FamilyState>()(
       setCurrentUserPermission: (permission) => set({ currentUserPermission: permission }),
       setLoading: (isLoading) => set({ isLoading }),
       setError: (error) => set({ error }),
+
+      clearFamily: () => set({
+        family: null,
+        members: [],
+        currentUserPermission: null,
+        isLoading: false,
+        error: null,
+      }),
 
       // Computed Selectors
       canManageFamily: () => {

@@ -19,6 +19,7 @@ interface ChatState {
   clearHistory: (babyId: string) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  clearMessages: () => void; // 전체 초기화 (로그아웃 시 사용)
 
   // Computed Selectors
   getMessageHistory: (babyId: string) => ChatMessage[];
@@ -54,6 +55,14 @@ export const useChatStore = create<ChatState>()(
         })),
       setLoading: (isLoading) => set({ isLoading }),
       setError: (error) => set({ error }),
+
+      clearMessages: () => set({
+        messages: {},
+        isGenerating: false,
+        streamingMessage: '',
+        isLoading: false,
+        error: null,
+      }),
 
       // Computed Selectors
       getMessageHistory: (babyId) => {

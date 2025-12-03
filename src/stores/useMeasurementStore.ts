@@ -19,6 +19,7 @@ interface MeasurementState {
   updateMeasurement: (measurementId: string, data: Partial<BabyMeasurement>) => void;
   deleteMeasurement: (babyId: string, measurementId: string) => void;
   clearMeasurements: (babyId: string) => void;
+  clearAll: () => void; // 전체 초기화 (로그아웃 시 사용)
 
   // Computed Selectors
   getLatestMeasurement: (babyId: string) => LatestMeasurement | null;
@@ -176,6 +177,13 @@ export const useMeasurementStore = create<MeasurementState>()(
             measurements: restMeasurements,
             latestMeasurements: restLatest,
           };
+        });
+      },
+
+      clearAll: () => {
+        set({
+          measurements: {},
+          latestMeasurements: {},
         });
       },
 

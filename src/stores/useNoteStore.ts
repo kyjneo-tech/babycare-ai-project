@@ -18,6 +18,7 @@ interface NoteState {
   uncompleteNote: (noteId: string) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  clearNotes: () => void; // 전체 초기화 (로그아웃 시 사용)
 
   // Computed Selectors
   getUpcomingSchedules: (babyId: string, days?: number) => Note[];
@@ -73,6 +74,13 @@ export const useNoteStore = create<NoteState>()(
         get().updateNote(noteId, { completedAt: null }),
       setLoading: (isLoading) => set({ isLoading }),
       setError: (error) => set({ error }),
+
+      clearNotes: () => set({
+        notes: {},
+        upcomingSchedules: {},
+        isLoading: false,
+        error: null,
+      }),
 
       // Computed Selectors
       getUpcomingSchedules: (babyId, days = 7) => {

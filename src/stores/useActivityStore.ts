@@ -14,6 +14,7 @@ interface ActivityState {
   updateActivity: (activityId: string, data: Partial<Activity>) => void;
   deleteActivity: (babyId: string, activityId: string) => void;
   clearActivities: (babyId: string) => void;
+  clearAll: () => void; // 전체 초기화 (로그아웃 시 사용)
 
   // 수면 타이머 전용
   startSleep: (babyId: string, activity: Activity) => void;
@@ -144,6 +145,14 @@ export const useActivityStore = create<ActivityState>()(
             recentActivities: restRecent,
             ongoingSleep: restSleep,
           };
+        });
+      },
+
+      clearAll: () => {
+        set({
+          activities: {},
+          recentActivities: {},
+          ongoingSleep: {},
         });
       },
 

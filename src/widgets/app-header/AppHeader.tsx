@@ -1,6 +1,7 @@
 // src/widgets/app-header/AppHeader.tsx
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -9,12 +10,45 @@ import LogoutButton from "./LogoutButton";
 import { useBabyStore } from "@/stores";
 
 export default function AppHeader() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
   const params = useParams();
-  
+  const prevSessionRef = useRef<string | null>(null);
+
   // ✨ Zustand Store 구독 (자동 업데이트!)
   const babies = useBabyStore((state) => state.babies);
+
+  // ⚠️ CRITICAL: 세션 변경 감지 (로그아웃 시 자동 Store 초기화)
+  useEffect(() => {
+    const currentUserId = session?.user?.id || null;
+
+    // 세션이 있다가 없어진 경우 (로그아웃)
+    if (prevSessionRef.current && !currentUserId) {
+      console.log('[SECURITY] Session lost - Clearing all stores');
+
+      // 모든 Store 초기화 (다른 사용자 데이터 유출 방지)
+      const clearAllStores = async () => {
+        try {
+          const { useBabyStore, useActivityStore, useMeasurementStore, useFamilyStore, useNoteStore, useChatStore } = await import('@/stores');
+
+          useBabyStore.getState().clearBabies();
+          useActivityStore.getState().clearAll();
+          useMeasurementStore.getState().clearAll();
+          useFamilyStore.getState().clearFamily();
+          useNoteStore.getState().clearNotes();
+          useChatStore.getState().clearMessages();
+
+          console.log('[SECURITY] All stores cleared after session loss');
+        } catch (error) {
+          console.error('[SECURITY] Failed to clear stores:', error);
+        }
+      };
+
+      clearAllStores();
+    }
+
+    prevSessionRef.current = currentUserId;
+  }, [session?.user?.id]);
 
   // 게스트 모드 확인
   const isGuestMode = pathname?.includes("guest-baby-id") || false;
