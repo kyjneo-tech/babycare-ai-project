@@ -8,6 +8,7 @@ import { getNoteTypeDetails } from "@/shared/utils/note-helpers";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -81,6 +82,8 @@ export function CompactScheduleCarousel({
         setSchedules(result.data);
       } else {
         console.error(result.error);
+        const errorMessage = typeof result.error === 'string' ? result.error : "알 수 없는 오류가 발생했습니다.";
+        toast.error("Failed to fetch upcoming schedules", { description: errorMessage });
       }
       setIsLoading(false);
     };

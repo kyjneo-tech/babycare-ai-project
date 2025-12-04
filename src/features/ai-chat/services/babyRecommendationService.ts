@@ -15,9 +15,48 @@ function getAgeInMonths(birthDate: Date): number {
   return Math.floor(diffDays / 30.4375); // 평균 한 달 일수
 }
 
+// ==========================================
+// 1. 권장 기준 상수 및 조회 함수 (Raw Data)
+// ==========================================
+
+export interface FeedingRecommendation {
+  minCount: number;
+  maxCount: number;
+  minVolume: number;
+  maxVolume: number;
+  description: string;
+}
+
+export function getFeedingRecommendationRange(months: number): FeedingRecommendation {
+  if (months < 1) return { minCount: 8, maxCount: 12, minVolume: 60, maxVolume: 90, description: "신생아" };
+  if (months < 3) return { minCount: 6, maxCount: 8, minVolume: 90, maxVolume: 120, description: "1-3개월" };
+  if (months < 6) return { minCount: 5, maxCount: 6, minVolume: 120, maxVolume: 180, description: "3-6개월" };
+  if (months < 12) return { minCount: 4, maxCount: 5, minVolume: 180, maxVolume: 240, description: "6-12개월 (이유식 병행)" };
+  return { minCount: 3, maxCount: 4, minVolume: 200, maxVolume: 240, description: "12개월 이상 (이유식 위주)" };
+}
+
+export interface SleepRecommendation {
+  totalMin: number;
+  totalMax: number;
+  nightMin: number;
+  nightMax: number;
+  napMin: number;
+  napMax: number;
+  description: string;
+}
+
+export function getSleepRecommendationRange(months: number): SleepRecommendation {
+  if (months < 3) return { totalMin: 14, totalMax: 17, nightMin: 8, nightMax: 9, napMin: 7, napMax: 8, description: "신생아-3개월" };
+  if (months < 6) return { totalMin: 12, totalMax: 15, nightMin: 10, nightMax: 11, napMin: 3, napMax: 4, description: "3-6개월" };
+  if (months < 12) return { totalMin: 12, totalMax: 14, nightMin: 11, nightMax: 12, napMin: 2, napMax: 3, description: "6-12개월" };
+  return { totalMin: 11, totalMax: 14, nightMin: 10, nightMax: 12, napMin: 1, napMax: 2, description: "12개월 이상" };
+}
+
+// ==========================================
+// 2. 기존 텍스트 생성 함수 (위 함수 활용)
+// ==========================================
+
 // 성장 백분위 계산 (매우 단순화된 예시, 실제로는 복잡한 차트 데이터 필요)
-// 이 함수는 실제 성장 차트 데이터를 기반으로 구현되어야 합니다.
-// 여기서는 예시를 위해 매우 단순화된 로직을 사용합니다.
 export function calculateGrowthPercentiles(babyInfo: BabyInfoForRecommendations): { weightPercentile?: string; heightPercentile?: string } {
   const ageInMonths = getAgeInMonths(babyInfo.birthDate);
   const { weightKg, heightCm } = babyInfo;
@@ -25,7 +64,7 @@ export function calculateGrowthPercentiles(babyInfo: BabyInfoForRecommendations)
   let weightPercentile: string | undefined;
   let heightPercentile: string | undefined;
 
-  // 예시: 6개월 남아 기준 (실제 데이터 아님)
+  // 예시: 6개월 남아 기준 (실제 데이터 아님) - 기존 로직 유지
   if (ageInMonths === 6 && babyInfo.gender === "MALE") {
     if (weightKg !== undefined) {
       if (weightKg < 7) weightPercentile = "10th 미만";
@@ -40,33 +79,24 @@ export function calculateGrowthPercentiles(babyInfo: BabyInfoForRecommendations)
       else heightPercentile = "90th 이상";
     }
   }
-  // TODO: 실제 성장 차트 데이터를 기반으로 더 정교하게 구현 필요
-
   return { weightPercentile, heightPercentile };
 }
 
-// 권장 수유량 계산 (매우 단순화된 예시)
+// 권장 수유량 가이드라인 텍스트
 export function getRecommendedFeedingAmount(babyInfo: BabyInfoForRecommendations): string {
   const ageInMonths = getAgeInMonths(babyInfo.birthDate);
-
-  if (ageInMonths < 1) return "신생아: 60-90ml/회, 하루 8-12회";
-  if (ageInMonths < 3) return "1-3개월: 90-120ml/회, 하루 6-8회";
-  if (ageInMonths < 6) return "3-6개월: 120-180ml/회, 하루 5-6회";
-  if (ageInMonths < 12) return "6-12개월: 180-240ml/회, 하루 4-5회 (이유식 병행)";
-  return "12개월 이상: 이유식 위주, 보충 수유";
+  const rec = getFeedingRecommendationRange(ageInMonths);
+  return `${rec.description}: ${rec.minVolume}-${rec.maxVolume}ml/회, 하루 ${rec.minCount}-${rec.maxCount}회`;
 }
 
-// 권장 수면 시간 계산 (매우 단순화된 예시)
+// 권장 수면 시간 가이드라인 텍스트
 export function getRecommendedSleepDuration(babyInfo: BabyInfoForRecommendations): string {
   const ageInMonths = getAgeInMonths(babyInfo.birthDate);
-
-  if (ageInMonths < 3) return "신생아-3개월: 하루 14-17시간 (밤잠 8-9시간, 낮잠 7-8시간)";
-  if (ageInMonths < 6) return "3-6개월: 하루 12-15시간 (밤잠 10-11시간, 낮잠 3-4시간)";
-  if (ageInMonths < 12) return "6-12개월: 하루 12-14시간 (밤잠 11-12시간, 낮잠 2-3시간)";
-  return "12개월 이상: 하루 11-14시간";
+  const rec = getSleepRecommendationRange(ageInMonths);
+  return `${rec.description}: 하루 ${rec.totalMin}-${rec.totalMax}시간 (밤잠 ${rec.nightMin}-${rec.nightMax}시간, 낮잠 ${rec.napMin}-${rec.napMax}시간)`;
 }
 
-// 약 적정 용량 가이드라인 (매우 일반적인 예시, 실제로는 약 종류와 체중 기반)
+// 약 적정 용량 가이드라인 (기존 유지)
 export function getMedicationDosageGuideline(babyInfo: BabyInfoForRecommendations, medicineName: string): string {
   const { weightKg } = babyInfo;
 
@@ -79,7 +109,7 @@ export function getMedicationDosageGuideline(babyInfo: BabyInfoForRecommendation
     const maxDose = (15 * weightKg).toFixed(0);
     return `아세트아미노펜 (해열제): 체중 1kg당 10-15mg/회, 4-6시간 간격. ${weightKg}kg 아기의 경우 ${minDose}-${maxDose}mg/회. (시럽의 경우 농도 확인 필요)`;
   }
-  // TODO: 다른 약에 대한 가이드라인 추가
 
   return "해당 약에 대한 일반적인 용량 정보는 없습니다. 의사 또는 약사와 상담하세요.";
 }
+

@@ -18,7 +18,7 @@ export const WONDER_WEEKS: WonderWeek[] = [
   {
     id: 'leap-1',
     leapNumber: 1,
-    name: 'Leap 1: 감각의 변화',
+    name: '1차 도약기: 감각의 변화',
     startWeek: 4,
     endWeek: 5,
     description: '생후 4-5주',
@@ -28,7 +28,7 @@ export const WONDER_WEEKS: WonderWeek[] = [
   {
     id: 'leap-2',
     leapNumber: 2,
-    name: 'Leap 2: 패턴 인식',
+    name: '2차 도약기: 패턴 인식',
     startWeek: 7.5,
     endWeek: 9.5,
     description: '생후 7.5-9.5주 (약 2개월)',
@@ -38,7 +38,7 @@ export const WONDER_WEEKS: WonderWeek[] = [
   {
     id: 'leap-3',
     leapNumber: 3,
-    name: 'Leap 3: 부드러운 변화',
+    name: '3차 도약기: 부드러운 변화',
     startWeek: 11.5,
     endWeek: 12.5,
     description: '생후 11.5-12.5주 (약 3개월)',
@@ -48,7 +48,7 @@ export const WONDER_WEEKS: WonderWeek[] = [
   {
     id: 'leap-4',
     leapNumber: 4,
-    name: 'Leap 4: 사건의 연결',
+    name: '4차 도약기: 사건의 연결',
     startWeek: 14.5,
     endWeek: 19.5,
     description: '생후 14.5-19.5주 (약 4-5개월)',
@@ -59,7 +59,7 @@ export const WONDER_WEEKS: WonderWeek[] = [
   {
     id: 'leap-5',
     leapNumber: 5,
-    name: 'Leap 5: 거리 개념',
+    name: '5차 도약기: 거리 개념',
     startWeek: 22.5,
     endWeek: 26.5,
     description: '생후 22.5-26.5주 (약 6개월)',
@@ -69,7 +69,7 @@ export const WONDER_WEEKS: WonderWeek[] = [
   {
     id: 'leap-6',
     leapNumber: 6,
-    name: 'Leap 6: 물체 지속성',
+    name: '6차 도약기: 물체 지속성',
     startWeek: 33.5,
     endWeek: 37.5,
     description: '생후 33.5-37.5주 (약 8-9개월)',
@@ -80,7 +80,7 @@ export const WONDER_WEEKS: WonderWeek[] = [
   {
     id: 'leap-7',
     leapNumber: 7,
-    name: 'Leap 7: 순서 개념',
+    name: '7차 도약기: 순서 개념',
     startWeek: 41.5,
     endWeek: 46.5,
     description: '생후 41.5-46.5주 (약 10-11개월)',
@@ -90,7 +90,7 @@ export const WONDER_WEEKS: WonderWeek[] = [
   {
     id: 'leap-8',
     leapNumber: 8,
-    name: 'Leap 8: 프로그램 이해',
+    name: '8차 도약기: 프로그램 이해',
     startWeek: 50.5,
     endWeek: 54.5,
     description: '생후 50.5-54.5주 (약 12-13개월)',
@@ -100,7 +100,7 @@ export const WONDER_WEEKS: WonderWeek[] = [
   {
     id: 'leap-9',
     leapNumber: 9,
-    name: 'Leap 9: 원리 이해',
+    name: '9차 도약기: 원리 이해',
     startWeek: 59.5,
     endWeek: 64.5,
     description: '생후 59.5-64.5주 (약 15개월)',
@@ -110,7 +110,7 @@ export const WONDER_WEEKS: WonderWeek[] = [
   {
     id: 'leap-10',
     leapNumber: 10,
-    name: 'Leap 10: 시스템 이해',
+    name: '10차 도약기: 시스템 이해',
     startWeek: 70.5,
     endWeek: 75.5,
     description: '생후 70.5-75.5주 (약 17-18개월)',

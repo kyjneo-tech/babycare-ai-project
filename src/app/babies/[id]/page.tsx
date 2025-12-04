@@ -216,7 +216,7 @@ export default async function BabyDetailPage({
       {/* <BabyDetailTabs babyId={baby.id} /> */}
 
       {/* Tab Content */}
-      <div className="mt-6">
+      <div className="mt-0">
         {currentTab === "activities" && (
           <div className="space-y-4">
             {/* 일정 캐러셀 - 최상단 */}

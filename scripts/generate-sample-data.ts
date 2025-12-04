@@ -81,8 +81,7 @@ async function generateData() {
           endTime: new Date(currentTime),
           diaperType: 'urine',
           stoolCondition: 'normal',
-          stoolColor: 'yellow',
-        });
+                  });
       }
 
       currentTime = addMinutes(currentTime, feedingDuration + 10); // Back to sleep after 10 mins settling
@@ -114,8 +113,7 @@ async function generateData() {
           endTime: new Date(currentTime),
           diaperType: Math.random() > 0.8 ? 'stool' : 'urine',
           stoolCondition: Math.random() > 0.7 ? 'normal' : 'loose',
-          stoolColor: 'yellow',
-        });
+                  });
       }
 
       // 3. Awake/Play time (45 - 90 mins)

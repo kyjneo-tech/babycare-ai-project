@@ -53,7 +53,7 @@ export function EditActivityDialog({
   // --- Refactored State Management ---
   const [startTime, setStartTime] = useState(new Date(activity.startTime));
   const [endTime, setEndTime] = useState(activity.endTime ? new Date(activity.endTime) : new Date(activity.startTime));
-  const [note, setNote] = useState(activity.note || "");
+  const [note, setNote] = useState(activity.memo || "");
 
   // Type-specific states
   const [feedingType, setFeedingType] = useState(activity.feedingType || "formula");
@@ -93,7 +93,7 @@ export function EditActivityDialog({
   useEffect(() => {
     setStartTime(new Date(activity.startTime));
     setEndTime(activity.endTime ? new Date(activity.endTime) : new Date(activity.startTime));
-    setNote(activity.note || "");
+    setNote(activity.memo || "");
     setFeedingType(activity.feedingType || "formula");
     setFeedingAmount(activity.feedingAmount?.toString() || "");
     setFeedingDuration(activity.duration?.toString() || "");

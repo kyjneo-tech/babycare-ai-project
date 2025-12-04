@@ -10,6 +10,7 @@ import { MILESTONES } from '@/shared/templates/milestone-templates';
 import { WONDER_WEEKS } from '@/shared/templates/wonder-weeks-templates';
 import { SLEEP_REGRESSIONS } from '@/shared/templates/sleep-regression-templates';
 import { FEEDING_STAGES } from '@/shared/templates/feeding-stage-templates';
+import { MILESTONES as DEVELOPMENTAL_MILESTONES } from '@/shared/templates/developmental-milestones';
 import {
   addMonthsToBirthDate,
   addWeeksToBirthDate,
@@ -181,7 +182,7 @@ export function generateWonderWeeksNotifications(
       dueDate: notificationDate,
       completed: false,
       priority: 'MEDIUM',
-      tags: ['원더윅스', `Leap ${wonderWeek.leapNumber}`],
+      tags: ['도약기', `${wonderWeek.leapNumber}차 도약기`],
       metadata: {
         wonderWeekId: wonderWeek.id,
         leapNumber: wonderWeek.leapNumber,
@@ -271,6 +272,63 @@ export function generateFeedingStageNotifications(
 }
 
 /**
+ * 발달 이정표 일정 생성 (상세 체크리스트)
+ */
+export function generateDevelopmentalMilestones(
+  babyId: string,
+  userId: string,
+  birthDate: Date
+): CreateNoteInput[] {
+  return DEVELOPMENTAL_MILESTONES.map((milestone) => {
+    // 시작일에 생성, 종료일을 기한으로 설정
+    const startMonth = milestone.ageRangeMonths[0];
+    const endMonth = milestone.ageRangeMonths[1];
+    const dueDate = addMonthsToBirthDate(birthDate, endMonth);
+
+    // 카테고리별 체크리스트 포맷팅
+    const grossMotorList = milestone.categories.grossMotor
+      .map(item => `☐ ${item}`).join('\n');
+    const fineMotorList = milestone.categories.fineMotor
+      .map(item => `☐ ${item}`).join('\n');
+    const languageList = milestone.categories.language
+      .map(item => `☐ ${item}`).join('\n');
+    const socialList = milestone.categories.social
+      .map(item => `☐ ${item}`).join('\n');
+
+    return {
+      babyId,
+      userId,
+      type: 'MILESTONE' as NoteType,
+      title: `📍 ${milestone.title} 발달 이정표 (${startMonth}-${endMonth}개월)`,
+      content: `
+🏃 대근육 발달
+${grossMotorList}
+
+✋ 소근육 발달
+${fineMotorList}
+
+💬 언어 발달
+${languageList}
+
+👶 사회성 발달
+${socialList}
+
+💡 발달은 개인차가 있습니다. 이정표는 참고용이며, 우려사항이 있다면 전문가와 상담하세요.
+      `.trim(),
+      dueDate,
+      completed: false,
+      priority: 'MEDIUM',
+      tags: ['발달', '이정표', milestone.title],
+      metadata: {
+        milestoneId: milestone.id,
+        ageRangeMonths: milestone.ageRangeMonths,
+      },
+      reminderDays: [0],
+    };
+  });
+}
+
+/**
  * 모든 일정 생성 (All-in-One)
  */
 export function generateAllSchedules(
@@ -284,6 +342,7 @@ export function generateAllSchedules(
     includeWonderWeeks?: boolean;
     includeSleepRegression?: boolean;
     includeFeedingStage?: boolean;
+    includeDevelopmentalMilestones?: boolean;
   } = {}
 ): CreateNoteInput[] {
   const {
@@ -293,6 +352,7 @@ export function generateAllSchedules(
     includeWonderWeeks = true,
     includeSleepRegression = true,
     includeFeedingStage = true,
+    includeDevelopmentalMilestones = true,
   } = options;
 
   const allSchedules: CreateNoteInput[] = [];
@@ -331,6 +391,12 @@ export function generateAllSchedules(
     allSchedules.push(
       ...generateFeedingStageNotifications(babyId, userId, birthDate)
     );
+  }
+
+  if (includeDevelopmentalMilestones) {
+    const milestones = generateDevelopmentalMilestones(babyId, userId, birthDate);
+    console.log(`[DEBUG] Generating ${milestones.length} developmental milestones for baby ${babyId}`);
+    allSchedules.push(...milestones);
   }
 
   return allSchedules;

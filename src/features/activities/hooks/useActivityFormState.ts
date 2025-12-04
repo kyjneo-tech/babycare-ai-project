@@ -36,8 +36,6 @@ export interface UseActivityFormStateReturn {
   setSleepType: Dispatch<SetStateAction<string>>;
   diaperType: string;
   setDiaperType: Dispatch<SetStateAction<string>>;
-  stoolColor: string;
-  setStoolColor: Dispatch<SetStateAction<string>>;
   stoolCondition: string;
   setStoolCondition: Dispatch<SetStateAction<string>>;
   medicineName: string;
@@ -99,7 +97,6 @@ export function useActivityFormState(): UseActivityFormStateReturn {
   const [breastSide, setBreastSide] = useState("");
   const [sleepType, setSleepType] = useState("nap");
   const [diaperType, setDiaperType] = useState("urine");
-  const [stoolColor, setStoolColor] = useState("");
   const [stoolCondition, setStoolCondition] = useState("normal"); // 정상 대변이 기본값
   const [medicineName, setMedicineName] = useState("");
   const [medicineAmount, setMedicineAmount] = useState("");
@@ -145,7 +142,6 @@ export function useActivityFormState(): UseActivityFormStateReturn {
     breastSide, setBreastSide,
     sleepType, setSleepType,
     diaperType, setDiaperType,
-    stoolColor, setStoolColor,
     stoolCondition, setStoolCondition,
     medicineName, setMedicineName,
     medicineAmount, setMedicineAmount,

@@ -132,8 +132,8 @@ export const getActivityDetails = (activity: Activity): string[] => {
       break;
   }
 
-  if (activity.note) {
-    details.push(`메모: ${activity.note}`);
+  if (activity.memo) {
+    details.push(`메모: ${activity.memo}`);
   }
 
   return details;

@@ -22,7 +22,7 @@ export const SLEEP_REGRESSIONS: SleepRegression[] = [
     causes: [
       '수면 사이클 변화 (성인형으로 전환)',
       '멜라토닌 분비 시작',
-      '원더윅스 Leap 4와 겹침',
+      '원더윅스 4와 겹침',
     ],
     symptoms: [
       '밤잠 자주 깸',
@@ -44,7 +44,7 @@ export const SLEEP_REGRESSIONS: SleepRegression[] = [
     causes: [
       '기기, 잡고 서기 등 대근육 발달',
       '분리불안 시작',
-      '원더윅스 Leap 6와 겹침',
+      '원더윅스 6와 겹침',
     ],
     symptoms: [
       '밤에 자다가 일어나서 앉거나 섬',

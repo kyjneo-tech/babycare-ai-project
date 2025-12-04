@@ -9,6 +9,7 @@ import {
   feedingTypeLabels,
   diaperTypeLabels,
   breastSideLabels,
+  stoolConditionLabels,
 } from "@/shared/utils/activityLabels";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -98,11 +99,11 @@ export function ActivityCard({ activity, onDelete, onUpdate }: ActivityCardProps
                   activity.diaperType as keyof typeof diaperTypeLabels
                 ]}
             </p>
-            {activity.stoolColor && (
-              <p className={cn(TYPOGRAPHY.caption, "mt-1")}>
-                색상: {activity.stoolColor}
-              </p>
-            )}
+                  {activity.stoolCondition && (
+                    <p className="text-sm text-gray-500">
+                      상태: {stoolConditionLabels[activity.stoolCondition as keyof typeof stoolConditionLabels] || activity.stoolCondition}
+                    </p>
+                  )}
           </>
         );
       case "BATH":
@@ -164,9 +165,9 @@ export function ActivityCard({ activity, onDelete, onUpdate }: ActivityCardProps
               </Badge>
             </div>
             {renderActivityDetails()}
-            {activity.note && (
+            {activity.memo && (
               <p className={cn(TYPOGRAPHY.body.small, "mt-2 text-muted-foreground italic")}>
-                {activity.note}
+                {activity.memo}
               </p>
             )}
           </div>

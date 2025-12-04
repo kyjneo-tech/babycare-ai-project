@@ -105,6 +105,7 @@ export async function POST(
       includeWonderWeeks?: boolean;
       includeSleepRegression?: boolean;
       includeFeedingStage?: boolean;
+      includeDevelopmentalMilestones?: boolean;
     };
     const {
       includeVaccination = true,
@@ -113,6 +114,7 @@ export async function POST(
       includeWonderWeeks = true,
       includeSleepRegression = true,
       includeFeedingStage = true,
+      includeDevelopmentalMilestones = true,
     } = body;
 
     // 아기 정보 조회 (필요한 필드만 select)
@@ -148,6 +150,7 @@ export async function POST(
       includeWonderWeeks,
       includeSleepRegression,
       includeFeedingStage,
+      includeDevelopmentalMilestones,
     });
 
     // CreateNoteData 타입으로 변환

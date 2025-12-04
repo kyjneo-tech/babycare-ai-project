@@ -32,6 +32,13 @@ export const breastSideLabels = {
   right: "오른쪽",
 };
 
+export const stoolConditionLabels = {
+  watery: "묽은변",
+  loose: "묽은변",
+  normal: "정상변",
+  hard: "된변",
+};
+
 // 활동 설명 생성 함수
 export function getActivityDescription(activity: any): string {
   switch (activity.type) {

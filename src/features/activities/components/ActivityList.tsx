@@ -15,6 +15,7 @@ interface DailySummary {
   sleepMinutes: number;
   feedingAmount: number;
   feedingCount: number;
+  diaperCount: number;
 }
 
 export function ActivityList({
@@ -57,9 +58,11 @@ export function ActivityList({
         if (curr.feedingAmount) {
           acc.feedingAmount += curr.feedingAmount;
         }
+      } else if (curr.type === 'DIAPER') {
+        acc.diaperCount += 1;
       }
       return acc;
-    }, { sleepMinutes: 0, feedingAmount: 0, feedingCount: 0 });
+    }, { sleepMinutes: 0, feedingAmount: 0, feedingCount: 0, diaperCount: 0 });
   };
 
   const dailySummary = getDailySummary(activities);
@@ -190,11 +193,24 @@ export function ActivityList({
     return groups;
   }, {} as Record<string, Activity[]>);
 
-  const renderDateHeader = (dateStr: string) => {
+  const getDateLabel = useCallback((dateStr: string) => {
     const date = new Date(dateStr);
-    let label = format(date, 'M월 d일 EEEE', { locale: ko });
-    if (isToday(date)) label = "오늘";
-    if (isYesterday(date)) label = "어제";
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // 날짜만 비교 (시간 제외)
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const yesterdayOnly = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+
+    if (dateOnly.getTime() === todayOnly.getTime()) return "오늘";
+    if (dateOnly.getTime() === yesterdayOnly.getTime()) return "어제";
+    return format(date, 'M월 d일 EEEE', { locale: ko });
+  }, []);
+
+  const renderDateHeader = (dateStr: string) => {
+    const label = getDateLabel(dateStr);
 
     return (
       <div className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur py-2 px-1 mb-4 border-b border-gray-100">
@@ -210,9 +226,9 @@ export function ActivityList({
     <div className="space-y-[clamp(16px,5vw,24px)]">
       {/* 오늘의 요약 헤더 */}
       {activities.length > 0 && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-[clamp(12px,4vw,16px)] rounded-xl border border-blue-100 shadow-sm mb-[clamp(16px,5vw,24px)]">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-[clamp(10px,3vw,14px)] rounded-xl border border-blue-100 shadow-sm mb-[clamp(8px,2vw,12px)]">
           <div className="flex justify-between items-start mb-2">
-            <h3 className="text-[clamp(10px,3vw,12px)] font-bold text-blue-800 uppercase tracking-wide">Today's Summary</h3>
+            <h3 className="text-[clamp(12px,3.5vw,14px)] font-bold text-blue-800 uppercase tracking-wide">오늘의 활동</h3>
             
             {/* 일괄 작업 컨트롤 */}
             <div className="flex gap-2">
@@ -234,17 +250,23 @@ export function ActivityList({
             </div>
           </div>
           
-          <div className="flex gap-[clamp(16px,5vw,24px)]">
+          <div className="flex justify-around">
             <div>
-              <p className="text-[clamp(10px,3vw,12px)] text-blue-600 mb-0.5">총 수면</p>
+              <p className="text-[clamp(12px,3.5vw,14px)] text-blue-600 mb-0.5">총 수면</p>
               <p className="text-[clamp(16px,5vw,18px)] font-bold text-blue-900">
                 {Math.floor(dailySummary.sleepMinutes / 60)}시간 {dailySummary.sleepMinutes % 60}분
               </p>
             </div>
             <div>
-              <p className="text-[clamp(10px,3vw,12px)] text-blue-600 mb-0.5">총 수유량</p>
+              <p className="text-[clamp(12px,3.5vw,14px)] text-blue-600 mb-0.5">총 수유량</p>
               <p className="text-[clamp(16px,5vw,18px)] font-bold text-blue-900">
                 {dailySummary.feedingAmount}ml <span className="text-[clamp(12px,3.5vw,14px)] font-normal text-blue-700">({dailySummary.feedingCount}회)</span>
+              </p>
+            </div>
+            <div>
+              <p className="text-[clamp(12px,3.5vw,14px)] text-blue-600 mb-0.5">배변 횟수</p>
+              <p className="text-[clamp(16px,5vw,18px)] font-bold text-blue-900">
+                {dailySummary.diaperCount}회
               </p>
             </div>
           </div>

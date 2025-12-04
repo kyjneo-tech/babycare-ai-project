@@ -57,7 +57,7 @@ const typeColors: Record<NoteType, string> = {
 const typeLabels: Record<NoteType, string> = {
   VACCINATION: "예방접종",
   HEALTH_CHECKUP: "건강검진",
-  WONDER_WEEK: "원더윅스",
+  WONDER_WEEK: "원더위크",
   SLEEP_REGRESSION: "수면퇴행",
   FEEDING_STAGE: "이유식",
   MILESTONE: "발달",

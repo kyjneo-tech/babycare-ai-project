@@ -54,7 +54,7 @@ export function MeasurementCard({ babyId }: MeasurementCardProps) {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-2 bg-white rounded-lg border border-gray-200 px-3 py-2">
+      <div className="flex items-center justify-between gap-2 bg-white rounded-lg border border-gray-200 px-4 py-3">
         {/* 타이틀 */}
         <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
           <Scale className="h-4 w-4" />
@@ -65,18 +65,16 @@ export function MeasurementCard({ babyId }: MeasurementCardProps) {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            size="sm"
             onClick={() => setShowInputDialog(true)}
-            className="h-7 px-2 text-xs"
+            className="h-8 px-3 text-sm"
           >
             📏 키 & 체중
           </Button>
 
           <Button
             variant="outline"
-            size="sm"
             onClick={() => setShowChartDialog(true)}
-            className="h-7 px-2 text-xs"
+            className="h-8 px-3 text-sm"
           >
             📊 성장 차트
           </Button>

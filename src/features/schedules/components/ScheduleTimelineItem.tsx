@@ -10,6 +10,7 @@ import { format, differenceInDays } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Trash2, Pencil } from "lucide-react";
 import { ScheduleDetailModal } from "./ScheduleDetailModal";
+import { MilestoneChecklistView } from "@/features/milestones/components/MilestoneChecklistView";
 import { useRouter } from "next/navigation";
 
 interface ScheduleTimelineItemProps {
@@ -158,11 +159,13 @@ export function ScheduleTimelineItem({ schedule, babyId, onUpdate, onUpdateLocal
             )}
 
             {/* 내용 */}
-            {schedule.content && (
+            {schedule.type === 'MILESTONE' ? (
+              <MilestoneChecklistView note={schedule} />
+            ) : schedule.content ? (
               <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded-md whitespace-pre-wrap">
                 {schedule.content}
               </p>
-            )}
+            ) : null}
           </div>
 
           {/* 액션 버튼들 - 하단 우측 배치 */}

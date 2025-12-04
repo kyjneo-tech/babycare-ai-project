@@ -307,6 +307,7 @@ export async function generateSchedulesAction(
     includeWonderWeeks?: boolean;
     includeSleepRegression?: boolean;
     includeFeedingStage?: boolean;
+    includeDevelopmentalMilestones?: boolean;
   }
 ): Promise<ActionResult<{ count: number }>> {
   try {
@@ -337,10 +338,13 @@ export async function generateSchedulesAction(
     }
 
     // 일정 생성
+    console.log('[DEBUG] generateSchedulesAction options:', { ...options, includeDevelopmentalMilestones: true });
     const schedules = generateAllSchedules(babyId, user.id, baby.birthDate, {
       ...options,
       includeMilestone: false,
+      includeDevelopmentalMilestones: true, // 발달 이정표 포함
     });
+    console.log(`[DEBUG] Generated ${schedules.length} total schedules`);
 
     // CreateNoteData 타입으로 변환
     const cleanedSchedules: CreateNoteData[] = schedules.map(schedule => ({
@@ -584,6 +588,149 @@ export async function getAllSchedulesForBaby(
   } catch (error) {
     console.error('getAllSchedulesForBaby error:', error);
     return { success: false, error: 'Failed to fetch schedules' };
+  }
+}
+
+/**
+ * 오늘을 기준으로 일정 조회 (투데이 핀 보장)
+ * 과거 10개 + 미래 40개를 조회하여 항상 오늘 위치를 포함
+ */
+export async function getInitialSchedulesWithToday(
+  babyId: string
+): Promise<ActionResult<{
+  schedules: Note[];
+  todayIndex: number;
+  hasMorePast: boolean;
+  hasMoreFuture: boolean;
+  babyName: string;
+  allBabies: {id: string, name: string}[];
+}>> {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        FamilyMembers: {
+          include: {
+            Family: {
+              include: {
+                Babies: {
+                  select: { id: true, name: true },
+                  orderBy: { createdAt: 'asc' },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const allBabies = user?.FamilyMembers.flatMap(fm => fm.Family.Babies) ?? [];
+    const currentBaby = allBabies.find(b => b.id === babyId);
+
+    if (!currentBaby) {
+      return {
+        success: true,
+        data: {
+          schedules: [],
+          todayIndex: -1,
+          hasMorePast: false,
+          hasMoreFuture: false,
+          babyName: '',
+          allBabies: allBabies
+        }
+      };
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const where = {
+      babyId: babyId,
+      type: {
+        in: ['VACCINATION', 'HEALTH_CHECKUP', 'MILESTONE', 'WONDER_WEEK', 'SLEEP_REGRESSION', 'FEEDING_STAGE', 'APPOINTMENT', 'TODO'] as NoteType[],
+      },
+    };
+
+    // 과거 일정 (오늘 미포함, 최신순으로 10개)
+    const pastSchedules = await prisma.note.findMany({
+      where: {
+        ...where,
+        dueDate: {
+          lt: today,
+        },
+      },
+      orderBy: [
+        { dueDate: 'desc' },
+        { createdAt: 'desc' },
+      ],
+      take: 10,
+    });
+
+    // 미래 일정 (오늘 포함, 오래된 순으로 40개)
+    const futureSchedules = await prisma.note.findMany({
+      where: {
+        ...where,
+        dueDate: {
+          gte: today,
+        },
+      },
+      orderBy: [
+        { dueDate: 'asc' },
+        { createdAt: 'desc' },
+      ],
+      take: 40,
+    });
+
+    // 과거 일정을 역순으로 정렬 (오래된 순)
+    const sortedPastSchedules = pastSchedules.reverse();
+
+    // 전체 일정 결합
+    const schedules = [...sortedPastSchedules, ...futureSchedules];
+
+    // todayIndex 계산
+    const todayIndex = sortedPastSchedules.length;
+
+    // 더 많은 일정이 있는지 확인
+    const totalPastCount = await prisma.note.count({
+      where: {
+        ...where,
+        dueDate: {
+          lt: today,
+        },
+      },
+    });
+
+    const totalFutureCount = await prisma.note.count({
+      where: {
+        ...where,
+        dueDate: {
+          gte: today,
+        },
+      },
+    });
+
+    const hasMorePast = totalPastCount > 10;
+    const hasMoreFuture = totalFutureCount > 40;
+
+    return {
+      success: true,
+      data: {
+        schedules,
+        todayIndex,
+        hasMorePast,
+        hasMoreFuture,
+        babyName: currentBaby.name,
+        allBabies
+      }
+    };
+  } catch (error) {
+    console.error('getInitialSchedulesWithToday error:', error);
+    return { success: false, error: 'Failed to fetch schedules with today' };
   }
 }
 

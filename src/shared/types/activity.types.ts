@@ -33,7 +33,7 @@ export interface SleepFormData extends BaseActivityFormData {
 export interface DiaperFormData extends BaseActivityFormData {
   type: "DIAPER";
   diaperType: "urine" | "stool" | "both";
-  stoolColor?: string;
+  
   stoolCondition?: string;
 }
 

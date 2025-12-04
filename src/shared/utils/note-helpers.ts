@@ -7,39 +7,37 @@ import { NoteType, Priority } from '@prisma/client';
 /**
  * NoteType별 아이콘 반환
  */
+export const noteTypeIcons: Record<NoteType, string> = {
+  MEMO: '📝',
+  TODO: '✅',
+  VACCINATION: '💉',
+  HEALTH_CHECKUP: '🏥',
+  MILESTONE: '🎯',
+  WONDER_WEEK: '🌊',
+  SLEEP_REGRESSION: '😴',
+  FEEDING_STAGE: '🍼',
+  APPOINTMENT: '📅',
+};
 export function getNoteIcon(type: NoteType): string {
-  const iconMap: Record<NoteType, string> = {
-    MEMO: '📝',
-    TODO: '✅',
-    VACCINATION: '💉',
-    HEALTH_CHECKUP: '🏥',
-    MILESTONE: '🎯',
-    WONDER_WEEK: '🌊',
-    SLEEP_REGRESSION: '😴',
-    FEEDING_STAGE: '🍼',
-    APPOINTMENT: '📅',
-  };
-
-  return iconMap[type] || '📌';
+  return noteTypeIcons[type] || '📌';
 }
 
 /**
  * NoteType별 색상 반환 (Tailwind CSS 클래스)
  */
+export const noteTypeColors: Record<NoteType, string> = {
+  MEMO: 'bg-gray-100 text-gray-800',
+  TODO: 'bg-green-100 text-green-800',
+  VACCINATION: 'bg-blue-100 text-blue-800',
+  HEALTH_CHECKUP: 'bg-purple-100 text-purple-800',
+  MILESTONE: 'bg-yellow-100 text-yellow-800',
+  WONDER_WEEK: 'bg-cyan-100 text-cyan-800',
+  SLEEP_REGRESSION: 'bg-indigo-100 text-indigo-800',
+  FEEDING_STAGE: 'bg-orange-100 text-orange-800',
+  APPOINTMENT: 'bg-pink-100 text-pink-800',
+};
 export function getNoteColor(type: NoteType): string {
-  const colorMap: Record<NoteType, string> = {
-    MEMO: 'bg-gray-100 text-gray-800',
-    TODO: 'bg-blue-100 text-blue-800',
-    VACCINATION: 'bg-purple-100 text-purple-800',
-    HEALTH_CHECKUP: 'bg-green-100 text-green-800',
-    MILESTONE: 'bg-yellow-100 text-yellow-800',
-    WONDER_WEEK: 'bg-cyan-100 text-cyan-800',
-    SLEEP_REGRESSION: 'bg-indigo-100 text-indigo-800',
-    FEEDING_STAGE: 'bg-primary/10 text-primary',
-    APPOINTMENT: 'bg-orange-100 text-orange-800',
-  };
-
-  return colorMap[type] || 'bg-gray-100 text-gray-800';
+  return noteTypeColors[type] || 'bg-gray-100 text-gray-800';
 }
 
 /**
@@ -73,20 +71,19 @@ export function getPriorityLabel(priority: Priority): string {
 /**
  * NoteType별 한글 라벨 반환
  */
+export const noteTypeLabels: Record<NoteType, string> = {
+  MEMO: '메모',
+  TODO: '할 일',
+  VACCINATION: '예방접종',
+  HEALTH_CHECKUP: '건강검진',
+  MILESTONE: '마일스톤',
+  WONDER_WEEK: '원더위크',
+  SLEEP_REGRESSION: '수면퇴행',
+  FEEDING_STAGE: '이유식',
+  APPOINTMENT: '병원예약',
+};
 export function getNoteTypeLabel(type: NoteType): string {
-  const labelMap: Record<NoteType, string> = {
-    MEMO: '메모',
-    TODO: '할 일',
-    VACCINATION: '예방접종',
-    HEALTH_CHECKUP: '건강검진',
-    MILESTONE: '발달 마일스톤',
-    WONDER_WEEK: '원더윅스',
-    SLEEP_REGRESSION: '수면 퇴행기',
-    FEEDING_STAGE: '이유식 단계',
-    APPOINTMENT: '병원 예약',
-  };
-
-  return labelMap[type] || '노트';
+  return noteTypeLabels[type] || '노트';
 }
 
 /**

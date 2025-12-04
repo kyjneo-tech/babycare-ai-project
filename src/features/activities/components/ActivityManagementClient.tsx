@@ -40,7 +40,7 @@ export function ActivityManagementClient({
       </div>
 
       {/* 최근 활동 목록 */}
-      <div>
+      <div className="mt-8">
         <h2 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-4">최근 활동</h2>
         <ActivityList
           babyId={babyId}

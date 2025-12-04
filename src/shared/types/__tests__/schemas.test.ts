@@ -270,14 +270,13 @@ describe('CreateActivitySchema', () => {
       expect(result.success).toBe(true);
     });
 
-    it('stoolColor와 stoolCondition은 선택 사항이어야 한다', () => {
+    it('stoolCondition은 선택 사항이어야 한다', () => {
       // Given
       const validData = {
         babyId: 'baby-1',
         type: 'DIAPER',
         startTime: new Date(),
         diaperType: 'poop',
-        stoolColor: 'yellow',
         stoolCondition: 'soft',
       };
 

@@ -72,7 +72,6 @@ export const CreateActivitySchema = z.object({
 
   // 배변 관련 필드
   diaperType: z.string().max(50, '배변 유형이 너무 깁니다.').optional(),
-  stoolColor: z.string().max(50, '대변 색상 정보가 너무 깁니다.').optional(),
   stoolCondition: z.string().max(50, '대변 상태 정보가 너무 깁니다.').optional(),
 
   // 약 복용 관련 필드

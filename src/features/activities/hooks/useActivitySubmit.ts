@@ -35,7 +35,6 @@ export function useActivitySubmit({
     temperature,
     feedingDuration,
     breastSide,
-    stoolColor,
     bathType,
     bathTemp,
     playLocation,
@@ -135,7 +134,6 @@ export function useActivitySubmit({
 
       } else if (type === "DIAPER") {
         input.diaperType = diaperType;
-        input.stoolColor = stoolColor;
         input.stoolCondition = stoolCondition;
       } else if (type === "MEDICINE") {
         input.medicineName = medicineName;
