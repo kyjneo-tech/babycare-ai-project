@@ -63,10 +63,24 @@ const InteractiveScheduleTimeline = dynamic(
   }
 );
 
+const MilestoneTimelineView = dynamic(
+  () => import("@/features/milestones/components/MilestoneTimelineView").then(mod => ({ default: mod.MilestoneTimelineView })),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-gray-500">발달 이정표를 불러오는 중...</p>
+        </div>
+      </div>
+    ),
+  }
+);
+
 // 페이지 캐시 설정: 3초마다 재검증 (ISR)
 export const revalidate = 3;
 
-type TabType = "activities" | "analytics" | "ai-chat" | "timeline";
+type TabType = "activities" | "analytics" | "ai-chat" | "timeline" | "milestones";
 
 const guestBaby: Baby = {
   id: "guest-baby-id",
@@ -107,7 +121,7 @@ export default async function BabyDetailPage({
 
 
   // 유효한 탭 값 검증
-  const validTabs: TabType[] = ["activities", "analytics", "ai-chat", "timeline"];
+  const validTabs: TabType[] = ["activities", "analytics", "ai-chat", "timeline", "milestones"];
   const currentTab: TabType =
     searchParams.tab && validTabs.includes(searchParams.tab as TabType)
       ? (searchParams.tab as TabType)
@@ -247,14 +261,64 @@ export default async function BabyDetailPage({
 
         {currentTab === "timeline" && (
           <Card>
-            <CardContent className="p-6">
-              <div className="mb-4">
-                <h2 className="text-xl font-bold text-gray-900">전체 일정</h2>
-                <p className="text-sm text-gray-500 mt-1">
-                  예방접종, 건강검진 등 모든 일정을 확인하고 관리하세요
-                </p>
+            <CardContent className="p-0">
+              {/* 서브 탭 네비게이션 */}
+              <div className="sticky top-0 z-10 bg-white border-b px-6 pt-6">
+                <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
+                  <Link
+                    href={`/babies/${baby.id}?tab=timeline`}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary bg-primary text-primary-foreground font-medium text-sm whitespace-nowrap hover:opacity-90 transition-opacity"
+                  >
+                    📅 일정 목록
+                  </Link>
+                  <Link
+                    href={`/babies/${baby.id}?tab=milestones`}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-gray-200 bg-white text-gray-700 font-medium text-sm whitespace-nowrap hover:bg-gray-50 transition-colors"
+                  >
+                    🎯 발달 이정표
+                  </Link>
+                </div>
               </div>
-              <InteractiveScheduleTimeline babyId={baby.id} />
+
+              {/* 콘텐츠 */}
+              <div className="p-6">
+                <div className="mb-4">
+                  <h2 className="text-xl font-bold text-gray-900">전체 일정</h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    예방접종, 건강검진 등 모든 일정을 확인하고 관리하세요
+                  </p>
+                </div>
+                <InteractiveScheduleTimeline babyId={baby.id} />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {currentTab === "milestones" && (
+          <Card>
+            <CardContent className="p-0">
+              {/* 서브 탭 네비게이션 */}
+              <div className="sticky top-0 z-10 bg-white border-b px-6 pt-6">
+                <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
+                  <Link
+                    href={`/babies/${baby.id}?tab=timeline`}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-gray-200 bg-white text-gray-700 font-medium text-sm whitespace-nowrap hover:bg-gray-50 transition-colors"
+                  >
+                    📅 일정 목록
+                  </Link>
+                  <Link
+                    href={`/babies/${baby.id}?tab=milestones`}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary bg-primary text-primary-foreground font-medium text-sm whitespace-nowrap hover:opacity-90 transition-opacity"
+                  >
+                    🎯 발달 이정표
+                  </Link>
+                </div>
+              </div>
+
+              {/* 콘텐츠 */}
+              <div className="p-6">
+                <MilestoneTimelineView babyBirthDate={new Date(baby.birthDate)} />
+              </div>
             </CardContent>
           </Card>
         )}
