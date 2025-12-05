@@ -166,13 +166,24 @@ model Activity {
   // 체온 관련 필드 (type이 TEMPERATURE일 때 사용)
   temperature Float? // 체온 (°C)
 
+  // 수면 분할 관련 필드 (날짜 경계를 넘는 수면 기록 처리용)
+  originalActivityId String? // 분할된 경우 원본 Activity ID (자식 레코드만 가짐)
+  isSplit            Boolean  @default(false) // 분할 여부 (원본 및 자식 모두 true)
+  splitSequence      Int? // 분할 순서 (자식 레코드: 1, 2, ..., 원본: null)
+
   // 관계: 활동 대상 아기 모델과 연결됩니다.
   Baby Baby @relation(fields: [babyId], references: [id], onDelete: Cascade) // 아기가 삭제되면 활동 기록도 삭제
   // 관계: 활동 기록자 사용자 모델과 연결됩니다.
   User User @relation(fields: [userId], references: [id], onDelete: Cascade) // 사용자가 삭제되면 활동 기록도 삭제
 
+  // 관계: 자기 참조 관계 (분할된 활동 간의 관계)
+  OriginalActivity Activity?  @relation("SplitActivities", fields: [originalActivityId], references: [id], onDelete: Cascade)
+  SplitActivities  Activity[] @relation("SplitActivities")
+
   // babyId와 createdAt 필드에 인덱스를 추가하여 조회 성능을 최적화합니다.
   @@index([babyId, createdAt(sort: Desc)])
+  // originalActivityId 필드에 인덱스를 추가하여 분할 레코드 조회 성능을 최적화합니다.
+  @@index([originalActivityId])
 }
 
 // ActivityType (활동 유형) Enum: Activity 모델의 'type' 필드에 사용될 수 있는 값들을 정의합니다.

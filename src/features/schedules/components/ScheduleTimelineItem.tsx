@@ -10,7 +10,7 @@ import { format, differenceInDays } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Trash2, Pencil } from "lucide-react";
 import { ScheduleDetailModal } from "./ScheduleDetailModal";
-import { MilestoneChecklistView } from "@/features/milestones/components/MilestoneChecklistView";
+import { MilestoneInfoCard } from "@/features/milestones/components/MilestoneInfoCard";
 import { useRouter } from "next/navigation";
 
 interface ScheduleTimelineItemProps {
@@ -160,7 +160,7 @@ export function ScheduleTimelineItem({ schedule, babyId, onUpdate, onUpdateLocal
 
             {/* 내용 */}
             {schedule.type === 'MILESTONE' ? (
-              <MilestoneChecklistView note={schedule} />
+              <MilestoneInfoCard note={schedule} />
             ) : schedule.content ? (
               <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded-md whitespace-pre-wrap">
                 {schedule.content}
