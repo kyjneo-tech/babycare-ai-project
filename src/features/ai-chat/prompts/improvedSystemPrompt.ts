@@ -85,6 +85,22 @@ ${questionContext.needsMedicationInfo ? context.medicationDosageInfo : ''}
 도구 호출:
 → analyzeTrend(days: 7, metric: "sleep_hours")
 
+## 예제 4: 기간 비교 질문
+질문: "한 달 전과 오늘 수유량 비교해줘"
+사고 과정:
+1. "한 달 전" 날짜 계산 필요 → calculateDate 사용
+2. 한 달 전 날짜와 오늘 날짜의 통계를 각각 계산
+3. 두 결과를 비교하여 증감 분석
+
+도구 호출:
+→ calculateDate(amount: 1, unit: "month", direction: "ago")
+   결과: { date: "2024-11-05" }
+→ calculateStats(startDate: "2024-11-05", endDate: "2024-11-05", activityType: "FEEDING")
+   결과: { feeding: { avgDailyAmount: 800 } }
+→ calculateStats(startDate: "2024-12-05", endDate: "2024-12-05", activityType: "FEEDING")
+   결과: { feeding: { avgDailyAmount: 900 } }
+→ 답변: "한 달 전(800ml)에 비해 100ml 증가했어요!"
+
 # 답변 형식
 1. 도구 결과를 먼저 해석합니다
 2. 권장 기준과 비교합니다 (필요시)

@@ -101,8 +101,61 @@ const RELATIVE_DATE_TOOL = {
   }
 };
 
+const CALCULATE_DATE_TOOL = {
+  name: "calculateDate",
+  description: `동적으로 날짜를 계산합니다. "N일/주/개월 전(후)"를 절대 날짜로 변환합니다.
+
+✅ 언제 사용하나요?
+- "한 달 전" → calculateDate(amount: 1, unit: "month", direction: "ago")
+- "3일 전" → calculateDate(amount: 3, unit: "day", direction: "ago")
+- "일주일 전" → calculateDate(amount: 1, unit: "week", direction: "ago")
+- "2주 후" → calculateDate(amount: 2, unit: "week", direction: "later")
+- "30일 전" → calculateDate(amount: 30, unit: "day", direction: "ago")
+
+⚠️ 고정된 기간은 getRelativeDate를 사용하세요:
+- "오늘", "어제", "이번 주" → getRelativeDate 사용
+- "N일 전", "N주 전", "N개월 전" → calculateDate 사용
+
+입력 예시:
+{
+  "amount": 1,
+  "unit": "month",
+  "direction": "ago"
+}
+
+출력 예시:
+{
+  "date": "2024-11-05",
+  "description": "1개월 전"
+}`,
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      amount: {
+        type: SchemaType.NUMBER,
+        description: "숫자 (1, 2, 3...)",
+        minimum: 1,
+        maximum: 365
+      },
+      unit: {
+        type: SchemaType.STRING,
+        enum: ["day", "week", "month"],
+        description: "단위: day(일), week(주), month(개월)"
+      },
+      direction: {
+        type: SchemaType.STRING,
+        enum: ["ago", "later"],
+        description: "방향: ago(전), later(후)",
+        default: "ago"
+      }
+    },
+    required: ["amount", "unit"]
+  }
+};
+
 export const COMPLETE_AI_TOOLS = [
   CHAT_HISTORY_TOOL,
   RELATIVE_DATE_TOOL,
+  CALCULATE_DATE_TOOL,
   ...AI_TOOLS,
 ];

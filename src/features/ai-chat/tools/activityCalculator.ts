@@ -123,6 +123,17 @@ export interface RelativeDateResult {
   description: string;
 }
 
+export interface CalculateDateParams {
+  amount: number;
+  unit: 'day' | 'week' | 'month';
+  direction?: 'ago' | 'later';
+}
+
+export interface CalculateDateResult {
+  date: string;
+  description: string;
+}
+
 // ==========================================
 // Helpers
 // ==========================================
@@ -824,5 +835,37 @@ export function getRelativeDate(params: GetRelativeDateParams): RelativeDateResu
     startDate: formatDate(startDate),
     endDate: formatDate(endDate),
     description,
+  };
+}
+
+/**
+ * 동적으로 상대 날짜를 계산합니다.
+ * "한 달 전", "3일 전", "2주 후" 같은 동적 날짜 계산에 사용합니다.
+ */
+export function calculateDate(params: CalculateDateParams): CalculateDateResult {
+  const { amount, unit, direction = 'ago' } = params;
+  const today = new Date();
+  const targetDate = new Date(today);
+
+  const multiplier = direction === 'ago' ? -1 : 1;
+
+  switch (unit) {
+    case 'day':
+      targetDate.setDate(today.getDate() + (amount * multiplier));
+      break;
+    case 'week':
+      targetDate.setDate(today.getDate() + (amount * 7 * multiplier));
+      break;
+    case 'month':
+      targetDate.setMonth(today.getMonth() + (amount * multiplier));
+      break;
+  }
+
+  const unitName = unit === 'day' ? '일' : unit === 'week' ? '주' : '개월';
+  const directionName = direction === 'ago' ? '전' : '후';
+
+  return {
+    date: formatDate(targetDate),
+    description: `${amount}${unitName} ${directionName}`
   };
 }

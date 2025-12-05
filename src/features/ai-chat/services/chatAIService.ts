@@ -8,6 +8,7 @@ import {
   analyzeTrend,
   getActivityLogs,
   getRelativeDate,
+  calculateDate,
 } from "../tools/activityCalculator";
 import { getChatHistoryTool } from "./chatHistoryTools";
 
@@ -32,6 +33,11 @@ async function executeTool(
   // 🆕 상대 날짜 변환 (babyId 불필요)
   if (functionName === "getRelativeDate") {
     return await getRelativeDate(args);
+  }
+
+  // 🆕 동적 날짜 계산 (babyId 불필요)
+  if (functionName === "calculateDate") {
+    return await calculateDate(args);
   }
 
   // 나머지 도구는 babyId 주입
