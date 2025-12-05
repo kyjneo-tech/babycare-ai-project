@@ -38,10 +38,15 @@ export class PrismaActivityRepository implements IActivityRepository {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
+    // 원본 레코드만 조회 (분할된 자식 레코드 제외)
     const activities = await prisma.activity.findMany({
       where: {
         babyId,
         createdAt: { gte: startDate },
+        OR: [
+          { isSplit: false }, // 분할 안 된 레코드
+          { AND: [{ isSplit: true }, { originalActivityId: null }] } // 분할된 원본 레코드만
+        ],
       },
       orderBy: { startTime: 'desc' },
       include: {
@@ -58,6 +63,7 @@ export class PrismaActivityRepository implements IActivityRepository {
   }
 
   async findByDateRange(babyId: string, start: Date, end: Date): Promise<Activity[]> {
+    // 원본 레코드만 조회
     return prisma.activity.findMany({
       where: {
         babyId,
@@ -65,6 +71,30 @@ export class PrismaActivityRepository implements IActivityRepository {
           gte: start,
           lte: end,
         },
+        OR: [
+          { isSplit: false },
+          { AND: [{ isSplit: true }, { originalActivityId: null }] }
+        ],
+      },
+      orderBy: { startTime: 'asc' },
+    });
+  }
+
+  /**
+   * 통계 계산용 레코드 조회 (분할된 자식 레코드 포함)
+   */
+  async findForStats(babyId: string, start: Date, end: Date): Promise<Activity[]> {
+    return prisma.activity.findMany({
+      where: {
+        babyId,
+        startTime: {
+          gte: start,
+          lte: end,
+        },
+        OR: [
+          { isSplit: false }, // 분할 안 된 레코드
+          { AND: [{ isSplit: true }, { originalActivityId: { not: null } }] } // 분할된 자식 레코드만
+        ],
       },
       orderBy: { startTime: 'asc' },
     });

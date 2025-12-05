@@ -318,6 +318,9 @@ export async function getActivitiesPaginated(
               medicineAmount: null,
               medicineUnit: null,
               temperature: null,
+              originalActivityId: null,
+              isSplit: false,
+              splitSequence: null,
             },
             lastFeeding: {
               id: 'guest-feed-1',
@@ -346,6 +349,9 @@ export async function getActivitiesPaginated(
               medicineAmount: null,
               medicineUnit: null,
               temperature: null,
+              originalActivityId: null,
+              isSplit: false,
+              splitSequence: null,
             },
           },
         };

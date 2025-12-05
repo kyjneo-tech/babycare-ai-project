@@ -43,8 +43,15 @@ export interface ActivityStats {
 }
 
 export function calculateActivityStats(activities: Activity[]): ActivityStats {
+  // 통계 계산 시에는 분할된 자식 레코드만 사용 (원본 레코드 제외)
+  // - 분할 안 된 레코드 (isSplit: false)
+  // - 분할된 자식 레코드 (isSplit: true && originalActivityId != null)
+  const statsActivities = activities.filter(a => 
+    !a.isSplit || (a.isSplit && a.originalActivityId !== null)
+  );
+
   // 수유 통계
-  const feedingActivities = activities.filter(a => a.type === 'FEEDING');
+  const feedingActivities = statsActivities.filter(a => a.type === 'FEEDING');
   const feedingByType = {
     breast: feedingActivities.filter(a => a.feedingType === 'breast').length,
     formula: feedingActivities.filter(a => a.feedingType === 'formula').length,
@@ -53,7 +60,7 @@ export function calculateActivityStats(activities: Activity[]): ActivityStats {
   const totalFeedingAmount = feedingActivities.reduce((sum, a) => sum + (a.feedingAmount || 0), 0);
 
   // 수면 통계
-  const sleepActivities = activities.filter(a => a.type === 'SLEEP');
+  const sleepActivities = statsActivities.filter(a => a.type === 'SLEEP');
   const napActivities = sleepActivities.filter(a => a.sleepType === 'nap');
   const nightSleepActivities = sleepActivities.filter(a => a.sleepType === 'night');
   const totalSleepDuration = sleepActivities.reduce((sum, a) => sum + (a.duration || 0), 0);
@@ -61,7 +68,7 @@ export function calculateActivityStats(activities: Activity[]): ActivityStats {
   const totalNapDuration = napActivities.reduce((sum, a) => sum + (a.duration || 0), 0);
 
   // 기저귀 통계
-  const diaperActivities = activities.filter(a => a.type === 'DIAPER');
+  const diaperActivities = statsActivities.filter(a => a.type === 'DIAPER');
   const diaperByType = {
     urine: diaperActivities.filter(a => a.diaperType === 'urine').length,
     stool: diaperActivities.filter(a => a.diaperType === 'stool').length,
@@ -69,11 +76,11 @@ export function calculateActivityStats(activities: Activity[]): ActivityStats {
   };
 
   // 놀이 통계
-  const playActivities = activities.filter(a => a.type === 'PLAY');
+  const playActivities = statsActivities.filter(a => a.type === 'PLAY');
   const totalPlayDuration = playActivities.reduce((sum, a) => sum + (a.playDuration || 0), 0);
 
   // 체온 통계
-  const tempActivities = activities.filter(a => a.type === 'TEMPERATURE');
+  const tempActivities = statsActivities.filter(a => a.type === 'TEMPERATURE');
   const temperatures = tempActivities.map(a => a.temperature || 0).filter(t => t > 0);
 
   return {
@@ -98,10 +105,10 @@ export function calculateActivityStats(activities: Activity[]): ActivityStats {
       ...diaperByType,
     },
     medicine: {
-      count: activities.filter(a => a.type === 'MEDICINE').length,
+      count: statsActivities.filter(a => a.type === 'MEDICINE').length,
     },
     bath: {
-      count: activities.filter(a => a.type === 'BATH').length,
+      count: statsActivities.filter(a => a.type === 'BATH').length,
     },
     play: {
       count: playActivities.length,

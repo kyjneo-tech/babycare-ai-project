@@ -44,7 +44,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset - 1, 22, 30),
       updatedAt: getRelativeDate(dayOffset - 1, 22, 30),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 아침 수유 #1
     {
       id: `${datePrefix}-sample-feeding-1`,
@@ -73,7 +75,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 6, 30),
       updatedAt: getRelativeDate(dayOffset, 6, 30),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 배변 #1
     {
       id: `${datePrefix}-sample-diaper-1`,
@@ -102,7 +106,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 7, 0),
       updatedAt: getRelativeDate(dayOffset, 7, 0),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 오전 낮잠 #1
     {
       id: `${datePrefix}-sample-sleep-1`,
@@ -131,7 +137,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 8, 0),
       updatedAt: getRelativeDate(dayOffset, 8, 0),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 수유 #2
     {
       id: `${datePrefix}-sample-feeding-2`,
@@ -160,7 +168,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 10, 0),
       updatedAt: getRelativeDate(dayOffset, 10, 0),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 배변 #2
     {
       id: `${datePrefix}-sample-diaper-2`,
@@ -189,7 +199,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 10, 45),
       updatedAt: getRelativeDate(dayOffset, 10, 45),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 낮잠 #2
     {
       id: `${datePrefix}-sample-sleep-2`,
@@ -218,7 +230,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 12, 0),
       updatedAt: getRelativeDate(dayOffset, 12, 0),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 수유 #3
     {
       id: `${datePrefix}-sample-feeding-3`,
@@ -247,7 +261,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 13, 30),
       updatedAt: getRelativeDate(dayOffset, 13, 30),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 배변 #3
     {
       id: `${datePrefix}-sample-diaper-3`,
@@ -276,7 +292,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 14, 15),
       updatedAt: getRelativeDate(dayOffset, 14, 15),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 체온 측정
     {
       id: `${datePrefix}-sample-temp-1`,
@@ -305,7 +323,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 15, 0),
       updatedAt: getRelativeDate(dayOffset, 15, 0),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 낮잠 #3
     {
       id: `${datePrefix}-sample-sleep-3`,
@@ -334,7 +354,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 15, 30),
       updatedAt: getRelativeDate(dayOffset, 15, 30),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 수유 #4
     {
       id: `${datePrefix}-sample-feeding-4`,
@@ -363,7 +385,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 17, 0),
       updatedAt: getRelativeDate(dayOffset, 17, 0),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 배변 #4
     {
       id: `${datePrefix}-sample-diaper-4`,
@@ -392,7 +416,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 17, 45),
       updatedAt: getRelativeDate(dayOffset, 17, 45),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 수유 #5
     {
       id: `${datePrefix}-sample-feeding-5`,
@@ -421,7 +447,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 19, 30),
       updatedAt: getRelativeDate(dayOffset, 19, 30),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 배변 #5
     {
       id: `${datePrefix}-sample-diaper-5`,
@@ -450,7 +478,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 20, 15),
       updatedAt: getRelativeDate(dayOffset, 20, 15),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 약 복용
     {
       id: `${datePrefix}-sample-medicine-1`,
@@ -479,7 +509,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 21, 0),
       updatedAt: getRelativeDate(dayOffset, 21, 0),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
     // 수유 #6 (밤 수유)
     {
       id: `${datePrefix}-sample-feeding-6`,
@@ -508,7 +540,9 @@ export const getSampleActivities = (date: Date): Activity[] => {
       playLocation: null,
       createdAt: getRelativeDate(dayOffset, 22, 0),
       updatedAt: getRelativeDate(dayOffset, 22, 0),
-    },
+      originalActivityId: null,
+      isSplit: false,
+      splitSequence: null,    },
   ];
   return activities;
 };

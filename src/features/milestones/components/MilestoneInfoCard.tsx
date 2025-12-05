@@ -10,13 +10,13 @@ interface MilestoneInfoCardProps {
 }
 
 export function MilestoneInfoCard({ note }: MilestoneInfoCardProps) {
-  // metadata에서 ageRangeMonths 추출
-  const metadata = note.metadata as { ageRangeMonths?: [number, number] };
-  const endMonth = metadata?.ageRangeMonths?.[1];
+  // metadata에서 ageMonths 추출
+  const metadata = note.metadata as { ageMonths?: number };
+  const ageMonths = metadata?.ageMonths;
 
   // developmental-milestones-v2에서 매칭되는 데이터 찾기
   const milestoneData = DEVELOPMENTAL_MILESTONES.find(
-    (m) => m.ageMonths === endMonth
+    (m) => m.ageMonths === ageMonths
   );
 
   if (!milestoneData) {

@@ -10,7 +10,7 @@ import { MILESTONES } from '@/shared/templates/milestone-templates';
 import { WONDER_WEEKS } from '@/shared/templates/wonder-weeks-templates';
 import { SLEEP_REGRESSIONS } from '@/shared/templates/sleep-regression-templates';
 import { FEEDING_STAGES } from '@/shared/templates/feeding-stage-templates';
-import { MILESTONES as DEVELOPMENTAL_MILESTONES } from '@/shared/templates/developmental-milestones';
+import { DEVELOPMENTAL_MILESTONES } from '@/shared/templates/developmental-milestones-v2';
 import {
   addMonthsToBirthDate,
   addWeeksToBirthDate,
@@ -272,7 +272,8 @@ export function generateFeedingStageNotifications(
 }
 
 /**
- * 발달 이정표 일정 생성 (상세 체크리스트)
+ * 발달 이정표 일정 생성 (정확한 월 단위)
+ * 2개월, 4개월, 6개월, 9개월, 12개월, 15개월, 18개월, 24개월
  */
 export function generateDevelopmentalMilestones(
   babyId: string,
@@ -280,26 +281,24 @@ export function generateDevelopmentalMilestones(
   birthDate: Date
 ): CreateNoteInput[] {
   return DEVELOPMENTAL_MILESTONES.map((milestone) => {
-    // 시작일에 생성, 종료일을 기한으로 설정
-    const startMonth = milestone.ageRangeMonths[0];
-    const endMonth = milestone.ageRangeMonths[1];
-    const dueDate = addMonthsToBirthDate(birthDate, endMonth);
+    // 정확한 월에 생성 (예: 2개월째 되는 날)
+    const dueDate = addMonthsToBirthDate(birthDate, milestone.ageMonths);
 
-    // 카테고리별 체크리스트 포맷팅
-    const grossMotorList = milestone.categories.grossMotor
-      .map(item => `☐ ${item}`).join('\n');
-    const fineMotorList = milestone.categories.fineMotor
-      .map(item => `☐ ${item}`).join('\n');
-    const languageList = milestone.categories.language
-      .map(item => `☐ ${item}`).join('\n');
-    const socialList = milestone.categories.social
-      .map(item => `☐ ${item}`).join('\n');
+    // 카테고리별 항목 포맷팅 (체크박스 없이)
+    const grossMotorList = milestone.categories.grossMotor.items
+      .map(item => `• ${item}`).join('\n');
+    const fineMotorList = milestone.categories.fineMotor.items
+      .map(item => `• ${item}`).join('\n');
+    const languageList = milestone.categories.language.items
+      .map(item => `• ${item}`).join('\n');
+    const socialList = milestone.categories.social.items
+      .map(item => `• ${item}`).join('\n');
 
     return {
       babyId,
       userId,
       type: 'MILESTONE' as NoteType,
-      title: `📍 ${milestone.title} 발달 이정표 (${startMonth}-${endMonth}개월)`,
+      title: `📍 ${milestone.ageMonths}개월 발달 이정표`,
       content: `
 🏃 대근육 발달
 ${grossMotorList}
@@ -310,7 +309,7 @@ ${fineMotorList}
 💬 언어 발달
 ${languageList}
 
-👶 사회성 발달
+👥 사회/정서 발달
 ${socialList}
 
 💡 발달은 개인차가 있습니다. 이정표는 참고용이며, 우려사항이 있다면 전문가와 상담하세요.
@@ -318,10 +317,10 @@ ${socialList}
       dueDate,
       completed: false,
       priority: 'MEDIUM',
-      tags: ['발달', '이정표', milestone.title],
+      tags: ['발달', '이정표', `${milestone.ageMonths}개월`],
       metadata: {
         milestoneId: milestone.id,
-        ageRangeMonths: milestone.ageRangeMonths,
+        ageMonths: milestone.ageMonths,
       },
       reminderDays: [0],
     };

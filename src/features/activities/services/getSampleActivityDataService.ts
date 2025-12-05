@@ -30,7 +30,7 @@ export function getSampleActivities(babyId: string, date: Date): Activity[] {
       feedingAmount: details?.feedingAmount || (type === ActivityType.FEEDING ? 120 : null),
       breastSide: details?.breastSide || null,
       diaperType: details?.diaperType || (type === ActivityType.DIAPER ? 'urine' : null),
-            stoolCondition: details?.stoolCondition || null,
+      stoolCondition: details?.stoolCondition || null,
       sleepType: details?.sleepType || (type === ActivityType.SLEEP ? 'nap' : null),
       duration: details?.duration || (type === ActivityType.SLEEP ? 60 : null),
       bathType: details?.bathType || null,
@@ -43,6 +43,9 @@ export function getSampleActivities(babyId: string, date: Date): Activity[] {
       playLocation: details?.playLocation || null,
       temperature: details?.temperature || null,
       reaction: details?.reaction || null,
+      originalActivityId: details?.originalActivityId || null,
+      isSplit: details?.isSplit || false,
+      splitSequence: details?.splitSequence || null,
     };
   };
 
