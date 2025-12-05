@@ -117,19 +117,6 @@ export async function POST(
       includeDevelopmentalMilestones = true,
     } = body;
 
-    // 아기 정보 조회 (필요한 필드만 select)
-    const baby = await prisma.baby.findUnique({
-      where: { id: babyId },
-      select: {
-        id: true,
-        birthDate: true,
-      },
-    });
-
-    if (!baby) {
-      return NextResponse.json({ error: 'Baby not found' }, { status: 404 });
-    }
-
     // 세션에서 userId 가져오기 (필요한 필드만 select)
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
@@ -140,6 +127,31 @@ export async function POST(
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // 🔒 보안: 아기 정보 조회 (권한 검증 포함)
+    // 현재 사용자가 해당 Family의 멤버인 경우만 조회
+    const baby = await prisma.baby.findFirst({
+      where: {
+        id: babyId,
+        Family: {
+          FamilyMembers: {
+            some: {
+              userId: user.id,
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        birthDate: true,
+      },
+    });
+
+    if (!baby) {
+      return NextResponse.json({
+        error: 'Baby not found or access denied'
+      }, { status: 404 });
     }
 
     // 일정 생성

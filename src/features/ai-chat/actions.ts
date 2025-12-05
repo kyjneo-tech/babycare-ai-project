@@ -14,6 +14,8 @@ import { removeBoldFormatting } from "./utils/responseFormatter";
 import { getSampleChatHistory } from "./services/getSampleChatHistoryService";
 import { analyzeChatHistoryNeeds, logChatHistoryAnalysis } from "./utils/chatHistoryAnalyzer";
 import { getChatHistoryTool, formatChatHistoryForPrompt } from "./services/chatHistoryTools";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 // ============================================================
 // 입력 검증
@@ -37,10 +39,30 @@ export async function getBabyAISettings(babyId: string) {
   }
 
   try {
-    const baby = await prisma.baby.findUnique({
-      where: { id: babyId },
+    // 🔒 보안: 사용자 인증 및 권한 검증
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return { success: false, error: "로그인이 필요합니다." };
+    }
+
+    // 🔒 보안: 현재 사용자가 해당 Family의 멤버인 경우만 조회
+    const baby = await prisma.baby.findFirst({
+      where: {
+        id: babyId,
+        Family: {
+          FamilyMembers: {
+            some: {
+              userId: session.user.id,
+            },
+          },
+        },
+      },
       select: { aiSettings: true },
     });
+
+    if (!baby) {
+      return { success: false, error: "아기를 찾을 수 없거나 접근 권한이 없습니다." };
+    }
 
     const savedSettings = baby?.aiSettings as unknown as Partial<AISettings>;
     const fullSettings = { ...DEFAULT_AI_SETTINGS, ...savedSettings };
@@ -54,6 +76,31 @@ export async function getBabyAISettings(babyId: string) {
 
 export async function updateBabyAISettings(babyId: string, settings: AISettings) {
   try {
+    // 🔒 보안: 사용자 인증 및 권한 검증
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return { success: false, error: "로그인이 필요합니다." };
+    }
+
+    // 🔒 보안: 권한 확인 후 업데이트
+    const baby = await prisma.baby.findFirst({
+      where: {
+        id: babyId,
+        Family: {
+          FamilyMembers: {
+            some: {
+              userId: session.user.id,
+            },
+          },
+        },
+      },
+      select: { id: true },
+    });
+
+    if (!baby) {
+      return { success: false, error: "아기를 찾을 수 없거나 접근 권한이 없습니다." };
+    }
+
     await prisma.baby.update({
       where: { id: babyId },
       data: { aiSettings: settings as any },

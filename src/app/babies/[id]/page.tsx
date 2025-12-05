@@ -122,9 +122,19 @@ export default async function BabyDetailPage({
     baby = guestBaby;
     allBabies = [guestBaby];
   } else {
-    // 아기 정보 가져오기 (필요한 필드만 select)
-    baby = await prisma.baby.findUnique({
-      where: { id: babyId },
+    // 🔒 보안: 아기 정보 가져오기 (권한 검증 포함)
+    // 반드시 현재 사용자가 해당 Family의 멤버인 경우만 조회
+    baby = await prisma.baby.findFirst({
+      where: {
+        id: babyId,
+        Family: {
+          FamilyMembers: {
+            some: {
+              userId: session!.user!.id,
+            },
+          },
+        },
+      },
       select: {
         id: true,
         name: true,
@@ -143,9 +153,9 @@ export default async function BabyDetailPage({
       return (
         <MobileContainer>
           <Alert variant="destructive">
-            <AlertTitle>아기를 찾을 수 없습니다.</AlertTitle>
+            <AlertTitle>접근 권한이 없습니다.</AlertTitle>
             <AlertDescription>
-              잘못된 접근이거나 아기가 삭제되었을 수 있습니다.
+              이 아기의 정보에 접근할 수 있는 권한이 없거나, 아기를 찾을 수 없습니다.
             </AlertDescription>
           </Alert>
         </MobileContainer>

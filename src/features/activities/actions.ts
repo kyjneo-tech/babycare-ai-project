@@ -132,22 +132,104 @@ export async function updateActivity(
       return { success: false, error: "이 활동을 수정할 권한이 없습니다." };
     }
 
-    const updatedActivity = await prisma.activity.update({
-      where: { id: activityId },
-      data: {
-        ...data,
-        updatedAt: new Date(),
-      },
-    });
+    // 분할 레코드 처리
+    const { needsSplit, splitActivityByMidnight, calculateDuration, determineSleepType } = await import('./lib/sleepSplitUtils');
+    
+    // 기존 분할 레코드 삭제 (원본인 경우)
+    if (activity.isSplit && !activity.originalActivityId) {
+      await prisma.activity.deleteMany({
+        where: { originalActivityId: activityId },
+      });
+    }
 
-    // Redis 캐시 무효화
-    await redis.del(`baby:${activity.babyId}:recent-activities:7-days`);
+    // 새로운 시간 정보
+    const newStartTime = data.startTime || activity.startTime;
+    const newEndTime = data.endTime !== undefined ? data.endTime : activity.endTime;
+    const newType = data.type || activity.type;
 
-    revalidatePath(`/babies/${activity.babyId}`);
-    revalidatePath("/");
-    revalidatePath(`/analytics/${activity.babyId}`);
+    // 분할이 필요한지 체크
+    const shouldSplit = newEndTime && needsSplit(newStartTime, newEndTime, newType);
 
-    return { success: true, data: updatedActivity };
+    if (shouldSplit && newEndTime) {
+      // 1. 원본 레코드 업데이트
+      const duration = calculateDuration(newStartTime, newEndTime);
+      const sleepType = newType === 'SLEEP' 
+        ? (data.sleepType || determineSleepType(newStartTime, newEndTime))
+        : null;
+
+      const updatedActivity = await prisma.activity.update({
+        where: { id: activityId },
+        data: {
+          ...data,
+          startTime: newStartTime,
+          endTime: newEndTime,
+          duration: newType === 'SLEEP' ? duration : data.duration,
+          sleepType,
+          isSplit: true,
+          splitSequence: null,
+          updatedAt: new Date(),
+        },
+      });
+
+      // 2. 새로운 분할 레코드 생성
+      const splits = splitActivityByMidnight(newStartTime, newEndTime, newType);
+      
+      for (const split of splits) {
+        await prisma.activity.create({
+          data: {
+            babyId: activity.babyId,
+            userId: activity.userId,
+            type: newType,
+            startTime: split.startTime,
+            endTime: split.endTime,
+            memo: data.note !== undefined ? data.note : activity.memo,
+            feedingType: data.feedingType !== undefined ? data.feedingType : activity.feedingType,
+            feedingAmount: data.feedingAmount !== undefined ? data.feedingAmount : activity.feedingAmount,
+            breastSide: data.breastSide !== undefined ? data.breastSide : activity.breastSide,
+            sleepType: split.sleepType,
+            duration: split.duration,
+            diaperType: data.diaperType !== undefined ? data.diaperType : activity.diaperType,
+            stoolCondition: data.stoolCondition !== undefined ? data.stoolCondition : activity.stoolCondition,
+            medicineName: data.medicineName !== undefined ? data.medicineName : activity.medicineName,
+            medicineAmount: data.medicineAmount !== undefined ? data.medicineAmount : activity.medicineAmount,
+            medicineUnit: data.medicineUnit !== undefined ? data.medicineUnit : activity.medicineUnit,
+            temperature: data.temperature !== undefined ? data.temperature : activity.temperature,
+            isSplit: true,
+            splitSequence: split.splitSequence,
+            originalActivityId: activityId,
+          },
+        });
+      }
+
+      // Redis 캐시 무효화
+      await redis.del(`baby:${activity.babyId}:recent-activities:7-days`);
+
+      revalidatePath(`/babies/${activity.babyId}`);
+      revalidatePath("/");
+      revalidatePath(`/analytics/${activity.babyId}`);
+
+      return { success: true, data: updatedActivity };
+    } else {
+      // 분할 불필요 - 기존 로직
+      const updatedActivity = await prisma.activity.update({
+        where: { id: activityId },
+        data: {
+          ...data,
+          isSplit: false,
+          splitSequence: null,
+          updatedAt: new Date(),
+        },
+      });
+
+      // Redis 캐시 무효화
+      await redis.del(`baby:${activity.babyId}:recent-activities:7-days`);
+
+      revalidatePath(`/babies/${activity.babyId}`);
+      revalidatePath("/");
+      revalidatePath(`/analytics/${activity.babyId}`);
+
+      return { success: true, data: updatedActivity };
+    }
   } catch (error: any) {
     console.error("활동 수정 실패:", error);
     return {
@@ -453,23 +535,86 @@ export async function endSleepActivity(
       (endTime.getTime() - activity.startTime.getTime()) / (1000 * 60)
     );
 
-    const updatedActivity = await prisma.activity.update({
-      where: { id: activityId },
-      data: {
-        endTime: endTime,
-        duration: durationMinutes > 0 ? durationMinutes : 0,
-        updatedAt: new Date(),
-      },
-    });
+    // 분할 레코드 처리
+    const { needsSplit, splitActivityByMidnight, determineSleepType } = await import('./lib/sleepSplitUtils');
+    
+    // 기존 분할 레코드 삭제 (원본인 경우)
+    if (activity.isSplit && !activity.originalActivityId) {
+      await prisma.activity.deleteMany({
+        where: { originalActivityId: activityId },
+      });
+    }
 
-    // Redis 캐시 무효화
-    await redis.del(`baby:${activity.babyId}:recent-activities:7-days`);
+    // 분할이 필요한지 체크
+    const shouldSplit = needsSplit(activity.startTime, endTime, activity.type);
 
-    revalidatePath(`/babies/${activity.babyId}`);
-    revalidatePath("/");
-    revalidatePath(`/analytics/${activity.babyId}`);
+    if (shouldSplit) {
+      // 1. 원본 레코드 업데이트
+      const sleepType = determineSleepType(activity.startTime, endTime);
 
-    return { success: true, data: updatedActivity };
+      const updatedActivity = await prisma.activity.update({
+        where: { id: activityId },
+        data: {
+          endTime: endTime,
+          duration: durationMinutes > 0 ? durationMinutes : 0,
+          sleepType,
+          isSplit: true,
+          splitSequence: null,
+          updatedAt: new Date(),
+        },
+      });
+
+      // 2. 새로운 분할 레코드 생성
+      const splits = splitActivityByMidnight(activity.startTime, endTime, activity.type);
+      
+      for (const split of splits) {
+        await prisma.activity.create({
+          data: {
+            babyId: activity.babyId,
+            userId: activity.userId,
+            type: activity.type,
+            startTime: split.startTime,
+            endTime: split.endTime,
+            memo: activity.memo,
+            sleepType: split.sleepType,
+            duration: split.duration,
+            isSplit: true,
+            splitSequence: split.splitSequence,
+            originalActivityId: activityId,
+          },
+        });
+      }
+
+      // Redis 캐시 무효화
+      await redis.del(`baby:${activity.babyId}:recent-activities:7-days`);
+
+      revalidatePath(`/babies/${activity.babyId}`);
+      revalidatePath("/");
+      revalidatePath(`/analytics/${activity.babyId}`);
+
+      return { success: true, data: updatedActivity };
+    } else {
+      // 분할 불필요 - 기존 로직
+      const updatedActivity = await prisma.activity.update({
+        where: { id: activityId },
+        data: {
+          endTime: endTime,
+          duration: durationMinutes > 0 ? durationMinutes : 0,
+          isSplit: false,
+          splitSequence: null,
+          updatedAt: new Date(),
+        },
+      });
+
+      // Redis 캐시 무효화
+      await redis.del(`baby:${activity.babyId}:recent-activities:7-days`);
+
+      revalidatePath(`/babies/${activity.babyId}`);
+      revalidatePath("/");
+      revalidatePath(`/analytics/${activity.babyId}`);
+
+      return { success: true, data: updatedActivity };
+    }
   } catch (error) {
     console.error("수면 종료 처리 실패:", error);
     return { success: false, error: "수면 종료 처리에 실패했습니다." };

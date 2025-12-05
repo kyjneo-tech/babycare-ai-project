@@ -203,13 +203,29 @@ export async function updateBabyAndRecalculateSchedules(
 
 export async function getBabyById(babyId: string) {
   try {
-    const baby = await prisma.baby.findUnique({
-      where: { id: babyId },
-      select: { id: true, name: true, gender: true, birthDate: true }, // 필요한 필드만 선택
+    // 🔒 보안: 사용자 인증 및 권한 검증
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return { success: false, error: "로그인이 필요합니다." };
+    }
+
+    // 🔒 보안: 현재 사용자가 해당 Family의 멤버인 경우만 조회
+    const baby = await prisma.baby.findFirst({
+      where: {
+        id: babyId,
+        Family: {
+          FamilyMembers: {
+            some: {
+              userId: session.user.id,
+            },
+          },
+        },
+      },
+      select: { id: true, name: true, gender: true, birthDate: true },
     });
 
     if (!baby) {
-      return { success: false, error: "아기를 찾을 수 없습니다." };
+      return { success: false, error: "아기를 찾을 수 없거나 접근 권한이 없습니다." };
     }
 
     return { success: true, data: baby };
