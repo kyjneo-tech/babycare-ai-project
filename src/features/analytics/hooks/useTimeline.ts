@@ -50,7 +50,7 @@ export function useTimeline({ activities, startDate, endDate }: UseTimelineProps
 
     return activities.filter((a) => {
       if (!a.endTime) return false;
-      if (a.type !== ActivityType.SLEEP && a.type !== ActivityType.PLAY) return false; // 지속 활동만
+      if (a.type !== ActivityType.SLEEP) return false; // 지속 활동만
       const start = new Date(a.startTime);
       const end = new Date(a.endTime);
 
@@ -67,7 +67,7 @@ export function useTimeline({ activities, startDate, endDate }: UseTimelineProps
     hourEnd.setHours(hour, 59, 59, 999);
 
     return activities.filter((a) => {
-      if (a.type === ActivityType.SLEEP || a.type === ActivityType.PLAY) return false; // 순간 활동만
+      if (a.type === ActivityType.SLEEP) return false; // 순간 활동만
       const start = new Date(a.startTime);
       return start >= hourStart && start <= hourEnd;
     });

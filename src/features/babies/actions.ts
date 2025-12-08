@@ -95,15 +95,34 @@ export async function deleteBaby(babyId: string) {
       throw new Error("이 아기를 삭제할 권한이 없습니다.");
     }
 
-    // 관련된 모든 활동 기록 삭제
-    await prisma.activity.deleteMany({
-      where: { babyId },
+    // 관련된 모든 활동 기록 삭제 및 아기 삭제, 가족 이름 업데이트를 트랜잭션으로 처리
+    await prisma.$transaction(async (tx) => {
+      // 관련된 모든 활동 기록 삭제
+      await tx.activity.deleteMany({
+        where: { babyId },
+      });
+
+      // 아기 삭제
+      await tx.baby.delete({
+        where: { id: babyId },
+      });
+
+      // 가족 이름 업데이트: 남은 아기 중 가장 오래된 아기 이름으로 변경
+      const remainingBabies = await tx.baby.findMany({
+        where: { familyId: baby.familyId },
+        orderBy: { createdAt: 'asc' },
+        take: 1,
+        select: { name: true },
+      });
+
+      if (remainingBabies.length > 0) {
+        await tx.family.update({
+          where: { id: baby.familyId },
+          data: { name: `${remainingBabies[0].name}의 가족` },
+        });
+      }
     });
 
-    // 아기 삭제
-    await prisma.baby.delete({
-      where: { id: babyId },
-    });
 
     revalidatePath("/");
     revalidatePath("/family");

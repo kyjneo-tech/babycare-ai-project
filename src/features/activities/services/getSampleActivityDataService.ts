@@ -33,14 +33,9 @@ export function getSampleActivities(babyId: string, date: Date): Activity[] {
       stoolCondition: details?.stoolCondition || null,
       sleepType: details?.sleepType || (type === ActivityType.SLEEP ? 'nap' : null),
       duration: details?.duration || (type === ActivityType.SLEEP ? 60 : null),
-      bathType: details?.bathType || null,
-      bathTemp: details?.bathTemp || null,
       medicineName: details?.medicineName || null,
       medicineAmount: details?.medicineAmount || null,
       medicineUnit: details?.medicineUnit || null,
-      playType: details?.playType || null,
-      playDuration: details?.playDuration || null,
-      playLocation: details?.playLocation || null,
       temperature: details?.temperature || null,
       reaction: details?.reaction || null,
       originalActivityId: details?.originalActivityId || null,
@@ -55,11 +50,9 @@ export function getSampleActivities(babyId: string, date: Date): Activity[] {
     activities.push(createActivity(ActivityType.SLEEP, 7, 0, { endTime: new Date(today.getTime() + 90 * 60 * 1000) })); // 기상 후 1시간 30분 수면
     activities.push(createActivity(ActivityType.FEEDING, 8, 45, { feedingAmount: 150 }));
     activities.push(createActivity(ActivityType.DIAPER, 9, 30, { diaperType: 'stool' }));
-    activities.push(createActivity(ActivityType.PLAY, 10, 0, { playDuration: 60 }));
     activities.push(createActivity(ActivityType.SLEEP, 11, 30, { endTime: new Date(today.getTime() + (11.5 * 60 + 60) * 60 * 1000), sleepType: 'nap' })); // 낮잠 1시간
     activities.push(createActivity(ActivityType.FEEDING, 13, 0, { feedingAmount: 160 }));
     activities.push(createActivity(ActivityType.DIAPER, 13, 45, { diaperType: 'urine' }));
-    activities.push(createActivity(ActivityType.PLAY, 15, 0, { playDuration: 45 }));
     activities.push(createActivity(ActivityType.FEEDING, 16, 0, { feedingAmount: 140 }));
     activities.push(createActivity(ActivityType.DIAPER, 16, 30, { diaperType: 'stool' }));
     activities.push(createActivity(ActivityType.SLEEP, 19, 0, { endTime: new Date(today.getTime() + (19 * 60 + 60) * 60 * 1000), sleepType: 'nap' })); // 저녁 잠 1시간

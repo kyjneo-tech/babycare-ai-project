@@ -116,14 +116,6 @@ jest.mock('@/features/activities/components/forms/TemperatureFormSection', () =>
   TemperatureFormSection: () => <div data-testid="temperature-form-section">Temperature Form</div>,
 }));
 
-jest.mock('@/features/activities/components/forms/BathFormSection', () => ({
-  BathFormSection: () => <div data-testid="bath-form-section">Bath Form</div>,
-}));
-
-jest.mock('@/features/activities/components/forms/PlayFormSection', () => ({
-  PlayFormSection: () => <div data-testid="play-form-section">Play Form</div>,
-}));
-
 jest.mock('@/features/activities/components/ui/ActivitySuggestions', () => ({
   ActivitySuggestions: ({ type }: any) => <div data-testid="activity-suggestions">Suggestions for {type}</div>,
 }));

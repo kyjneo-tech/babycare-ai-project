@@ -16,10 +16,6 @@ export const getActivityColors = (type: ActivityType, isNight: boolean = false) 
       return { bg: "bg-purple-500", text: "text-white", hex: "#a855f7" };
     case ActivityType.TEMPERATURE:
       return { bg: "bg-red-500", text: "text-white", hex: "#ef4444" };
-    case ActivityType.BATH:
-      return { bg: "bg-cyan-500", text: "text-white", hex: "#06b6d4" };
-    case ActivityType.PLAY:
-      return { bg: "bg-primary", text: "text-primary-foreground", hex: "#FB7185" };
     default:
       return { bg: "bg-gray-400", text: "text-white", hex: "#9ca3af" };
   }
@@ -41,10 +37,6 @@ export const getActivityIcon = (activity: Activity): string => {
       return "💊";
     case ActivityType.TEMPERATURE:
       return "🌡️";
-    case ActivityType.BATH:
-      return "🛁";
-    case ActivityType.PLAY:
-      return "🎮";
     default:
       return "📝";
   }
@@ -68,10 +60,6 @@ export const getActivityLabel = (activity: Activity): string => {
       return "약";
     case ActivityType.TEMPERATURE:
       return "체온 측정";
-    case ActivityType.BATH:
-      return "목욕";
-    case ActivityType.PLAY:
-      return "놀이";
     default:
       return "활동";
   }

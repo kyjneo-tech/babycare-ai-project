@@ -8,9 +8,7 @@ type ActivityType =
   | "SLEEP"
   | "DIAPER"
   | "MEDICINE"
-  | "TEMPERATURE"
-  | "BATH"
-  | "PLAY";
+  | "TEMPERATURE";
 
 interface ActivitySuggestionsProps {
   type: ActivityType;

@@ -22,8 +22,6 @@ import { SleepFormSection } from "@/features/activities/components/forms/SleepFo
 import { DiaperFormSection } from "@/features/activities/components/forms/DiaperFormSection";
 import { MedicineFormSection } from "@/features/activities/components/forms/MedicineFormSection";
 import { TemperatureFormSection } from "@/features/activities/components/forms/TemperatureFormSection";
-import { BathFormSection } from "@/features/activities/components/forms/BathFormSection";
-import { PlayFormSection } from "@/features/activities/components/forms/PlayFormSection";
 
 import { useActivityFormState } from "@/features/activities/hooks/useActivityFormState";
 import { useActivitySubmit } from "@/features/activities/hooks/useActivitySubmit";
@@ -374,8 +372,6 @@ export function ActivityForm({
                   {type === "DIAPER" && "💩 배변 기록"}
                   {type === "MEDICINE" && "💊 투약 기록"}
                   {type === "TEMPERATURE" && "🌡️ 체온 기록"}
-                  {type === "BATH" && "🛁 목욕 기록"}
-                  {type === "PLAY" && "🧸 놀이 기록"}
                 </span>
               </CardTitle>
               <Button
@@ -468,29 +464,7 @@ export function ActivityForm({
                 />
               )}
 
-              {type === "BATH" && (
-                <BathFormSection
-                  bathType={state.bathType}
-                  setBathType={state.setBathType}
-                  bathTemp={state.bathTemp}
-                  setBathTemp={state.setBathTemp}
-                  reaction={state.reaction}
-                  setReaction={state.setReaction}
-                  disabled={isGuestMode}
-                />
-              )}
 
-              {type === "PLAY" && (
-                <PlayFormSection
-                  playLocation={state.playLocation}
-                  setPlayLocation={state.setPlayLocation}
-                  playType={state.playType}
-                  togglePlayType={state.togglePlayType}
-                  reaction={state.reaction}
-                  setReaction={state.setReaction}
-                  disabled={isGuestMode}
-                />
-              )}
 
               {/* 메모 입력 - AI 상담에 활용 */}
               <div className={cn("p-3 bg-muted rounded-lg", SPACING.space.sm)}>

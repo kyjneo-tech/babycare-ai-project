@@ -34,8 +34,6 @@ import { SleepFormSection } from "@/features/activities/components/forms/SleepFo
 import { DiaperFormSection } from "@/features/activities/components/forms/DiaperFormSection";
 import { MedicineFormSection } from "@/features/activities/components/forms/MedicineFormSection";
 import { TemperatureFormSection } from "@/features/activities/components/forms/TemperatureFormSection";
-import { BathFormSection } from "@/features/activities/components/forms/BathFormSection";
-import { PlayFormSection } from "@/features/activities/components/forms/PlayFormSection";
 
 // 기존 훅 재사용
 import { useActivityFormState, type ActivityType } from "@/features/activities/hooks/useActivityFormState";
@@ -441,29 +439,7 @@ export function QuickRecordModal({
                   />
                 )}
 
-                {selectedType === "BATH" && (
-                  <BathFormSection
-                    bathType={state.bathType}
-                    setBathType={state.setBathType}
-                    bathTemp={state.bathTemp}
-                    setBathTemp={state.setBathTemp}
-                    reaction={state.reaction}
-                    setReaction={state.setReaction}
-                    disabled={isGuestMode}
-                  />
-                )}
 
-                {selectedType === "PLAY" && (
-                  <PlayFormSection
-                    playLocation={state.playLocation}
-                    setPlayLocation={state.setPlayLocation}
-                    playType={state.playType}
-                    togglePlayType={state.togglePlayType}
-                    reaction={state.reaction}
-                    setReaction={state.setReaction}
-                    disabled={isGuestMode}
-                  />
-                )}
 
                 {/* 메모 입력 - AI 상담에 활용 */}
                 <div className={cn("p-3 bg-muted rounded-lg", SPACING.space.sm)}>

@@ -196,9 +196,11 @@ export async function getChatContext(babyId: string, userId: string): Promise<Ch
  */
 export async function getChatHistoryContext(
   babyId: string,
-  isHealthRelated: boolean
+  count: number = 3
 ): Promise<string> {
-  const historyCount = isHealthRelated ? 5 : 3;
+  if (count <= 0) return "";
+  
+  const historyCount = count;
 
   const recentMessages = await prisma.chatMessage.findMany({
     where: { babyId },

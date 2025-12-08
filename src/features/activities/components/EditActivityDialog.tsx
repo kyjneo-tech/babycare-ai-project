@@ -24,8 +24,6 @@ import { SleepFormSection } from "@/features/activities/components/forms/SleepFo
 import { DiaperFormSection } from "@/features/activities/components/forms/DiaperFormSection";
 import { MedicineFormSection } from "@/features/activities/components/forms/MedicineFormSection";
 import { TemperatureFormSection } from "@/features/activities/components/forms/TemperatureFormSection";
-import { BathFormSection } from "@/features/activities/components/forms/BathFormSection";
-import { PlayFormSection } from "@/features/activities/components/forms/PlayFormSection";
 import { GuestModeDialog } from "@/components/common/GuestModeDialog";
 import { SPACING, TYPOGRAPHY } from "@/design-system";
 import { cn } from "@/lib/utils";
@@ -80,11 +78,6 @@ export function EditActivityDialog({
   const [medicineUnit, setMedicineUnit] = useState(activity.medicineUnit || "ml");
   const [syrupConc, setSyrupConc] = useState("");
   const [temperature, setTemperature] = useState(activity.temperature?.toString() || "");
-  const [bathType, setBathType] = useState(activity.bathType || "full");
-  const [bathTemp, setBathTemp] = useState(activity.bathTemp?.toString() || "");
-  const [reaction, setReaction] = useState(activity.reaction || "");
-  const [playLocation, setPlayLocation] = useState(activity.playLocation || "");
-  const [playType, setPlayType] = useState<string[]>(activity.playType?.split(',') || []);
 
   const [latestWeight, setLatestWeight] = useState<number | null>(null);
   const [ageInMonths, setAgeInMonths] = useState(0);
@@ -107,11 +100,6 @@ export function EditActivityDialog({
     setMedicineAmount(activity.medicineAmount?.toString() || "");
     setMedicineUnit(activity.medicineUnit || "ml");
     setTemperature(activity.temperature?.toString() || "");
-    setBathType(activity.bathType || "full");
-    setBathTemp(activity.bathTemp?.toString() || "");
-    setReaction(activity.reaction || "");
-    setPlayLocation(activity.playLocation || "");
-    setPlayType(activity.playType?.split(',') || []);
   }, [activity]);
 
   useEffect(() => {
@@ -171,14 +159,6 @@ export function EditActivityDialog({
         updateData.medicineUnit = medicineUnit;
       } else if (activity.type === "TEMPERATURE") {
         updateData.temperature = temperature ? parseFloat(temperature) : null;
-      } else if (activity.type === "BATH") {
-        updateData.bathType = bathType;
-        updateData.bathTemp = bathTemp ? parseFloat(bathTemp) : null;
-        updateData.reaction = reaction || null;
-      } else if (activity.type === "PLAY") {
-        updateData.playLocation = playLocation || null;
-        updateData.playType = playType.length > 0 ? playType.join(",") : null;
-        updateData.reaction = reaction || null;
       }
 
       const result = await updateActivity(activity.id, session.user.id, updateData);
@@ -196,9 +176,7 @@ export function EditActivityDialog({
     }
   };
 
-  const togglePlayType = (type: string) => {
-    setPlayType(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
-  };
+
 
   const formDisabled = isSaving || isGuestMode;
 
@@ -239,12 +217,7 @@ export function EditActivityDialog({
             {activity.type === "TEMPERATURE" && (
               <TemperatureFormSection {...{ temperature, setTemperature, errors, disabled: formDisabled }} />
             )}
-             {activity.type === "BATH" && (
-              <BathFormSection bathType={bathType} setBathType={setBathType} bathTemp={bathTemp} setBathTemp={setBathTemp} reaction={reaction} setReaction={setReaction} disabled={formDisabled} />
-            )}
-            {activity.type === "PLAY" && (
-              <PlayFormSection playLocation={playLocation} setPlayLocation={setPlayLocation} playType={playType} togglePlayType={togglePlayType} reaction={reaction} setReaction={setReaction} disabled={formDisabled} />
-            )}
+
 
             <div className={cn("p-3 bg-muted rounded-lg", SPACING.space.sm)}>
               <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>

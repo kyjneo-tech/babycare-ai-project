@@ -4,8 +4,6 @@ export const activityTypeLabels: Record<ActivityType, string> = {
   FEEDING: "수유",
   SLEEP: "수면",
   DIAPER: "기저귀",
-  BATH: "목욕",
-  PLAY: "놀이",
   MEDICINE: "약",
   TEMPERATURE: "체온",
 };
@@ -61,10 +59,6 @@ export function getActivityDescription(activity: any): string {
       return `${activity.temperature}°C`;
     case "MEDICINE":
       return `${activity.medicineName || "약"} ${activity.medicineAmount || ""}${activity.medicineUnit || ""}`;
-    case "BATH":
-      return activity.bathTemp ? `${activity.bathTemp}°C` : "목욕";
-    case "PLAY":
-      return activity.playDuration ? `${activity.playDuration}분` : "놀이";
     default:
       return "";
   }

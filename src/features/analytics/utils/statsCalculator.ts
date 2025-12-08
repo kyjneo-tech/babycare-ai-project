@@ -27,13 +27,6 @@ export interface ActivityStats {
   medicine: {
     count: number;
   };
-  bath: {
-    count: number;
-  };
-  play: {
-    count: number;
-    totalDuration: number;
-  };
   temperature: {
     count: number;
     avg: number;
@@ -75,9 +68,7 @@ export function calculateActivityStats(activities: Activity[]): ActivityStats {
     both: diaperActivities.filter(a => a.diaperType === 'both').length,
   };
 
-  // 놀이 통계
-  const playActivities = statsActivities.filter(a => a.type === 'PLAY');
-  const totalPlayDuration = playActivities.reduce((sum, a) => sum + (a.playDuration || 0), 0);
+
 
   // 체온 통계
   const tempActivities = statsActivities.filter(a => a.type === 'TEMPERATURE');
@@ -106,13 +97,6 @@ export function calculateActivityStats(activities: Activity[]): ActivityStats {
     },
     medicine: {
       count: statsActivities.filter(a => a.type === 'MEDICINE').length,
-    },
-    bath: {
-      count: statsActivities.filter(a => a.type === 'BATH').length,
-    },
-    play: {
-      count: playActivities.length,
-      totalDuration: totalPlayDuration,
     },
     temperature: {
       count: tempActivities.length,

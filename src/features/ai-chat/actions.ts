@@ -1,33 +1,27 @@
 "use server";
 
-import { prisma } from "@/shared/lib/prisma";
-import { ChatMessage } from "@prisma/client";
-import { z } from "zod";
-import { Message } from "@/shared/types/chat";
-import { AISettings } from "./types";
-import { DEFAULT_AI_SETTINGS } from "./constants/aiSettings";
-import { getChatContext } from "./services/chatDataService";
-import { generateAIResponse } from "./services/chatAIService";
-import { saveChatMessage } from "./services/chatHistoryService";
-import { generateFinalPrompt } from "./prompts/systemPrompt";
-import { removeBoldFormatting } from "./utils/responseFormatter";
-import { getSampleChatHistory } from "./services/getSampleChatHistoryService";
-import { analyzeChatHistoryNeeds, logChatHistoryAnalysis } from "./utils/chatHistoryAnalyzer";
-import { getChatHistoryTool, formatChatHistoryForPrompt } from "./services/chatHistoryTools";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { runOrchestrator } from "./services/orchestratorService";
+import { runAnswerer } from "./services/answererService";
+import { runSingleAI } from "./services/singleAIService";
+import { getChatContext, getChatHistoryContext } from "./services/chatDataService";
+import { prisma } from "@/shared/lib/prisma";
+import { revalidatePath } from "next/cache";
 
-// ============================================================
-// 입력 검증
-// ============================================================
+// 최적화 유틸리티
+import { analyzeOptimalChatHistory } from "./utils/improvedChatHistoryAnalyzer";
+import { analyzeQuestionComplexity } from "./utils/questionComplexity";
 
-const chatMessageSchema = z.object({
-  message: z
-    .string()
-    .min(1, "메시지를 입력해주세요.")
-    .max(1500, "메시지는 최대 1,500자까지 입력 가능합니다.")
-    .trim(),
-});
+// 설정 관리
+import { AISettings } from "./types";
+import { DEFAULT_AI_SETTINGS } from "./constants/aiSettings";
+
+// 모니터링
+import { ChatMessage } from "@prisma/client";
+import { collectChatMetrics } from "./services/metricsCollector";
+import { calculatePromptTokens, calculateResponseTokens } from "./utils/tokenCounter";
+
 
 // ============================================================
 // AI 설정 관리
@@ -39,13 +33,11 @@ export async function getBabyAISettings(babyId: string) {
   }
 
   try {
-    // 🔒 보안: 사용자 인증 및 권한 검증
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return { success: false, error: "로그인이 필요합니다." };
     }
 
-    // 🔒 보안: 현재 사용자가 해당 Family의 멤버인 경우만 조회
     const baby = await prisma.baby.findFirst({
       where: {
         id: babyId,
@@ -76,13 +68,11 @@ export async function getBabyAISettings(babyId: string) {
 
 export async function updateBabyAISettings(babyId: string, settings: AISettings) {
   try {
-    // 🔒 보안: 사용자 인증 및 권한 검증
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return { success: false, error: "로그인이 필요합니다." };
     }
 
-    // 🔒 보안: 권한 확인 후 업데이트
     const baby = await prisma.baby.findFirst({
       where: {
         id: babyId,
@@ -113,144 +103,297 @@ export async function updateBabyAISettings(babyId: string, settings: AISettings)
 }
 
 // ============================================================
-// AI 채팅
+// Server Action: AI 채팅 메시지 전송 (하이브리드 시스템)
 // ============================================================
 
 export async function sendChatMessage(
   babyId: string,
-  userId: string | undefined,
+  userId: string | undefined, // undefined 허용
   message: string
-): Promise<{
-  success: boolean;
-  data?: { reply: string | null; summary?: any };
-  error?: string;
-}> {
-  // 1. 입력 검증
-  const validation = chatMessageSchema.safeParse({ message });
-  if (!validation.success) {
-    return {
-      success: false,
-      error: validation.error.errors[0].message,
-    };
-  }
-  const validatedMessage = validation.data.message;
-
-  // 2. 게스트 모드 처리
-  if (babyId === "guest-baby-id") {
-    return {
-      success: true,
-      data: {
-        reply: "저는 게스트 모드 AI입니다. 실제 아기 데이터에 기반한 답변은 회원가입 후 이용 가능합니다. 예를 들어, '우리 아기 수면 패턴은 어떤가요?'와 같이 질문하실 수 있습니다.",
-      },
-    };
-  }
-
-  // 3. 인증 확인
-  if (!userId) {
-    return { success: false, error: "로그인이 필요합니다" };
-  }
-
-  // 4. Rate Limiting
-  const { aiChatRateLimit } = await import('@/shared/lib/ratelimit');
-  if (aiChatRateLimit) {
-    const { success } = await aiChatRateLimit.limit(userId);
-    if (!success) {
-      const { logger } = await import('@/shared/lib/logger');
-      logger.warn('AI 채팅 rate limit 초과', { userId });
-      return {
-        success: false,
-        error: "너무 많은 요청입니다. 잠시 후 다시 시도해주세요."
-      };
-    }
-  }
+): Promise<{ success: boolean; data?: { reply: string }; error?: string }> {
+  const startTime = Date.now();
+  let orchestratorStartTime = 0;
+  let orchestratorEndTime = 0;
+  let answererStartTime = 0;
+  let answererEndTime = 0;
+  let mode: "single-ai" | "dual-ai" = "dual-ai";
+  let historyCount = 0;
+  let toolsUsedCount = 0;
+  let complexityResult: "simple" | "complex" = "complex";
 
   try {
-    // 5. 채팅 컨텍스트 데이터 조회
-    const context = await getChatContext(babyId, userId);
-
-    // 🆕 6. 대화 기록 필요성 분석 (하이브리드 방식)
-    const historyNeeds = analyzeChatHistoryNeeds(validatedMessage);
-    logChatHistoryAnalysis(validatedMessage, historyNeeds);
-
-    let historyContext = "";
-
-    if (historyNeeds.autoProvide && historyNeeds.needsHistory) {
-      // 자동으로 대화 기록 제공
-      const historyResult = await getChatHistoryTool({
-        babyId,
-        count: historyNeeds.count,
-      });
-      historyContext = formatChatHistoryForPrompt(historyResult);
-
-      console.log(`✅ 자동으로 ${historyNeeds.count}개 대화 기록 제공: ${historyNeeds.reason}`);
-    } else {
-      // 대화 기록 제공 안 함 (AI가 필요시 도구 사용)
-      historyContext = "";
-      console.log(`⏭️ 대화 기록 제공 안 함: ${historyNeeds.reason}`);
+    // 0. 사용자 인증 확인
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.id !== userId) {
+      throw new Error("인증되지 않은 사용자입니다.");
     }
 
-    // 7. 최종 프롬프트 생성
-    const finalPrompt = generateFinalPrompt(context, historyContext, validatedMessage);
+    // 1. 질문 및 대화 기록 분석 (최적화)
+    complexityResult = analyzeQuestionComplexity(message);
+    const historyStrategy = analyzeOptimalChatHistory(message);
+    historyCount = historyStrategy.count;
 
-    // 디버깅용 로그
-    console.log("---------------------------------------------------");
-    console.log("AI Prompt Debugging:");
-    console.log(finalPrompt);
-    console.log("---------------------------------------------------");
+    console.log(`📊 질문 분석: ${complexityResult}, 기록: ${historyCount}개 (${historyStrategy.reason})`);
 
-    // 8. AI 응답 생성
-    let reply = await generateAIResponse(finalPrompt, babyId);
+    // 2. 컨텍스트 조회 (공통)
+    const context = await getChatContext(babyId, userId);
+    const chatHistoryContext = historyCount > 0
+      ? await getChatHistoryContext(babyId, historyCount)
+      : "";
 
-    // 9. 볼드 표시 제거
-    reply = removeBoldFormatting(reply);
+    // ============================================================
+    // Case A: Simple 질문 -> Single AI (빠름, 저렴)
+    // ============================================================
+    if (complexityResult === "simple") {
+      mode = "single-ai";
+      console.log("🚀 Single AI 모드 실행");
 
-    // 10. 채팅 기록 저장
-    const simpleSummary = {
-      logCount: 0,
-      excluded: [],
-      growthDataCount: context.growthHistory.length,
-      historyProvided: historyNeeds.autoProvide,  // 🆕 대화 기록 제공 여부
-      historyCount: historyNeeds.count,  // 🆕 제공한 대화 개수
-    };
+      answererStartTime = Date.now();
+      
+      const reply = await runSingleAI(
+        context.baby.name,
+        context.monthAge,
+        context.userRoleLabel,
+        message,
+        chatHistoryContext
+      );
+      
+      answererEndTime = Date.now();
 
-    await saveChatMessage(babyId, userId, validatedMessage, reply, simpleSummary);
+      // DB 저장
+      await saveChatMessage(babyId, userId, message, reply);
 
-    return {
+      // Revalidate
+      revalidatePath(`/families/${context.baby.familyId}/chat`);
+
+      // 메트릭 수집 (Fire-and-forget)
+      const endTime = Date.now();
+      // calculatePromptTokens 인터페이스: (systemPrompt, userMessage, chatHistory)
+      // Single AI는 System Prompt가 코드 내에 하드코딩 되어 있으므로 대략적인 길이를 넣어주거나 빈 문자열 처리
+      const inputTokens = calculatePromptTokens("", message, chatHistoryContext); 
+      const outputTokens = calculateResponseTokens(reply);
+
+      collectChatMetrics({
+        babyId,
+        userId,
+        question: message,
+        answer: reply,
+        complexity: "simple",
+        historyTier: historyStrategy.tier,
+        historyCount: historyStrategy.count,
+        historyReason: historyStrategy.reason,
+        mode: "single-ai",
+        
+        // 시간 (Flat structure)
+        startTime,
+        endTime,
+        answererStartTime,
+        answererEndTime,
+
+        // 토큰 (Flat structure)
+        inputTokens,
+        outputTokens,
+        aiCallCount: 1,
+
+        // 도구 (미사용)
+        toolsCalled: [],
+        toolsSuccess: true,
+        
+        // 결과
+        success: true,
+        dataAvailable: false, // Simple 모드는 데이터 조회 안함
+      }).catch(e => console.error("Metrics Error (Single):", e));
+
+      return { success: true, data: { reply } };
+    }
+
+    // ============================================================
+    // Case B: Complex 질문 -> Dual AI (정확, 데이터 기반)
+    // ============================================================
+    console.log("🔄 Dual AI 모드 실행");
+    mode = "dual-ai";
+
+    // Step 3-1: AI #1 Orchestrator (데이터 수집)
+    orchestratorStartTime = Date.now();
+    const orchestratorOutput = await runOrchestrator(
+      context.baby.name,
+      context.monthAge,
+      message,
+      babyId,
+      historyCount > 0 // 이전 대화 포함 여부 결정
+    );
+    orchestratorEndTime = Date.now();
+    toolsUsedCount = orchestratorOutput.toolsCalled?.length || 0;
+
+    // Step 3-2: AI #2 Answerer (답변 생성)
+    answererStartTime = Date.now();
+    const reply = await runAnswerer(
+      context.baby.name,
+      context.monthAge, // 개월 수 전달
+      context.userRoleLabel,
+      message,
+      orchestratorOutput
+    );
+    answererEndTime = Date.now();
+
+    // 4. 대화 저장
+    await saveChatMessage(babyId, userId, message, reply);
+
+    // 5. 페이지 갱신
+    revalidatePath(`/families/${context.baby.familyId}/chat`);
+
+    // 메트릭 수집 (Fire-and-forget)
+    const endTime = Date.now();
+    const inputTokens = calculatePromptTokens("", message, JSON.stringify(orchestratorOutput)); 
+    const outputTokens = calculateResponseTokens(reply);
+
+    collectChatMetrics({
+      babyId,
+      userId,
+      question: message,
+      answer: reply,
+      complexity: "complex",
+      historyTier: historyStrategy.tier,
+      historyCount: historyStrategy.count,
+      historyReason: historyStrategy.reason,
+      mode: "dual-ai",
+      
+      // 시간
+      startTime,
+      endTime,
+      orchestratorStartTime,
+      orchestratorEndTime,
+      answererStartTime,
+      answererEndTime,
+
+      // 토큰
+      inputTokens,
+      outputTokens,
+      aiCallCount: 2,
+
+      // 도구
+      toolsCalled: orchestratorOutput.toolsCalled?.map((t: any) => t.toolName) || [],
+      toolsSuccess: true,
+      toolsData: orchestratorOutput.toolsCalled,
+
+      // 결과
       success: true,
-      data: {
-        reply,
-        summary: simpleSummary as any,
-      },
+      dataAvailable: orchestratorOutput.dataAvailable,
+      missingInfo: orchestratorOutput.missingInfo
+    }).catch(e => console.error("Metrics Error (Dual):", e));
+
+    return { success: true, data: { reply } };
+
+  } catch (error: any) {
+    console.error("AI Chat Error:", error);
+    
+    // 에러 발생 시에도 메트릭 수집
+    collectChatMetrics({
+      babyId,
+      userId: userId || "unknown",
+      question: message,
+      answer: "Error",
+      complexity: complexityResult || "complex", // 에러 시 기본값
+      historyTier: 1,
+      historyCount: 0,
+      historyReason: "Error",
+      mode: mode,
+      
+      startTime: Date.now(),
+      endTime: Date.now(),
+      
+      inputTokens: 0,
+      outputTokens: 0,
+      aiCallCount: 0,
+      
+      toolsCalled: [],
+      toolsSuccess: false,
+      
+      success: false,
+      errorType: error.name || "UnknownError",
+      errorMessage: error.message,
+      dataAvailable: false
+    }).catch(e => console.error("Metrics Error (Fail):", e));
+
+    return { 
+      success: false, 
+      error: "상담 중 문제가 발생했어요. 잠시 후 다시 시도해주세요." 
     };
-  } catch (error) {
-    const { logger } = await import('@/shared/lib/logger');
-    logger.error("AI 채팅 실패");
-    return { success: false, error: "AI 응답 생성에 실패했습니다" };
   }
 }
 
 // ============================================================
-// 채팅 기록 조회
+// Internal: 대화 저장
 // ============================================================
 
+async function saveChatMessage(
+  babyId: string,
+  userId: string,
+  message: string,
+  reply: string
+) {
+  try {
+    // 1. 메시지 저장
+    await prisma.chatMessage.create({
+      data: {
+        babyId,
+        userId,
+        message,
+        reply,
+        createdAt: new Date(), 
+      },
+    });
+
+    // 2. 오래된 메시지 삭제 (TTL: 30일)
+    // 매번 실행하는 것이 부담스럽다면 확률적으로 실행하거나(e.g. 1/10), 별도 Cron으로 분리 가능.
+    // 여기서는 간단히 사용자 별 Cleanup으로 구현.
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    
+    // Fire-and-forget (await 하지 않음 or 에러 무시)
+    prisma.chatMessage.deleteMany({
+      where: {
+        babyId, // 해당 아기의 데이터만 정리 (인덱스 활용)
+        createdAt: {
+          lt: thirtyDaysAgo
+        }
+      }
+    }).catch(e => console.error("TTL Cleanup Error:", e));
+
+  } catch (dbError) {
+    console.error("DB Save Error:", dbError);
+    // 채팅 저장이 실패해도 사용자에게 답변은 보여주는게 UX상 나음
+  }
+}
+
+/**
+ * 대화 목록 조회
+ */
 export async function getChatHistory(
   babyId: string
 ): Promise<{
   success: boolean;
-  data?: (ChatMessage | Message)[];
+  data?: any[]; // ChatMessage | Message 타입 호환을 위해 any 또는 유연한 타입 사용
   error?: string;
 }> {
   if (babyId === "guest-baby-id") {
+    // getSampleChatHistory 함수 필요 (import 필요)
+    // 하지만 여기서는 간단히 빈 배열 또는 샘플 데이터 처리를 위해 import 구문을 확인해야 함.
+    // 기존 코드 상단에 import { getSampleChatHistory } from "./services/getSampleChatHistoryService"; 가 있었음.
+    // 이 파일 맨 위 import 섹션에 추가되어 있는지 확인해야 함. 
+    // 현재 파일 상단 import 목록을 보면 getSampleChatHistory가 없음. 
+    // 따라서 여기서 import를 추가할 수는 없으니, 동적 import를 쓰거나 상단 import를 추가해야 함.
+    // 일단 여기서는 동적 import로 처리.
+    const { getSampleChatHistory } = await import("./services/getSampleChatHistoryService");
     return { success: true, data: getSampleChatHistory() };
   }
 
   try {
     const messages = await prisma.chatMessage.findMany({
       where: { babyId },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "asc" }, // 과거 -> 현재 (화면 표시 순서)
     });
 
-    const formattedMessages: Message[] = messages.flatMap((msg) => [
+    const formattedMessages = messages.flatMap((msg) => [
       {
         id: `${msg.id}-user`,
         role: "user",
@@ -259,7 +402,7 @@ export async function getChatHistory(
       },
       {
         id: msg.id,
-        role: "assistant",
+        role: "assistant", // "ai" 대신 "assistant" 사용 (Message 타입 따름)
         content: msg.reply,
         createdAt: msg.createdAt,
       },
@@ -267,8 +410,7 @@ export async function getChatHistory(
 
     return { success: true, data: formattedMessages };
   } catch (error) {
-    const { logger } = await import('@/shared/lib/logger');
-    logger.error("대화 기록 조회 실패");
-    return { success: false, error: "대화 기록 조회에 실패했습니다" };
+    console.error("Get Messages Error:", error);
+    return { success: false, error: "대화 기록 조회 실패" };
   }
 }

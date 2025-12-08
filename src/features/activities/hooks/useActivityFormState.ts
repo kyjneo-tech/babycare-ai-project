@@ -6,9 +6,7 @@ export type ActivityType =
   | "SLEEP"
   | "DIAPER"
   | "MEDICINE"
-  | "TEMPERATURE"
-  | "BATH"
-  | "PLAY";
+  | "TEMPERATURE";
 
 // --- UseActivityFormStateReturn 인터페이스 수정 ---
 export interface UseActivityFormStateReturn {
@@ -55,16 +53,6 @@ export interface UseActivityFormStateReturn {
 
   temperature: string;
   setTemperature: Dispatch<SetStateAction<string>>;
-  bathType: string;
-  setBathType: Dispatch<SetStateAction<string>>;
-  bathTemp: string;
-  setBathTemp: Dispatch<SetStateAction<string>>;
-  playLocation: string;
-  setPlayLocation: Dispatch<SetStateAction<string>>;
-  playType: string[];
-  setPlayType: Dispatch<SetStateAction<string[]>>;
-  reaction: string;
-  setReaction: Dispatch<SetStateAction<string>>;
   errors: Record<string, string>;
   setErrors: Dispatch<SetStateAction<Record<string, string>>>;
   babyInfo: { birthDate: Date; gender: 'male' | 'female' } | null;
@@ -73,7 +61,6 @@ export interface UseActivityFormStateReturn {
   setLatestWeight: Dispatch<SetStateAction<number | null>>;
   ageInMonths: number;
   setAgeInMonths: Dispatch<SetStateAction<number>>;
-  togglePlayType: (tag: string) => void;
   setSleepDuration: (durationMinutes: number) => void;
 }
 
@@ -106,22 +93,12 @@ export function useActivityFormState(): UseActivityFormStateReturn {
   const [sleepDurationHours, setSleepDurationHours] = useState("");
   const [sleepDurationMinutes, setSleepDurationMinutes] = useState("");
   const [temperature, setTemperature] = useState("36.5");
-  const [bathType, setBathType] = useState("tub");
-  const [bathTemp, setBathTemp] = useState("38");
-  const [playLocation, setPlayLocation] = useState("indoor");
-  const [playType, setPlayType] = useState<string[]>([]);
-  const [reaction, setReaction] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [babyInfo, setBabyInfo] = useState<{ birthDate: Date; gender: 'male' | 'female' } | null>(null);
   const [latestWeight, setLatestWeight] = useState<number | null>(null);
   const [ageInMonths, setAgeInMonths] = useState<number>(0);
 
-  const togglePlayType = (tag: string) => {
-    setPlayType(prev =>
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
-  };
-  
+
   const setSleepDuration = (durationMinutes: number) => {
     const now = getInitialTime();
     setEndTime(now);
@@ -151,16 +128,10 @@ export function useActivityFormState(): UseActivityFormStateReturn {
     sleepDurationHours, setSleepDurationHours,
     sleepDurationMinutes, setSleepDurationMinutes,
     temperature, setTemperature,
-    bathType, setBathType,
-    bathTemp, setBathTemp,
-    playLocation, setPlayLocation,
-    playType, setPlayType,
-    reaction, setReaction,
     errors, setErrors,
     babyInfo, setBabyInfo,
     latestWeight, setLatestWeight,
     ageInMonths, setAgeInMonths,
-    togglePlayType,
     setSleepDuration,
   };
 }

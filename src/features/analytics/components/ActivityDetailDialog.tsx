@@ -31,7 +31,7 @@ export function ActivityDetailDialog({ selectedCell, onClose }: ActivityDetailDi
             <span
               className={`${
                 getActivityColors(
-                  selectedCell?.activity?.type || ActivityType.PLAY,
+                  selectedCell?.activity?.type || ActivityType.FEEDING,
                   selectedCell?.activity?.type === ActivityType.SLEEP &&
                     (new Date(selectedCell?.activity?.startTime || "").getHours() >= 18 ||
                       new Date(selectedCell?.activity?.startTime || "").getHours() < 6)

@@ -1,315 +1,333 @@
-// prisma/schema.prisma
-
-// Prisma Client를 생성하는 설정입니다.
-// 이 클라이언트를 통해 애플리케이션에서 데이터베이스와 상호작용합니다.
 generator client {
   provider = "prisma-client-js"
 }
 
-// 데이터베이스 연결 설정입니다.
-// PostgreSQL을 사용하며, 환경 변수에서 데이터베이스 URL을 가져옵니다.
-// `url`은 연결 풀링을 위한 URL이고, `directUrl`은 마이그레이션 등 직접 연결에 사용됩니다.
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-// --- 데이터 모델 정의 시작 ---
-
-// User (사용자) 모델: 앱을 사용하는 사용자의 정보를 저장합니다.
-// 각 사용자는 고유한 ID와 이메일을 가집니다.
 model User {
-  id        String   @id @default(cuid()) // 사용자 고유 ID
-  email     String   @unique // 이메일 (로그인 ID), 중복 불가
-  password  String // 비밀번호 (해시값으로 저장)
-  name      String // 사용자 이름
-  createdAt DateTime @default(now()) // 생성일시
-  updatedAt DateTime @updatedAt // 최종 수정일시
-
-  // 관계: 사용자는 여러 가족 구성원이 될 수 있습니다.
-  FamilyMembers FamilyMember[]
-  // 관계: 사용자는 여러 활동을 기록할 수 있습니다.
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String
+  name          String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   Activities    Activity[]
-  // 관계: 사용자는 여러 채팅 메시지를 보낼 수 있습니다.
   ChatMessages  ChatMessage[]
-  // 관계: 사용자의 설정
-  Settings      UserSettings?
-  // 관계: 사용자는 여러 노트를 작성할 수 있습니다.
-  Notes         Note[]
-}
-
-// UserSettings (사용자 설정) 모델: 사용자의 앱 설정을 저장합니다.
-model UserSettings {
-  id                   String   @id @default(cuid()) // 설정 고유 ID
-  userId               String   @unique // 사용자 ID (일대일 관계)
-  unit                 String   @default("ml") // 단위 설정 (ml 또는 oz)
-  timeFormat           String   @default("24h") // 시간 형식 (24h 또는 12h)
-  notificationsEnabled Boolean  @default(true) // 알림 활성화 여부
-  notificationTimes    Json? // 알림 시간 설정 (JSON 형식)
-  createdAt            DateTime @default(now()) // 생성일시
-  updatedAt            DateTime @updatedAt // 최종 수정일시
-
-  // 관계: 사용자 모델과 연결
-  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-// Family (가족) 모델: 아기를 공유하는 가족 그룹의 정보를 저장합니다.
-// 각 가족은 고유한 ID와 초대 코드를 가집니다.
-model Family {
-  id               String    @id @default(cuid()) // 가족 고유 ID
-  name             String // 가족 이름 (예: '지우네 가족')
-  inviteCode       String    @unique // 가족 초대 코드, 중복 불가
-  inviteCodeExpiry DateTime? // 초대 코드 만료 시간 (선택 사항, 7일 기본)
-  createdAt        DateTime  @default(now()) // 생성일시
-  updatedAt        DateTime  @updatedAt // 최종 수정일시
-
-  // 관계: 가족은 여러 아기를 가질 수 있습니다.
-  Babies        Baby[]
-  // 관계: 가족은 여러 구성원을 가질 수 있습니다.
   FamilyMembers FamilyMember[]
+  Notes         Note[]
+  Settings      UserSettings?
+  ChatMetrics   ChatMetrics[]
 }
 
-// Baby (아기) 모델: 육아 기록의 대상이 되는 아기의 정보를 저장합니다.
-// 각 아기는 고유한 ID를 가지며, 하나의 가족에 속합니다.
+model UserSettings {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  unit                 String   @default("ml")
+  timeFormat           String   @default("24h")
+  notificationsEnabled Boolean  @default(true)
+  notificationTimes    Json?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  User                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Family {
+  id               String         @id @default(cuid())
+  name             String
+  inviteCode       String         @unique
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  inviteCodeExpiry DateTime?
+  Babies           Baby[]
+  FamilyMembers    FamilyMember[]
+}
+
 model Baby {
-  id         String   @id @default(cuid()) // 아기 고유 ID
-  name       String // 아기 이름
-  gender     String // 성별
-  birthDate  DateTime // 생년월일
-  birthTime  String // 태어난 시간 (예: "14:30")
-  photoUrl   String? // 아기 사진 URL (선택 사항)
-  aiSettings Json? // AI 상담 시 참고할 데이터 설정 (예: { feeding: true, sleep: true, diaper: false })
-  createdAt  DateTime @default(now()) // 생성일시
-  updatedAt  DateTime @updatedAt // 최종 수정일시
-
-  familyId String // 소속 가족 ID
-  // 관계: 아기는 하나의 가족에 속합니다.
-  Family   Family @relation(fields: [familyId], references: [id], onDelete: Cascade) // 가족이 삭제되면 아기도 삭제
-
-  // 관계: 아기는 여러 활동 기록을 가질 수 있습니다.
+  id           String            @id @default(cuid())
+  name         String
+  gender       String
+  birthDate    DateTime
+  birthTime    String
+  photoUrl     String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  familyId     String
+  aiSettings   Json?
   Activities   Activity[]
-  // 관계: 아기는 여러 채팅 기록을 가질 수 있습니다.
-  ChatMessages ChatMessage[]
-  // 관계: 아기는 여러 측정 기록을 가질 수 있습니다.
+  Family       Family            @relation(fields: [familyId], references: [id], onDelete: Cascade)
   Measurements BabyMeasurement[]
-  // 관계: 아기는 여러 노트/일정을 가질 수 있습니다.
+  ChatMessages ChatMessage[]
   Notes        Note[]
+  ChatMetrics  ChatMetrics[]
 
-  // familyId 필드에 인덱스를 추가하여 조회 성능을 최적화합니다.
   @@index([familyId])
 }
 
-// FamilyMember (가족 구성원) 모델: User와 Family 간의 다대다 관계를 연결합니다.
-// 누가 어떤 가족에 어떤 역할로 속해있는지를 정의합니다.
 model FamilyMember {
-  userId     String // 사용자 ID
-  familyId   String // 가족 ID
-  permission String   @default("member") // 권한 레벨: 'owner' | 'admin' | 'member' | 'viewer'
-  role       String // 가족 내 역할 (예: 'parent', 'grandparent')
-  relation   String // 아기와의 관계 (예: '엄마', '아빠')
-  createdAt  DateTime @default(now()) // 생성일시
-  updatedAt  DateTime @updatedAt // 최종 수정일시
+  userId     String
+  familyId   String
+  role       String
+  relation   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  permission String   @default("member")
+  Family     Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // 관계: 사용자 모델과 연결됩니다.
-  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade) // 사용자가 삭제되면 구성원 정보도 삭제
-  // 관계: 가족 모델과 연결됩니다.
-  Family Family @relation(fields: [familyId], references: [id], onDelete: Cascade) // 가족이 삭제되면 구성원 정보도 삭제
-
-  // userId와 familyId를 복합 기본 키로 설정하여 고유성을 보장합니다.
   @@id([userId, familyId])
-  // familyId 필드에 인덱스를 추가하여 조회 성능을 최적화합니다.
   @@index([familyId])
 }
 
-// Activity (활동) 모델: 아기의 수유, 수면, 배변 등 다양한 활동 기록을 저장합니다.
-// 활동 유형에 따라 특정 필드만 사용될 수 있으므로, 일부 필드는 선택 사항(Nullable)입니다.
 model Activity {
-  id        String       @id @default(cuid()) // 활동 기록 고유 ID
-  babyId    String // 활동 대상 아기 ID
-  userId    String // 활동 기록자 ID
-  type      ActivityType // 활동 유형 (FEEDING, SLEEP, DIAPER, BATH, PLAY, MEDICINE)
-  startTime DateTime // 활동 시작 시간
-  endTime   DateTime? // 활동 종료 시간 (수면 등, 선택 사항)
-  memo      String?      @db.Text // 메모 (선택 사항, 긴 텍스트 가능)
-  reaction  String? // 아기 반응 (좋아함, 싫어함 등)
-  createdAt DateTime     @default(now()) // 기록 생성 시간
-  updatedAt DateTime     @updatedAt // 최종 수정일시
+  id                 String       @id @default(cuid())
+  babyId             String
+  userId             String
+  type               ActivityType
+  startTime          DateTime
+  endTime            DateTime?
+  memo               String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  feedingType        String?
+  feedingAmount      Int?
+  breastSide         String?
+  sleepType          String?
+  duration           Int?
+  diaperType         String?
+  medicineAmount     String?
+  medicineName       String?
+  medicineUnit       String?
+  temperature        Float?
+  stoolCondition     String?
+  reaction           String?
+  isSplit            Boolean      @default(false)
+  originalActivityId String?
+  splitSequence      Int?
+  Baby               Baby         @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  OriginalActivity   Activity?    @relation("SplitActivities", fields: [originalActivityId], references: [id], onDelete: Cascade)
+  SplitActivities    Activity[]   @relation("SplitActivities")
+  User               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // 수유 관련 필드 (type이 FEEDING일 때 사용)
-  feedingType   String? // 수유 유형 (예: 'breast', 'formula')
-  feedingAmount Int? // 수유량 (ml)
-  breastSide    String? // 수유한 쪽 (예: 'left', 'right')
-
-  // 수면 관련 필드 (type이 SLEEP일 때 사용)
-  sleepType String? // 수면 유형 (예: 'nap', 'night')
-  duration  Int? // 수면 시간 (분)
-
-  // 배변 관련 필드 (type이 DIAPER일 때 사용)
-  diaperType     String? // 배변 유형 (예: 'urine', 'stool')
-  stoolCondition String? // 대변 상태 (예: 'watery', 'loose', 'normal', 'hard')
-
-  // 목욕 관련 필드 (type이 BATH일 때 사용)
-  bathType String? // 목욕 유형 (예: 'tub', 'shower', 'wipe')
-  bathTemp Int? // 물의 온도 (°C)
-
-  // 놀이 관련 필드 (type이 PLAY일 때 사용)
-  playType     String? // 놀이 유형 (쉼표로 구분된 태그 형태)
-  playLocation String? // 놀이 장소 (예: 'indoor', 'outdoor')
-  playDuration Int? // 놀이 시간 (분)
-
-  // 약 복용 관련 필드 (type이 MEDICINE일 때 사용)
-  medicineName   String? // 약 이름
-  medicineAmount String? // 약 용량
-  medicineUnit   String? // 약 단위 (ml, cc, mg 등)
-
-  // 체온 관련 필드 (type이 TEMPERATURE일 때 사용)
-  temperature Float? // 체온 (°C)
-
-  // 수면 분할 관련 필드 (날짜 경계를 넘는 수면 기록 처리용)
-  originalActivityId String? // 분할된 경우 원본 Activity ID (자식 레코드만 가짐)
-  isSplit            Boolean  @default(false) // 분할 여부 (원본 및 자식 모두 true)
-  splitSequence      Int? // 분할 순서 (자식 레코드: 1, 2, ..., 원본: null)
-
-  // 관계: 활동 대상 아기 모델과 연결됩니다.
-  Baby Baby @relation(fields: [babyId], references: [id], onDelete: Cascade) // 아기가 삭제되면 활동 기록도 삭제
-  // 관계: 활동 기록자 사용자 모델과 연결됩니다.
-  User User @relation(fields: [userId], references: [id], onDelete: Cascade) // 사용자가 삭제되면 활동 기록도 삭제
-
-  // 관계: 자기 참조 관계 (분할된 활동 간의 관계)
-  OriginalActivity Activity?  @relation("SplitActivities", fields: [originalActivityId], references: [id], onDelete: Cascade)
-  SplitActivities  Activity[] @relation("SplitActivities")
-
-  // babyId와 createdAt 필드에 인덱스를 추가하여 조회 성능을 최적화합니다.
   @@index([babyId, createdAt(sort: Desc)])
-  // originalActivityId 필드에 인덱스를 추가하여 분할 레코드 조회 성능을 최적화합니다.
   @@index([originalActivityId])
 }
 
-// ActivityType (활동 유형) Enum: Activity 모델의 'type' 필드에 사용될 수 있는 값들을 정의합니다.
-enum ActivityType {
-  FEEDING // 수유
-  SLEEP // 수면
-  DIAPER // 배변
-  BATH // 목욕
-  PLAY // 놀이
-  MEDICINE // 약 복용
-  TEMPERATURE // 체온
-}
-
-// ChatMessage (채팅 메시지) 모델: AI 상담 기록을 저장합니다.
 model ChatMessage {
-  id        String   @id @default(cuid()) // 채팅 메시지 고유 ID
-  babyId    String // 채팅 대상 아기 ID
-  userId    String // 채팅 사용자 ID
-  message   String // 사용자 메시지 내용
-  reply     String   @db.Text // AI 응답 내용 (긴 텍스트 가능)
-  summary   Json? // AI 응답 생성에 사용된 요약 데이터 (JSON 형식, 선택 사항)
-  createdAt DateTime @default(now()) // 메시지 생성 시간
+  id        String   @id @default(cuid())
+  babyId    String
+  userId    String
+  message   String
+  reply     String
+  summary   Json?
+  createdAt DateTime @default(now())
+  Baby      Baby     @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // 관계: 채팅 대상 아기 모델과 연결됩니다.
-  Baby Baby @relation(fields: [babyId], references: [id], onDelete: Cascade) // 아기가 삭제되면 채팅 기록도 삭제
-  // 관계: 채팅 사용자 모델과 연결됩니다.
-  User User @relation(fields: [userId], references: [id], onDelete: Cascade) // 사용자가 삭제되면 채팅 기록도 삭제
-
-  // babyId와 createdAt 필드에 인덱스를 추가하여 조회 성능을 최적화합니다.
   @@index([babyId, createdAt(sort: Desc)])
 }
 
-// BabyMeasurement (아기 측정값) 모델: 아기의 체중, 키 등 성장 기록을 저장합니다.
-// 시간순으로 이력을 관리하여 성장 추이를 추적할 수 있습니다.
 model BabyMeasurement {
-  id         String   @id @default(cuid()) // 측정 기록 고유 ID
-  babyId     String // 측정 대상 아기 ID
-  weight     Float // 체중 (kg)
-  height     Float // 키 (cm)
-  measuredAt DateTime // 측정 일시
-  note       String?  @db.Text // 메모 (선택 사항)
-  createdAt  DateTime @default(now()) // 기록 생성 시간
-  updatedAt  DateTime @updatedAt // 최종 수정일시
+  id         String   @id @default(cuid())
+  babyId     String
+  weight     Float
+  height     Float
+  measuredAt DateTime
+  note       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  Baby       Baby     @relation(fields: [babyId], references: [id], onDelete: Cascade)
 
-  // 관계: 측정 대상 아기 모델과 연결됩니다.
-  Baby Baby @relation(fields: [babyId], references: [id], onDelete: Cascade) // 아기가 삭제되면 측정 기록도 삭제
-
-  // babyId와 measuredAt 필드에 인덱스를 추가하여 조회 성능을 최적화합니다.
   @@index([babyId, measuredAt(sort: Desc)])
 }
 
-// Note (노트/일정) 모델: 메모, 투두, 예방접종, 건강검진 등 모든 일정을 통합 관리합니다.
 model Note {
-  id     String @id @default(cuid()) // 노트 고유 ID
-  babyId String // 대상 아기 ID
-  userId String // 작성자 ID
-
-  type    NoteType // 노트 유형 (메모, 투두, 예방접종 등)
-  title   String // 노트 제목
-  content String?  @db.Text // 노트 내용 (선택 사항, 긴 텍스트 가능)
-
-  dueDate     DateTime? // 마감일/일정 날짜 (선택 사항)
-  completed   Boolean   @default(false) // 완료 여부 (투두용)
-  completedAt DateTime? // 완료 일시
-  priority    Priority? // 우선순위 (선택 사항)
-
-  tags     String[] // 태그 배열 (검색 및 필터링용)
-  metadata Json? // 타입별 추가 정보 (예: 백신 배치번호, 병원 이름 등)
-
-  reminderDays Int[] // 알림 설정 (예: [7, 3, 0] = 7일전, 3일전, 당일)
-
-  createdAt DateTime @default(now()) // 생성일시
-  updatedAt DateTime @updatedAt // 최종 수정일시
-
-  // 관계: 노트 대상 아기 모델과 연결됩니다.
-  Baby              Baby                @relation(fields: [babyId], references: [id], onDelete: Cascade)
-  // 관계: 노트 작성자 사용자 모델과 연결됩니다.
-  User              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  // 관계: 발달 이정표 진행 상황 (MILESTONE 타입일 경우)
+  id                String              @id @default(cuid())
+  babyId            String
+  userId            String
+  type              NoteType
+  title             String
+  content           String?
+  dueDate           DateTime?
+  completed         Boolean             @default(false)
+  completedAt       DateTime?
+  priority          Priority?
+  tags              String[]
+  metadata          Json?
+  reminderDays      Int[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
   MilestoneProgress MilestoneProgress[]
+  Baby              Baby                @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  User              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // 인덱스: 조회 성능 최적화
   @@index([babyId, type])
   @@index([babyId, dueDate])
   @@index([babyId, completed])
 }
 
-// MilestoneProgress (발달 이정표 진행 상황) 모델: 각 이정표 항목의 달성 여부를 추적합니다.
 model MilestoneProgress {
-  id         String    @id @default(cuid()) // 진행 상황 고유 ID
-  noteId     String // 이정표 Note ID
-  category   String // 카테고리 (grossMotor, fineMotor, language, social)
-  itemIndex  Int // 항목 인덱스 (0부터 시작)
-  achieved   Boolean   @default(false) // 달성 여부
-  achievedAt DateTime? // 달성 일시
-  memo       String?   @db.Text // 부모 메모 (예: "오늘 처음 뒤집었어요!")
+  id         String    @id @default(cuid())
+  noteId     String
+  category   String
+  itemIndex  Int
+  achieved   Boolean   @default(false)
+  achievedAt DateTime?
+  memo       String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  Note       Note      @relation(fields: [noteId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now()) // 생성일시
-  updatedAt DateTime @updatedAt // 최종 수정일시
-
-  // 관계: 이정표 Note와 연결됩니다.
-  Note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
-
-  // 유니크 제약: 같은 Note의 같은 카테고리의 같은 항목은 하나만 존재
   @@unique([noteId, category, itemIndex])
-  // 인덱스: 조회 성능 최적화
   @@index([noteId])
 }
 
-// NoteType (노트 유형) Enum: Note 모델의 'type' 필드에 사용될 수 있는 값들을 정의합니다.
-enum NoteType {
-  MEMO // 일반 메모
-  TODO // 할 일
-  VACCINATION // 예방접종
-  HEALTH_CHECKUP // 건강검진
-  MILESTONE // 발달 마일스톤
-  WONDER_WEEK // 원더위크 (도약기)
-  SLEEP_REGRESSION // 수면 퇴행기
-  FEEDING_STAGE // 이유식 단계
-  APPOINTMENT // 병원 예약
+enum ActivityType {
+  FEEDING
+  SLEEP
+  DIAPER
+  MEDICINE
+  TEMPERATURE
 }
 
-// Priority (우선순위) Enum: Note 모델의 'priority' 필드에 사용될 수 있는 값들을 정의합니다.
+enum NoteType {
+  MEMO
+  TODO
+  VACCINATION
+  HEALTH_CHECKUP
+  MILESTONE
+  WONDER_WEEK
+  SLEEP_REGRESSION
+  FEEDING_STAGE
+  APPOINTMENT
+}
+
 enum Priority {
-  LOW // 낮음
-  MEDIUM // 보통
-  HIGH // 높음
-  URGENT // 긴급
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ============================================================
+// AI 상담 모니터링 모델
+// ============================================================
+
+model ChatMetrics {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // 기본 정보
+  babyId   String
+  userId   String
+  question String @db.Text
+  answer   String @db.Text
+
+  // 분류 정보
+  complexity    String
+  historyTier   Int
+  historyCount  Int
+  historyReason String
+  mode          String
+
+  // 성능 지표 (ms)
+  totalTime        Int
+  orchestratorTime Int?
+  answererTime     Int?
+  toolsTime        Int?
+  databaseTime     Int?
+
+  // 비용 지표
+  inputTokens   Int
+  outputTokens  Int
+  totalTokens   Int
+  estimatedCost Float
+  aiCallCount   Int
+
+  // 도구 사용
+  toolsCalled  String[]
+  toolsSuccess Boolean
+  toolsData    Json?
+
+  // 결과 및 품질
+  success      Boolean
+  errorType    String?
+  errorMessage String? @db.Text
+
+  dataAvailable Boolean
+  missingInfo   String[]
+
+  // 사용자 피드백
+  userFeedback Json?
+  feedbackAt   DateTime?
+
+  // 관계
+  Baby Baby @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 인덱스
+  @@index([babyId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@index([complexity])
+  @@index([success])
+}
+
+model MetricsAlert {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  type     String
+  severity String
+
+  title   String
+  message String @db.Text
+
+  metadata Json
+
+  resolved   Boolean   @default(false)
+  resolvedAt DateTime?
+
+  @@index([createdAt(sort: Desc)])
+  @@index([type])
+  @@index([resolved])
+}
+
+model DailyMetricsSummary {
+  id   String   @id @default(cuid())
+  date DateTime @unique
+
+  totalQuestions   Int
+  simpleQuestions  Int
+  complexQuestions Int
+
+  tier1Count Int
+  tier2Count Int
+  tier3Count Int
+
+  avgResponseTime Float
+  minResponseTime Int
+  maxResponseTime Int
+
+  totalTokens        Int
+  totalCost          Float
+  avgCostPerQuestion Float
+
+  successRate Float
+  errorCount  Int
+
+  feedbackCount    Int
+  helpfulCount     Int
+  satisfactionRate Float?
+
+  topTools     Json
+  topQuestions Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date(sort: Desc)])
 }

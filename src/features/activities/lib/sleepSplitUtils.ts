@@ -87,8 +87,8 @@ export function splitActivityByMidnight(
   endTime: Date,
   type: ActivityType
 ): SplitActivityData[] {
-  // SLEEP과 PLAY만 분할 가능
-  if (type !== ActivityType.SLEEP && type !== ActivityType.PLAY) {
+  // SLEEP만 분할 가능
+  if (type !== ActivityType.SLEEP) {
     throw new Error(`Activity type ${type} cannot be split`);
   }
   
@@ -113,10 +113,8 @@ export function splitActivityByMidnight(
     const durationMs = currentEnd.getTime() - currentStart.getTime();
     const duration = Math.floor(durationMs / (1000 * 60));
     
-    // 수면 타입 판단 (SLEEP인 경우만)
-    const sleepType = type === ActivityType.SLEEP 
-      ? determineSleepType(currentStart, currentEnd)
-      : 'nap'; // PLAY는 sleepType 사용 안 함
+    // 수면 타입 판단
+    const sleepType = determineSleepType(currentStart, currentEnd);
     
     splits.push({
       startTime: new Date(currentStart),
@@ -147,8 +145,8 @@ export function needsSplit(
     return false;
   }
   
-  // SLEEP과 PLAY만 분할 가능
-  if (type !== ActivityType.SLEEP && type !== ActivityType.PLAY) {
+  // SLEEP만 분할 가능
+  if (type !== ActivityType.SLEEP) {
     return false;
   }
   

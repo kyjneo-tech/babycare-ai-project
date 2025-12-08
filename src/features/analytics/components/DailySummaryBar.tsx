@@ -99,27 +99,6 @@ export function DailySummaryBar({ date, activities }: DailySummaryBarProps) {
           colorClass="bg-amber-50"
         />
 
-        {/* 놀이 (있는 경우만) */}
-        {stats.play.count > 0 && (
-          <QuickStat
-            icon="🎮"
-            label="놀이"
-            value={`${stats.play.count}회`}
-            subValue={formatDuration(stats.play.totalDuration)}
-            colorClass="bg-green-50"
-          />
-        )}
-
-        {/* 목욕 (있는 경우만) */}
-        {stats.bath.count > 0 && (
-          <QuickStat
-            icon="🛁"
-            label="목욕"
-            value={`${stats.bath.count}회`}
-            colorClass="bg-cyan-50"
-          />
-        )}
-
         {/* 약 (있는 경우만) */}
         {stats.medicine.count > 0 && (
           <QuickStat

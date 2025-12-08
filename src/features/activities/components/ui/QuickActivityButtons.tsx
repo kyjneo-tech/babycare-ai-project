@@ -15,8 +15,6 @@ const ACTIVITY_ICONS: Record<ActivityType, string> = {
   DIAPER: "💩",
   MEDICINE: "💊",
   TEMPERATURE: "🌡️",
-  BATH: "🛁",
-  PLAY: "🧸",
 };
 
 const ACTIVITY_LABELS: Record<ActivityType, string> = {
@@ -25,8 +23,6 @@ const ACTIVITY_LABELS: Record<ActivityType, string> = {
   DIAPER: "배변",
   MEDICINE: "약",
   TEMPERATURE: "체온",
-  BATH: "목욕",
-  PLAY: "놀이",
 };
 
 const ACTIVITY_TYPES: ActivityType[] = [

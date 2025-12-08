@@ -72,7 +72,7 @@ export function AIChatView({ babyId }: { babyId: string }) {
         ) : (
           <>
             <p className={cn(TYPOGRAPHY.caption, "text-center mb-2 text-muted-foreground")}>
-              대화는 최근 20개까지만 저장됩니다. 필요하신 대화는 따로 저장하세요.
+              대화는 30일이 지나면 자동으로 삭제됩니다. 필요한 대화는 따로 저장해주세요.
             </p>
             <ChatInput onSend={handleSend} disabled={isLoading} />
           </>

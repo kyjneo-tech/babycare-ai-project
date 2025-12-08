@@ -2,7 +2,7 @@
 import { z } from 'zod';
 
 // ActivityType Enum (Prisma의 ActivityType과 일치)
-export const ActivityTypeEnum = z.enum(['FEEDING', 'SLEEP', 'DIAPER', 'BATH', 'PLAY', 'MEDICINE', 'TEMPERATURE']);
+export const ActivityTypeEnum = z.enum(['FEEDING', 'SLEEP', 'DIAPER', 'MEDICINE', 'TEMPERATURE']);
 
 // 예측된 활동 패턴 스키마
 export const PredictedPatternSchema = z.object({
@@ -19,7 +19,7 @@ export const PredictedActivityPatternsSchema = z.object({
   FEEDING: PredictedPatternSchema.optional(),
   SLEEP: PredictedPatternSchema.optional(),
   DIAPER: PredictedPatternSchema.optional(),
-  // BATH, PLAY, MEDICINE은 현재 예측에서 제외하지만,
+  // MEDICINE, TEMPERATURE는 현재 예측에서 제외하지만,
   // 필요시 PredictedPatternSchema.optional()로 추가 가능
 });
 

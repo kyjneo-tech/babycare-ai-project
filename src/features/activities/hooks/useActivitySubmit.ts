@@ -35,11 +35,6 @@ export function useActivitySubmit({
     temperature,
     feedingDuration,
     breastSide,
-    bathType,
-    bathTemp,
-    playLocation,
-    playType,
-    reaction,
     setLoading,
     setError,
     setErrors,
@@ -141,14 +136,6 @@ export function useActivitySubmit({
         input.medicineUnit = medicineUnit;
       } else if (type === "TEMPERATURE") {
         input.temperature = Number(temperature);
-      } else if (type === "BATH") {
-        input.bathType = bathType;
-        input.bathTemp = Number(bathTemp);
-        input.reaction = reaction;
-      } else if (type === "PLAY") {
-        input.playLocation = playLocation;
-        input.playType = playType;
-        input.reaction = reaction;
       }
 
       if (!userId) {

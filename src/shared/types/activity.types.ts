@@ -4,9 +4,7 @@ export type ActivityType =
   | "SLEEP"
   | "DIAPER"
   | "MEDICINE"
-  | "TEMPERATURE"
-  | "BATH"
-  | "PLAY";
+  | "TEMPERATURE";
 
 export interface BaseActivityFormData {
   babyId: string;
@@ -49,28 +47,14 @@ export interface TemperatureFormData extends BaseActivityFormData {
   temperature: number;
 }
 
-export interface BathFormData extends BaseActivityFormData {
-  type: "BATH";
-  bathType: string;
-  bathTemp: number;
-  reaction?: string;
-}
 
-export interface PlayFormData extends BaseActivityFormData {
-  type: "PLAY";
-  playLocation: string;
-  playType: string[];
-  reaction?: string;
-}
 
 export type ActivityFormData =
   | FeedingFormData
   | SleepFormData
   | DiaperFormData
   | MedicineFormData
-  | TemperatureFormData
-  | BathFormData
-  | PlayFormData;
+  | TemperatureFormData;
 
 export interface ActivityFormErrors {
   [key: string]: string;

@@ -57,7 +57,7 @@ export function MobileOptimizedTimeline({
 
     return activities.filter((a) => {
       if (!a.endTime) return false;
-      if (a.type !== ActivityType.SLEEP && a.type !== ActivityType.PLAY) return false;
+      if (a.type !== ActivityType.SLEEP) return false;
 
       const start = new Date(a.startTime);
       const end = new Date(a.endTime);
@@ -75,7 +75,7 @@ export function MobileOptimizedTimeline({
     hourEnd.setHours(hour, 59, 59, 999);
 
     return activities.filter((a) => {
-      if (a.type === ActivityType.SLEEP || a.type === ActivityType.PLAY) return false;
+      if (a.type === ActivityType.SLEEP) return false;
 
       const start = new Date(a.startTime);
       return start >= hourStart && start <= hourEnd;
@@ -155,14 +155,6 @@ export function MobileOptimizedTimeline({
           <div className="flex items-center gap-1.5">
             <div className="w-4 h-4 bg-red-500 rounded"></div>
             <span className="text-gray-700">체온</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-4 bg-cyan-500 rounded"></div>
-            <span className="text-gray-700">목욕</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-4 bg-primary rounded"></div>
-            <span className="text-gray-700">놀이</span>
           </div>
         </div>
       </div>

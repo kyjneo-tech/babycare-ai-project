@@ -118,27 +118,13 @@ export function ActivityStatsSidebar({ activities, startDate, endDate }: Activit
       />
 
       {/* 기타 활동 */}
-      {(stats.bath.count > 0 || stats.play.count > 0 || stats.medicine.count > 0 || stats.temperature.count > 0) && (
+      {(stats.medicine.count > 0 || stats.temperature.count > 0) && (
         <div className="bg-white p-4 rounded-lg border border-gray-200">
           <h4 className="font-semibold text-gray-700 text-sm mb-3">기타 활동</h4>
           <div className="space-y-2 text-sm">
-            {stats.bath.count > 0 && (
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">🛁 목욕</span>
-                <span className="font-semibold">{stats.bath.count}회</span>
-              </div>
-            )}
-            {stats.play.count > 0 && (
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">🎮 놀이</span>
-                <span className="font-semibold">
-                  {stats.play.count}회 · {formatDuration(stats.play.totalDuration)}
-                </span>
-              </div>
-            )}
             {stats.medicine.count > 0 && (
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">💊 약</span>
+                <span className="text-gray-600">💊 투약</span>
                 <span className="font-semibold">{stats.medicine.count}회</span>
               </div>
             )}

@@ -106,24 +106,6 @@ export function ActivityCard({ activity, onDelete, onUpdate }: ActivityCardProps
                   )}
           </>
         );
-      case "BATH":
-        return (
-          <>
-            {activity.bathTemp && (
-              <p className={textClass}>
-                온도: {activity.bathTemp}°C
-              </p>
-            )}
-          </>
-        );
-      case "PLAY":
-        return (
-          <>
-            {activity.playDuration && (
-              <p className={textClass}>{activity.playDuration}분</p>
-            )}
-          </>
-        );
       case "MEDICINE":
         return (
           <>
