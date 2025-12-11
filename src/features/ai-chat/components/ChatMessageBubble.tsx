@@ -5,11 +5,12 @@ import { Bot, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { TYPOGRAPHY } from "@/design-system";
+import type { ReactNode } from "react";
 
 interface ChatMessageBubbleProps {
   message: {
-    role: "user" | "assistant" | "system";
-    content: string;
+    role: "user" | "assistant" | "system" | "tool";
+    content: ReactNode;
     createdAt?: Date;
   };
 }

@@ -14,7 +14,7 @@ import { ActivityType } from "@prisma/client";
  * 밤잠 판단 기준 시간 (오전 6시)
  * 이 시간 이전에 끝난 수면은 전날 밤잠으로 간주
  */
-export const NIGHT_SLEEP_CUTOFF_HOUR = 6;
+export const NIGHT_SLEEP_CUTOFF_HOUR = 8;
 
 /**
  * 밤잠 시작 기준 시간 (저녁 6시)
@@ -39,7 +39,7 @@ export function crossesMidnight(startTime: Date, endTime: Date): boolean {
  * 수면 타입 판단 (밤잠 vs 낮잠)
  * 
  * 규칙:
- * 1. 오전 6시 이전에 끝난 수면 → 밤잠
+ * 1. 오전 8시 이전에 끝난 수면 → 밤잠
  * 2. 저녁 6시 이후에 시작한 수면 → 밤잠
  * 3. 그 외 → 낮잠
  */
@@ -51,7 +51,7 @@ export function determineSleepType(startTime: Date, endTime?: Date): 'night' | '
     return 'night';
   }
   
-  // 종료 시간이 있고, 오전 6시 이전에 끝남 → 밤잠
+  // 종료 시간이 있고, 오전 8시 이전에 끝남 → 밤잠
   if (endTime) {
     const endHour = endTime.getHours();
     if (endHour < NIGHT_SLEEP_CUTOFF_HOUR) {
