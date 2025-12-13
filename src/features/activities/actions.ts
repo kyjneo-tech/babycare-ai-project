@@ -157,18 +157,23 @@ export async function updateActivity(
         ? (data.sleepType || determineSleepType(newStartTime, newEndTime))
         : null;
 
+      // note를 memo로 변환
+      const { note, ...restData } = data;
+      const prismaData = {
+        ...restData,
+        ...(note !== undefined && { memo: note }),
+        startTime: newStartTime,
+        endTime: newEndTime,
+        duration: newType === 'SLEEP' ? duration : data.duration,
+        sleepType,
+        isSplit: true,
+        splitSequence: null,
+        updatedAt: new Date(),
+      };
+
       const updatedActivity = await prisma.activity.update({
         where: { id: activityId },
-        data: {
-          ...data,
-          startTime: newStartTime,
-          endTime: newEndTime,
-          duration: newType === 'SLEEP' ? duration : data.duration,
-          sleepType,
-          isSplit: true,
-          splitSequence: null,
-          updatedAt: new Date(),
-        },
+        data: prismaData,
       });
 
       // 2. 새로운 분할 레코드 생성
@@ -211,14 +216,19 @@ export async function updateActivity(
       return { success: true, data: updatedActivity };
     } else {
       // 분할 불필요 - 기존 로직
+      // note를 memo로 변환
+      const { note, ...restData } = data;
+      const prismaData = {
+        ...restData,
+        ...(note !== undefined && { memo: note }),
+        isSplit: false,
+        splitSequence: null,
+        updatedAt: new Date(),
+      };
+      
       const updatedActivity = await prisma.activity.update({
         where: { id: activityId },
-        data: {
-          ...data,
-          isSplit: false,
-          splitSequence: null,
-          updatedAt: new Date(),
-        },
+        data: prismaData,
       });
 
       // Redis 캐시 무효화

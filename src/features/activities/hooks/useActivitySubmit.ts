@@ -116,14 +116,14 @@ export function useActivitySubmit({
           if (feedingAmount) input.feedingAmount = Number(feedingAmount);
         }
       } else if (type === "SLEEP") {
-        input.sleepType = sleepType;
-        
+        // sleepType은 백엔드에서 시간 기반으로 자동 계산됨
+
         const durH = Number(sleepDurationHours) || 0;
         const durM = Number(sleepDurationMinutes) || 0;
-        
+
         const durationMs = (durH * 60 + durM) * 60 * 1000;
         const calculatedStartTime = new Date(endTime.getTime() - durationMs);
-        
+
         input.startTime = calculatedStartTime;
         input.endTime = endTime;
 

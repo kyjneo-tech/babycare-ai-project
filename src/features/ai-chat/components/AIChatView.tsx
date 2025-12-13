@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
+import { useChatStore } from "@/stores/useChatStore";
 import { ChatMessageBubble } from "@/features/ai-chat/components/ChatMessageBubble";
 import { ChatInput } from "@/features/ai-chat/components/ChatInput";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,64 +12,75 @@ import { cn } from "@/lib/utils";
 import { Bot } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-
-// Message 타입 정의
-interface Message {
-  id: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  createdAt?: Date;
-}
+import { Message as ChatMessage } from '@/shared/types/chat';
 
 export function AIChatView({ babyId }: { babyId: string }) {
   const isGuestMode = babyId === "guest-baby-id";
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const initialLoaded = true; // No initial history loading, so it's always "loaded"
+  const initialLoaded = true; // For simplicity, assuming history is loaded.
 
-  // 3. Send Handler (Manual Implementation)
+  // 1. Zustand Store Integration
+  // The selector `state.messages[babyId]` is stable. It will return undefined
+  // or the array from the store. This prevents re-renders.
+  const messages = useChatStore((state) => state.messages[babyId]);
+  const { 
+    isLoading, 
+    addMessage, 
+    setLoading, 
+    appendContentToLastMessage, 
+    setLastErrorContent,
+    clearHistory
+  } = useChatStore();
+
+  const messagesToRender = messages ?? [];
+
+  // Clear history on unmount
+  useEffect(() => {
+    return () => {
+      if (babyId) {
+        // Optionally clear history when user navigates away
+        // clearHistory(babyId); 
+      }
+    };
+  }, [babyId, clearHistory]);
+  
+  // 2. Send Handler refactored for Zustand
   const handleSend = async (message: string) => {
     if (!message.trim() || isLoading) return;
 
-    if (isGuestMode) {
-      const userMsg: Message = {
-        id: `guest-user-${Date.now()}`,
-        role: "user",
-        content: message,
-        createdAt: new Date(),
-      };
-      const newMessages = [...messages, userMsg];
-      setMessages(newMessages);
-
-      setTimeout(() => {
-        const aiMsg: Message = {
-          id: `guest-ai-${Date.now()}`,
-          role: "assistant",
-          content: "게스트 모드에서는 실제 AI 상담이 제공되지 않습니다. 로그인 후 이용해주세요! 👶",
-          createdAt: new Date(),
-        };
-        setMessages([...newMessages, aiMsg]);
-      }, 1000);
-      return;
-    }
-
-    // Real Mode: Manual streaming implementation
-    const userMsg: Message = {
+    const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
       role: "user",
       content: message,
       createdAt: new Date(),
     };
+    addMessage(babyId, userMsg);
 
-    const assistantMsg: Message = {
+    if (isGuestMode) {
+      setLoading(true);
+      setTimeout(() => {
+        const aiMsg: ChatMessage = {
+          id: `guest-ai-${Date.now()}`,
+          role: "assistant",
+          content: "게스트 모드에서는 실제 AI 상담이 제공되지 않습니다. 로그인 후 이용해주세요! 👶",
+          createdAt: new Date(),
+        };
+        addMessage(babyId, aiMsg);
+        setLoading(false);
+      }, 1000);
+      return;
+    }
+
+    // Real Mode: Manual streaming implementation with Zustand
+    const assistantMsg: ChatMessage = {
       id: `assistant-${Date.now()}`,
       role: "assistant",
       content: "",
       createdAt: new Date(),
     };
+    addMessage(babyId, assistantMsg);
+    setLoading(true);
 
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
-    setIsLoading(true);
+    const currentMessages = useChatStore.getState().getMessageHistory(babyId);
 
     try {
       const response = await fetch("/api/chat", {
@@ -78,11 +90,12 @@ export function AIChatView({ babyId }: { babyId: string }) {
           "X-Baby-Id": babyId,
         },
         body: JSON.stringify({
-          messages: [...messages, userMsg].map((m) => ({
+          // Send all but the last empty assistant message
+          messages: currentMessages.slice(0, -1).map((m) => ({
             role: m.role,
             content: m.content,
           })),
-          babyId, // ✅ 명시적으로 babyId 전달
+          babyId,
         }),
       });
 
@@ -95,50 +108,34 @@ export function AIChatView({ babyId }: { babyId: string }) {
 
       if (!reader) throw new Error("No response body");
 
-      let accumulatedText = "";
-
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         const chunk = decoder.decode(value, { stream: true });
-        accumulatedText += chunk;
-
-        // Update assistant message in real-time
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantMsg.id ? { ...m, content: accumulatedText } : m
-          )
-        );
+        appendContentToLastMessage(babyId, chunk);
       }
     } catch (error) {
       console.error("Chat Error:", error);
-      // Update assistant message with error
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantMsg.id
-            ? { ...m, content: "죄송해요, 응답 중 오류가 발생했어요. 다시 시도해주세요. 😢" }
-            : m
-        )
-      );
+      setLastErrorContent(babyId, "죄송해요, 응답 중 오류가 발생했어요. 다시 시도해주세요. 😢");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const isAnalyzing = isLoading && messages.length > 0 && messages[messages.length - 1].role === "user";
+  const isAnalyzing = isLoading && messagesToRender.length > 0 && messagesToRender[messagesToRender.length - 1].role === "assistant" && messagesToRender[messagesToRender.length-1].content === "";
 
   // Auto-scroll logic
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading, isAnalyzing]);
+  }, [messagesToRender, isLoading, isAnalyzing]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] max-w-3xl mx-auto">
       {/* Messages Area */}
       <div className={cn("flex-1 overflow-y-auto space-y-4", SPACING.card.medium)}>
-        {messages.map((msg) => (
+        {messagesToRender.map((msg) => (
             <ChatMessageBubble
               key={msg.id}
               message={msg}

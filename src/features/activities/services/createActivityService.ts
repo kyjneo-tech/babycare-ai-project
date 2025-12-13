@@ -104,7 +104,13 @@ export async function createActivityService(
 
     return originalActivity;
   } else {
-    // 분할이 필요 없는 경우: 기존 로직 유지
+    // 분할이 필요 없는 경우: sleepType 자동 계산
+    const calculatedSleepType = validated.sleepType || (
+      validated.type === 'SLEEP' && validated.endTime
+        ? determineSleepType(validated.startTime, validated.endTime)
+        : null
+    );
+
     return repository.create({
       User: {
         connect: { id: userId },
@@ -119,7 +125,7 @@ export async function createActivityService(
       feedingType: validated.feedingType,
       feedingAmount: validated.feedingAmount,
       breastSide: validated.breastSide,
-      sleepType: validated.sleepType,
+      sleepType: calculatedSleepType,
       duration: duration,
       diaperType: validated.diaperType,
       stoolCondition: validated.stoolCondition,

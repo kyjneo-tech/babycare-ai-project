@@ -119,16 +119,8 @@ export const CreateActivitySchema = z.object({
       });
     }
   }
-  if (data.type === 'SLEEP') {
-    // endTime은 선택 사항 (진행 중인 수면 허용)
-    if (!data.sleepType) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: '수면 유형은 필수입니다.',
-        path: ['sleepType'],
-      });
-    }
-  }
+  // SLEEP 타입: sleepType은 선택사항 (백엔드에서 시간 기반 자동 계산)
+  // endTime은 선택 사항 (진행 중인 수면 허용)
   if (data.type === 'DIAPER') {
     if (!data.diaperType) {
       ctx.addIssue({
