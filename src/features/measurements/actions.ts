@@ -12,6 +12,7 @@ import { getMeasurementHistoryService } from "./services/getMeasurementHistorySe
 import { updateMeasurementService } from "./services/updateMeasurementService";
 import { deleteMeasurementService } from "./services/deleteMeasurementService";
 import { CreateMeasurementData } from "./repositories/IMeasurementRepository";
+import { redis } from '@/shared/lib/redis';
 
 const repository = new PrismaMeasurementRepository();
 
@@ -40,6 +41,8 @@ export async function createMeasurement(
     // 서비스 호출
     const measurement = await createMeasurementService(repository, measurementData);
 
+    // Redis 캐시 무효화
+    await redis.del(`baby:${data.babyId}:recent-activities:7-days`);
 
     // 캐시 무효화
     revalidatePath(`/babies/${data.babyId}`);
@@ -109,6 +112,10 @@ export async function updateMeasurement(
     // TODO: 권한 검사 로직 추가 (activity actions 참고)
     
     const updatedMeasurement = await updateMeasurementService(repository, id, data);
+    
+    // Redis 캐시 무효화
+    await redis.del(`baby:${updatedMeasurement.babyId}:recent-activities:7-days`);
+    
     revalidatePath(`/babies/${updatedMeasurement.babyId}`);
     return { success: true, data: updatedMeasurement };
   } catch (error: any) {
@@ -129,6 +136,10 @@ export async function deleteMeasurement(
     // TODO: 권한 검사 로직 추가
     
     const deletedMeasurement = await deleteMeasurementService(repository, id);
+    
+    // Redis 캐시 무효화
+    await redis.del(`baby:${deletedMeasurement.babyId}:recent-activities:7-days`);
+    
     revalidatePath(`/babies/${deletedMeasurement.babyId}`);
     return { success: true, message: "측정 기록이 삭제되었습니다." };
   } catch (error: any) {

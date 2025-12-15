@@ -22,8 +22,9 @@ export const createSystemPrompt = (data: {
   preloadedData: PreloadedData;
   guidelineInfo?: string;
   dataCollectionPeriod?: string;
+  recentSummaries?: string[];
 }): string => {
-  const { babyName, monthAge, userName, userRole, today, conversationContext, preloadedData, guidelineInfo, dataCollectionPeriod } = data;
+  const { babyName, monthAge, userName, userRole, today, conversationContext, preloadedData, guidelineInfo, recentSummaries } = data;
 
   const formattedData = formatDataForPrompt(preloadedData);
 
@@ -35,10 +36,13 @@ ${userRole}님께 ${babyName} (${monthAge}개월)에 대한 신뢰할 수 있는
 - 이름: ${babyName}
 - 월령: ${monthAge}개월  
 - 오늘: ${today}
-${conversationContext ? `
-대화 맥락
-${conversationContext}
+
+${(recentSummaries && recentSummaries.length > 0) || conversationContext ? `
+대화 맥락 (이전 대화 요약)
+${recentSummaries?.map(s => `- ${s}`).join('\n') || ''}
+${conversationContext || ''}
 ` : ''}
+
 ${guidelineInfo ? `
 권장 가이드라인
 ${guidelineInfo}

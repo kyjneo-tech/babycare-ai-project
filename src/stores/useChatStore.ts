@@ -9,6 +9,7 @@ interface ChatState {
   error: string | null;
 
   // Actions
+  loadHistory: (babyId: string) => Promise<void>;
   setMessages: (babyId: string, messages: ChatMessage[]) => void;
   addMessage: (babyId: string, message: ChatMessage) => void;
   appendContentToLastMessage: (babyId: string, chunk: string) => void;
@@ -30,75 +31,99 @@ export const useChatStore = create<ChatState>()(
       isLoading: false,
       error: null,
 
-      setMessages: (babyId, messages) =>
-        set((state) => ({
-          messages: { ...state.messages, [babyId]: messages },
-        })),
-      addMessage: (babyId, message) =>
-        set((state) => ({
-          messages: {
-            ...state.messages,
-            [babyId]: [...(state.messages[babyId] || []), message],
-          },
-        })),
-      appendContentToLastMessage: (babyId, chunk) =>
-        set((state) => {
-          const babyMessages = state.messages[babyId] || [];
-          if (babyMessages.length === 0) return {};
+  loadHistory: async (babyId: string) => {
+    try {
+      set({ isLoading: true, error: null });
+      const response = await fetch(`/api/chat/history?babyId=${babyId}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to load history');
+      }
 
-          const lastMessage = babyMessages[babyMessages.length - 1];
-          // Only append to assistant messages
-          if (lastMessage.role !== 'assistant') return {};
-
-          const updatedLastMessage = {
-            ...lastMessage,
-            content: lastMessage.content + chunk,
-          };
-
-          return {
-            messages: {
-              ...state.messages,
-              [babyId]: [...babyMessages.slice(0, -1), updatedLastMessage],
-            },
-          };
-        }),
-      setLastErrorContent: (babyId, errorContent) =>
-        set(state => {
-          const babyMessages = state.messages[babyId] || [];
-          if (babyMessages.length === 0) return {};
-          
-          const lastMessage = babyMessages[babyMessages.length - 1];
-          const updatedLastMessage = { ...lastMessage, content: errorContent };
-
-          return {
-            messages: {
-              ...state.messages,
-              [babyId]: [...babyMessages.slice(0, -1), updatedLastMessage],
-            },
-          };
-        }),
-      clearHistory: (babyId) =>
-        set((state) => ({
-          messages: { ...state.messages, [babyId]: [] },
-        })),
-      setLoading: (isLoading) => set({ isLoading }),
-      setError: (error) => set({ error }),
-
-      clearMessages: () => set({
-        messages: {},
+      const history = await response.json();
+      set((state) => ({
+        messages: {
+          ...state.messages,
+          [babyId]: history,
+        },
         isLoading: false,
-        error: null,
-      }),
+      }));
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+      set({ error: '대화 내용을 불러오는데 실패했어요.', isLoading: false });
+    }
+  },
 
-      // Computed Selectors
-      getMessageHistory: (babyId) => {
-        return get().messages[babyId] || [];
+  // Actions
+  setMessages: (babyId, messages) =>
+    set((state) => ({
+      messages: { ...state.messages, [babyId]: messages },
+    })),
+  addMessage: (babyId, message) =>
+    set((state) => ({
+      messages: {
+        ...state.messages,
+        [babyId]: [...(state.messages[babyId] || []), message],
       },
-      getLastMessage: (babyId) => {
-        const messages = get().messages[babyId] || [];
-        return messages.length > 0 ? messages[messages.length - 1] : null;
-      },
+    })),
+  appendContentToLastMessage: (babyId, chunk) =>
+    set((state) => {
+      const babyMessages = state.messages[babyId] || [];
+      if (babyMessages.length === 0) return {};
+
+      const lastMessage = babyMessages[babyMessages.length - 1];
+      // Only append to assistant messages
+      if (lastMessage.role !== 'assistant') return {};
+
+      const updatedLastMessage = {
+        ...lastMessage,
+        content: lastMessage.content + chunk,
+      };
+
+      return {
+        messages: {
+          ...state.messages,
+          [babyId]: [...babyMessages.slice(0, -1), updatedLastMessage],
+        },
+      };
     }),
-    { name: 'ChatStore' }
-  )
+  setLastErrorContent: (babyId, errorContent) =>
+    set(state => {
+      const babyMessages = state.messages[babyId] || [];
+      if (babyMessages.length === 0) return {};
+      
+      const lastMessage = babyMessages[babyMessages.length - 1];
+      const updatedLastMessage = { ...lastMessage, content: errorContent };
+
+      return {
+        messages: {
+          ...state.messages,
+          [babyId]: [...babyMessages.slice(0, -1), updatedLastMessage],
+        },
+      };
+    }),
+  clearHistory: (babyId) =>
+    set((state) => ({
+      messages: { ...state.messages, [babyId]: [] },
+    })),
+  setLoading: (isLoading) => set({ isLoading }),
+  setError: (error) => set({ error }),
+
+  clearMessages: () => set({
+    messages: {},
+    isLoading: false,
+    error: null,
+  }),
+
+  // Computed Selectors
+  getMessageHistory: (babyId) => {
+    return get().messages[babyId] || [];
+  },
+  getLastMessage: (babyId) => {
+    const messages = get().messages[babyId] || [];
+    return messages.length > 0 ? messages[messages.length - 1] : null;
+  },
+}),
+{ name: 'ChatStore' }
+)
 );

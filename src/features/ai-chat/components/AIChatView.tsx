@@ -28,10 +28,18 @@ export function AIChatView({ babyId }: { babyId: string }) {
     setLoading, 
     appendContentToLastMessage, 
     setLastErrorContent,
+    loadHistory,
     clearHistory
   } = useChatStore();
 
   const messagesToRender = messages ?? [];
+
+  // Load history on mount
+  useEffect(() => {
+    if (babyId && !isGuestMode) {
+      loadHistory(babyId);
+    }
+  }, [babyId, loadHistory, isGuestMode]);
 
   // Clear history on unmount
   useEffect(() => {
@@ -128,7 +136,7 @@ export function AIChatView({ babyId }: { babyId: string }) {
 
   // Auto-scroll logic
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messagesToRender, isLoading, isAnalyzing]);
 
   return (
