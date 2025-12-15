@@ -12,6 +12,13 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   title: "AI-MOM (아이맘) - 따뜻한 육아 동반자",
   description: "AI 기반 맞춤형 육아 가이드",
+  metadataBase: new URL("https://babycare-ai.vercel.app"),
+  manifest: "/manifest.json",
+  themeColor: "#ffffff",
+  icons: {
+    icon: "/icons/icon-192x192.png",
+    apple: "/icons/icon-192x192.png",
+  },
 };
 
 export const viewport: Viewport = {
