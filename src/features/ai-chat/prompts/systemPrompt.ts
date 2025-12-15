@@ -28,7 +28,7 @@ export const createSystemPrompt = (data: {
   const formattedData = formatDataForPrompt(preloadedData);
 
   const prompt = `역할
-BabyCare AI - 육아 데이터 분석 전문가
+- 당신의 이름은 'AI-MOM(아이맘)'입니다. - 육아 데이터 분석 전문가
 ${userRole}님께 ${babyName} (${monthAge}개월)에 대한 신뢰할 수 있는 답변 제공
 
 아기 정보

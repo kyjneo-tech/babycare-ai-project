@@ -10,7 +10,7 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "BabyCare AI - 따뜻한 육아 동반자",
+  title: "AI-MOM (아이맘) - 따뜻한 육아 동반자",
   description: "AI 기반 맞춤형 육아 가이드",
 };
 

@@ -7,10 +7,10 @@ export const getApiDocs = async () => {
     definition: {
       openapi: '3.0.0',
       info: {
-        title: 'BabyCare AI API',
+        title: 'AI-MOM API',
         version: '1.0',
         description: `
-# BabyCare AI API 문서
+# AI-MOM API 문서
 
 ## 인증 방법
 

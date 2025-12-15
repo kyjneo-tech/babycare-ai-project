@@ -146,7 +146,7 @@ export function TimeSelector({
           variant="default"
           size="sm"
           disabled={disabled}
-          className="flex-1 min-w-16 bg-green-500 hover:bg-green-600"
+          className="flex-1 min-w-16 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary font-bold"
         >
           방금
         </Button>

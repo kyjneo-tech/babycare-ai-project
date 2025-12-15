@@ -3,6 +3,7 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { BabySwitcher } from "@/components/common/BabySwitcher";
@@ -23,9 +24,6 @@ export default function AppHeader() {
     const currentUserId = session?.user?.id || null;
 
     // 이전 세션과 현재 세션이 다른 경우 (사용자 변경 또는 로그아웃)
-    // - 사용자 A → 사용자 B 로그인: Store 초기화
-    // - 사용자 A → 로그아웃: Store 초기화
-    // - 최초 마운트 시에는 prevSessionRef.current가 null이므로 실행 안됨
     if (prevSessionRef.current !== null && prevSessionRef.current !== currentUserId) {
       console.log(`[SECURITY] User session changed (${prevSessionRef.current} → ${currentUserId}) - Clearing all stores`);
 
@@ -73,11 +71,15 @@ export default function AppHeader() {
           <div className="flex items-center space-x-[clamp(8px,2vw,16px)]">
             <Link
               href={homeHref}
-              className="text-[clamp(18px,5vw,24px)] font-bold text-primary font-heading flex items-center"
+              className="group flex items-center space-x-2 transition-opacity hover:opacity-80"
             >
-              <span className="hidden sm:inline">🍼 Babycare AI</span>
-              <span className="sm:hidden text-[clamp(24px,6vw,32px)]">🍼</span>
+              {/* 타이틀 텍스트 */}
+              <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-1.5 leading-tight">
+                  <h1 className="text-lg sm:text-xl font-black text-brand-navy tracking-tight">AI-MOM</h1>
+                  <span className="text-xs sm:text-sm font-bold text-primary">아이맘</span>
+              </div>
             </Link>
+            
             {babies.length > 0 && !isGuestMode && (
               <div className="min-w-[7rem] max-w-[10rem]">
                 <BabySwitcher babies={babies} />
@@ -114,4 +116,3 @@ export default function AppHeader() {
     </header>
   );
 }
-

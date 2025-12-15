@@ -283,8 +283,8 @@ export function FamilyManagementPage() {
                   {currentUserPermission !== "owner" && (
                     <Button
                       onClick={handleLeaveFamily}
-                      variant="secondary"
-                      className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
+                      variant="outline"
+                      className="w-full"
                       size="lg"
                     >
                       가족 나가기

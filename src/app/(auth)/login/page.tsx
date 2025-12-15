@@ -3,8 +3,9 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Sparkles, Baby, Bot, TrendingUp } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
@@ -55,24 +56,35 @@ function LoginForm() {
   }
 
   return (
-    <Card className="relative shadow-2xl border-none bg-white/80 backdrop-blur-xl overflow-hidden group p-2">
+    <Card className="relative shadow-soft border-none bg-card/80 backdrop-blur-xl overflow-hidden group p-2 rounded-[var(--radius)]">
       {/* 카드 테두리 애니메이션 효과 */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
       
       <div className="relative">
         <CardHeader className="text-center pb-6 pt-8 px-8">
-          <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-primary animate-gradient-x">
+          <div className="flex justify-center mb-6">
+             <div className="relative w-24 h-24 rounded-[2rem] overflow-hidden shadow-soft transition-transform duration-500 hover:scale-105 hover:rotate-3">
+                <Image 
+                  src="/logo.jpeg" 
+                  alt="Babycare AI Logo" 
+                  fill
+                  className="object-cover"
+                  priority
+                />
+             </div>
+          </div>
+          <CardTitle className="text-3xl font-black text-foreground">
             환영합니다! 👋
           </CardTitle>
-          <CardDescription className="text-base mt-2">
-            간편하게 로그인하고 시작해보세요
+          <CardDescription className="text-base mt-2 text-muted-foreground">
+            아이와 함께하는 따뜻한 하루를 기록해보세요
           </CardDescription>
         </CardHeader>
         
         <CardContent className="space-y-6 pt-2 px-8 pb-8">
           {error && (
-            <Alert variant="destructive" className="rounded-2xl animate-shake">
-              <AlertDescription className="flex items-center gap-2">
+            <Alert variant="destructive" className="rounded-2xl animate-shake shadow-soft border-none bg-destructive/10 text-destructive">
+              <AlertDescription className="flex items-center gap-2 font-medium">
                 <span className="text-lg">⚠️</span>
                 <span>{error}</span>
               </AlertDescription>
@@ -80,20 +92,17 @@ function LoginForm() {
           )}
 
           {/* 소셜 로그인 버튼 */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Button
               type="button"
               variant="outline"
-              className="w-full h-14 text-base font-semibold border-2 border-gray-200 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 rounded-2xl justify-start px-6 relative overflow-hidden group/btn"
+              className="w-full h-14 text-base font-bold bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 shadow-sm hover:shadow-soft hover:scale-[1.02] transition-all duration-300 rounded-3xl justify-start px-6 relative overflow-hidden group/btn btn-jelly"
               onClick={() => handleSocialLogin("google")}
               disabled={loading}
             >
-              {/* Shimmer 효과 */}
-              <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-              
               {loadingProvider === "google" ? (
                 <div className="w-full flex justify-center items-center">
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin text-primary" />
                   로그인 중...
                 </div>
               ) : (
@@ -123,16 +132,13 @@ function LoginForm() {
 
             <Button
               type="button"
-              className="w-full h-14 text-base font-semibold bg-[#FEE500] hover:bg-[#FDD835] text-[#000000] hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-none rounded-2xl justify-start px-6 relative shadow-md overflow-hidden group/btn"
+              className="w-full h-14 text-base font-bold bg-[#FEE500] hover:bg-[#FDD835] text-[#3c1e1e] hover:shadow-soft hover:scale-[1.02] transition-all duration-300 border-none rounded-3xl justify-start px-6 relative shadow-sm overflow-hidden group/btn btn-jelly"
               onClick={() => handleSocialLogin("kakao")}
               disabled={loading}
             >
-              {/* Shimmer 효과 */}
-              <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-              
               {loadingProvider === "kakao" ? (
                 <div className="w-full flex justify-center items-center">
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin text-[#3c1e1e]" />
                   로그인 중...
                 </div>
               ) : (
@@ -148,10 +154,10 @@ function LoginForm() {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-200" />
+              <span className="w-full border-t border-muted/50" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white/80 backdrop-blur-sm px-4 text-muted-foreground font-medium">
+            <div className="relative flex justify-center text-xs font-medium uppercase">
+              <span className="bg-transparent px-4 text-muted-foreground">
                 또는
               </span>
             </div>
@@ -160,11 +166,11 @@ function LoginForm() {
           <Button
             type="button"
             variant="secondary"
-            className="w-full h-14 rounded-2xl font-bold text-secondary-foreground hover:shadow-lg hover:scale-[1.02] transition-all duration-300 bg-gradient-to-r from-secondary/90 to-secondary/70 hover:from-secondary hover:to-secondary/80"
+            className="w-full h-14 rounded-3xl font-bold text-secondary-foreground hover:shadow-soft hover:scale-[1.02] transition-all duration-300 bg-secondary/80 hover:bg-secondary btn-jelly"
             onClick={handleGuestLogin}
             disabled={loading}
           >
-            <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
+            <Sparkles className="w-5 h-5 mr-2 animate-pulse text-secondary-foreground/70" />
             게스트로 둘러보기
           </Button>
         </CardContent>
@@ -175,79 +181,70 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-blue-50 to-green-50 relative overflow-hidden p-4">
-      {/* 애니메이션 배경 요소들 */}
-      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-br from-primary/20 to-transparent blur-3xl animate-blob" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-br from-secondary/20 to-transparent blur-3xl animate-blob animation-delay-2000" />
-      <div className="absolute top-1/2 left-1/2 w-[50%] h-[50%] rounded-full bg-gradient-to-br from-accent/10 to-transparent blur-3xl animate-blob animation-delay-4000" />
+    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden p-4">
+      {/* Luminous Warmth Animated Background */}
+      <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-primary/20 to-transparent blur-3xl animate-blob mix-blend-multiply" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-secondary to-transparent blur-3xl animate-blob animation-delay-2000 mix-blend-multiply" />
+      <div className="absolute top-1/3 left-1/3 w-[50%] h-[50%] rounded-full bg-gradient-to-br from-brand-yellow/10 to-transparent blur-3xl animate-blob animation-delay-4000 mix-blend-multiply" />
 
-      {/* 떠다니는 파티클들 */}
-      <div className="absolute top-20 left-20 w-2 h-2 bg-primary/40 rounded-full animate-float" />
-      <div className="absolute top-40 right-32 w-3 h-3 bg-secondary/40 rounded-full animate-float animation-delay-1000" />
-      <div className="absolute bottom-32 left-40 w-2 h-2 bg-accent/40 rounded-full animate-float animation-delay-2000" />
-      <div className="absolute bottom-20 right-20 w-3 h-3 bg-primary/30 rounded-full animate-float animation-delay-3000" />
+      {/* Floating Particles */}
+      <div className="absolute top-20 left-20 w-3 h-3 bg-primary/30 rounded-full animate-float blur-[1px]" />
+      <div className="absolute top-40 right-32 w-4 h-4 bg-secondary-foreground/20 rounded-full animate-float animation-delay-1000 blur-[1px]" />
+      <div className="absolute bottom-32 left-40 w-3 h-3 bg-brand-yellow/40 rounded-full animate-float animation-delay-2000 blur-[1px]" />
 
-      {/* 메인 컨텐츠 */}
-      <div className="max-w-6xl w-full grid md:grid-cols-2 gap-12 items-center z-10">
-        {/* 왼쪽: 소개 섹션 */}
-        <div className="space-y-8 animate-fade-in-up">
+      {/* Main Content */}
+      <div className="max-w-6xl w-full grid md:grid-cols-2 gap-12 items-center z-10 relative">
+        {/* Left: Introduction Section */}
+        <div className="space-y-10 animate-fade-in-up">
           <div>
-            <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-rose-500 via-pink-500 to-rose-500 animate-gradient-x inline-block">
-                따뜻한 육아,
-              </span>
-              <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-500 animate-gradient-x inline-block animation-delay-200">
-                Babycare AI
+            <div className="inline-block px-4 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-white/60 mb-6 shadow-sm">
+                <span className="text-sm font-bold text-gradient-coral">
+                    Better Parenting with AI
+                </span>
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6 tracking-tight text-brand-navy">
+              따뜻한 육아,<br/>
+              <span className="text-gradient-coral inline-block">
+                AI-MOM 아이맘
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-600 leading-relaxed font-medium">
-              초보 엄마아빠를 위한 든든한 AI 육아 동반자.
-              <br />
-              아이의 모든 순간을 기록하고 분석해드려요.
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium max-w-lg">
+              초보 엄마아빠를 위한 든든한 AI 육아 동반자.<br />
+              아이의 모든 순간을 더 따뜻하게 더 똑똑하게 기록하세요.
             </p>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-start space-x-4 p-4 rounded-2xl bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border border-white/50 group animate-fade-in-up animation-delay-300">
-              <div className="bg-gradient-to-br from-rose-100 to-pink-100 p-3 rounded-xl group-hover:scale-110 transition-transform">
-                <Baby className="w-7 h-7 text-rose-500 animate-wiggle" />
-              </div>
-              <div>
-                <p className="font-bold text-base text-slate-800">수유 & 수면 패턴 스마트 분석</p>
-                <p className="text-sm text-slate-500 mt-1">AI가 아기의 패턴을 학습하고 예측해요</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4 p-4 rounded-2xl bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border border-white/50 group animate-fade-in-up animation-delay-500">
-              <div className="bg-gradient-to-br from-emerald-100 to-green-100 p-3 rounded-xl group-hover:scale-110 transition-transform">
-                <Bot className="w-7 h-7 text-emerald-500 animate-pulse" />
-              </div>
-              <div>
-                <p className="font-bold text-base text-slate-800">24시간 AI 육아 상담</p>
-                <p className="text-sm text-slate-500 mt-1">언제 어디서나 궁금한 점을 물어보세요</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4 p-4 rounded-2xl bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border border-white/50 group animate-fade-in-up animation-delay-700">
-              <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-3 rounded-xl group-hover:scale-110 transition-transform">
-                <TrendingUp className="w-7 h-7 text-blue-500 animate-bounce-slow" />
-              </div>
-              <div>
-                <p className="font-bold text-base text-slate-800">또래 대비 성장 발달 체크</p>
-                <p className="text-sm text-slate-500 mt-1">우리 아이의 성장을 한눈에 확인하세요</p>
-              </div>
-            </div>
+            <FeatureItem 
+                icon={<Baby className="w-6 h-6 text-primary" />}
+                title="AI 패턴 분석"
+                desc="수유와 수면 사이클을 자동으로 분석해요"
+                delay="delay-300"
+                color="bg-primary/10"
+            />
+            <FeatureItem 
+                icon={<Bot className="w-6 h-6 text-secondary-foreground" />}
+                title="24시간 육아 상담"
+                desc="궁금한 육아 상식, 언제든 물어보세요"
+                delay="delay-500"
+                color="bg-secondary/20"
+            />
+            <FeatureItem 
+                icon={<TrendingUp className="w-6 h-6 text-brand-yellow" />}
+                title="성장 발달 체크"
+                desc="우리 아이가 잘 자라고 있는지 확인해요"
+                delay="delay-700"
+                color="bg-brand-yellow/10"
+            />
           </div>
         </div>
 
-        {/* 오른쪽: 로그인 폼 */}
-        <div className="animate-fade-in-up animation-delay-200">
+        {/* Right: Login Form */}
+        <div className="animate-fade-in-up animation-delay-200 w-full max-w-md mx-auto">
           <Suspense fallback={
-            <Card className="shadow-2xl border-none bg-white/80 backdrop-blur-xl">
-              <CardContent className="flex items-center justify-center h-[500px]">
-                <Loader2 className="h-10 w-10 animate-spin text-primary" />
-              </CardContent>
+            <Card className="shadow-soft border-none bg-white/80 backdrop-blur-xl h-[500px] flex items-center justify-center rounded-[var(--radius)]">
+               <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </Card>
           }>
             <LoginForm />
@@ -255,14 +252,28 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* 푸터 */}
-      <footer className="absolute bottom-6 w-full text-center text-slate-500 text-sm">
-        <p className="flex items-center justify-center space-x-2 backdrop-blur-sm">
-          <span>© 2025 Babycare AI</span>
+      {/* Footer */}
+      <footer className="absolute bottom-6 w-full text-center text-muted-foreground/60 text-xs font-medium">
+        <p className="flex items-center justify-center space-x-2">
+          <span>© 2025 AI-MOM</span>
           <span>•</span>
           <span>All rights reserved</span>
         </p>
       </footer>
     </div>
   );
+}
+
+function FeatureItem({ icon, title, desc, delay, color }: { icon: React.ReactNode, title: string, desc: string, delay: string, color: string }) {
+    return (
+        <div className={`flex items-center space-x-4 p-4 rounded-[2rem] bg-white/40 backdrop-blur-sm border border-white/40 hover:bg-white/60 transition-colors duration-300 animate-fade-in-up ${delay}`}>
+            <div className={`p-3 rounded-2xl ${color} shadow-sm`}>
+                {icon}
+            </div>
+            <div>
+                <p className="font-bold text-base text-foreground">{title}</p>
+                <p className="text-sm text-muted-foreground">{desc}</p>
+            </div>
+        </div>
+    )
 }

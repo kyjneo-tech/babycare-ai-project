@@ -25,7 +25,7 @@ export function MobileContainer({
     <div
       className={cn(
         'mx-auto w-full max-w-md', // max-w-md = 448px
-        !noPadding && 'px-4 py-6',
+        !noPadding && 'px-4 py-6 pb-24 safe-bottom', // Added pb-24 for nav bar clearance and safe-bottom for iPhone Home Indicator
         className
       )}
     >
