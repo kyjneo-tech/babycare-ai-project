@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     // 4. 활동 데이터 수집 (Redis Caching & Safety Rule Implemented)
     const { redis } = await import('@/shared/lib/redis'); // Dynamic import
-    const CACHE_KEY = `baby:${babyId}:recent-activities:7-days`;
+    const CACHE_KEY = `baby:${babyId}:chat-context:7-days`; // 채팅용 한글 포맷 캐시
     const SAFETY_THRESHOLD_MS = 10 * 60 * 1000; // 10분
 
     let preloadedData: string | null = null;
