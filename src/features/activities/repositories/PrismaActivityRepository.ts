@@ -57,7 +57,7 @@ export class PrismaActivityRepository implements IActivityRepository {
       take: 100,
     });
 
-    await redis.setex(cacheKey, 300, JSON.stringify(activities));
+    await redis.setex(cacheKey, 1800, JSON.stringify(activities)); // 30분 캐시 (5분 → 30분 개선)
 
     return activities;
   }

@@ -62,7 +62,7 @@ export class PrismaNoteRepository implements INoteRepository {
 
   async findUpcoming(babyId: string, withinDays: number = 7): Promise<Note[]> {
     const cacheKey = `Baby:${babyId}:upcoming-notes:${withinDays}`;
-    const cacheDuration = 300; // 5 minutes
+    const cacheDuration = 1800; // 30분 캐시 (5분 → 30분 개선)
 
     const cached = await redis.get(cacheKey);
     if (cached) {
