@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
+      console.error("[Chat History] No session or user ID");
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
     const babyId = searchParams.get("babyId");
 
     if (!babyId) {
+      console.error("[Chat History] No baby ID provided");
       return new NextResponse("Baby ID is required", { status: 400 });
     }
 
@@ -29,8 +31,11 @@ export async function GET(req: NextRequest) {
     });
 
     if (!baby) {
+      console.error(`[Chat History] User ${session.user.id} has no access to baby ${babyId}`);
       return new NextResponse("Forbidden", { status: 403 });
     }
+
+    console.log(`[Chat History] Fetching messages for baby ${babyId}, user ${session.user.id}`);
 
     // 최근 대화 20개 조회 (최신순)
     // Privacy: 본인이 작성한 메시지 OR 가족과 공유된 메시지만 조회
@@ -45,6 +50,8 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
       take: 20,
     });
+
+    console.log(`[Chat History] Found ${messages.length} messages`);
 
     // 복호화 및 포맷팅 (과거순으로 재정렬하여 클라이언트에 전달)
     const formattedMessages = messages
@@ -89,7 +96,15 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(formattedMessages);
   } catch (error) {
-    console.error("Failed to fetch chat history:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    console.error("[Chat History] ERROR:", error);
+    console.error("[Chat History] Stack:", error instanceof Error ? error.stack : "No stack trace");
+    return NextResponse.json(
+      {
+        error: "Internal Server Error",
+        message: error instanceof Error ? error.message : "Unknown error",
+        details: process.env.NODE_ENV === "development" ? error : undefined
+      },
+      { status: 500 }
+    );
   }
 }
