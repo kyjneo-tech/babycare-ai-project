@@ -16,6 +16,9 @@ import { cn } from "@/lib/utils";
 import { ActivityTypeFilter } from "@/features/analytics/components/ActivityTypeFilter";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
+import { PeriodSummaryCard } from "@/features/analytics/components/PeriodSummaryCard";
+import { calculatePeriodSummary } from "@/features/analytics/services/summaryCalculator";
+import { PeriodSummary } from "@/features/analytics/types/summary";
 
 interface BabyAnalyticsViewProps {
   babyId: string;
@@ -26,6 +29,8 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
   const [loading, setLoading] = useState(true);
   const [selectedDays, setSelectedDays] = useState(7);
   const [activeFilters, setActiveFilters] = useState<ActivityType[]>([]);
+  const [summary, setSummary] = useState<PeriodSummary | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
 
   // 기본값: 최근 7일
   const [startDate, setStartDate] = useState<Date>(
@@ -42,6 +47,18 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
     setLoading(false);
   }, [babyId]);
 
+  const loadSummary = useCallback(async (days: number) => {
+    setSummaryLoading(true);
+    try {
+      const summaryData = await calculatePeriodSummary(babyId, days);
+      setSummary(summaryData);
+    } catch (error) {
+      console.error("Failed to load summary:", error);
+    } finally {
+      setSummaryLoading(false);
+    }
+  }, [babyId]);
+
   useEffect(() => {
     // babyId가 변경되면 날짜 범위를 초기화하고 데이터를 다시 로드
     const newStartDate = startOfDay(subDays(new Date(), 6));
@@ -50,7 +67,8 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
     setEndDate(newEndDate);
     setSelectedDays(7);
     loadActivities(newStartDate, newEndDate);
-  }, [babyId, loadActivities]);
+    loadSummary(7); // 요약 데이터도 함께 로드
+  }, [babyId, loadActivities, loadSummary]);
 
   const handlePeriodChange = (days: number) => {
     setSelectedDays(days);
@@ -59,6 +77,7 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
     setStartDate(start);
     setEndDate(end);
     loadActivities(start, end);
+    loadSummary(days); // 요약 데이터도 함께 로드
   };
 
   const handleCustomDateChange = (type: "start" | "end", value: string) => {
@@ -108,7 +127,7 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* 통합 필터 카드 */}
       <Card>
         <CardContent className={cn(SPACING.card.small, "space-y-4")}>
@@ -179,6 +198,23 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* 요약 카드 */}
+      {summaryLoading ? (
+        <Card>
+          <CardContent className={cn(SPACING.card.small, "space-y-4")}>
+            <Skeleton className="h-6 w-32" />
+            <div className="grid grid-cols-2 gap-3">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-32 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      ) : summary ? (
+        <PeriodSummaryCard summary={summary} days={selectedDays} />
+      ) : null}
 
       {/* 타임라인 */}
       <Card>
