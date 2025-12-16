@@ -1,10 +1,20 @@
 "use client";
 
 import { format } from "date-fns";
-import { Bot, User, Share2, Lock } from "lucide-react";
+import { Bot, User, Share2, Lock, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { TYPOGRAPHY } from "@/design-system";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -28,22 +38,41 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
   const { data: session } = useSession();
   const [isSharing, setIsSharing] = useState(false);
   const [currentSharedState, setCurrentSharedState] = useState(message.isShared || false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   // 본인의 메시지인지 확인
   const isOwnMessage = message.userId === session?.user?.id;
 
-  // 공유 토글 핸들러
-  const handleShareToggle = async () => {
+  // 메시지 미리보기 (처음 50자)
+  const messagePreview = typeof message.content === 'string'
+    ? message.content.slice(0, 50) + (message.content.length > 50 ? '...' : '')
+    : '';
+
+  // 공유하기 버튼 클릭 (다이얼로그 열기)
+  const handleShareClick = () => {
+    if (!currentSharedState) {
+      // 현재 "나만 보기" 상태 → 공유하려면 확인 다이얼로그 표시
+      setShowShareDialog(true);
+    } else {
+      // 현재 "공유됨" 상태 → 즉시 공유 해제 (위험 낮음)
+      handleShareToggle(false);
+    }
+  };
+
+  // 실제 공유 API 호출
+  const handleShareToggle = async (newSharedState: boolean) => {
     if (!message.messageId || !isOwnMessage) return;
 
     setIsSharing(true);
+    setShowShareDialog(false); // 다이얼로그 닫기
+
     try {
       const response = await fetch("/api/chat/share", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messageId: message.messageId,
-          isShared: !currentSharedState,
+          isShared: newSharedState,
         }),
       });
 
@@ -54,7 +83,6 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
       const data = await response.json();
       setCurrentSharedState(data.data.isShared);
 
-      // 간단한 알림 (추후 Toast 컴포넌트로 대체 가능)
       console.log(data.message);
     } catch (error) {
       console.error("Failed to toggle sharing:", error);
@@ -110,7 +138,7 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleShareToggle}
+                onClick={handleShareClick}
                 disabled={isSharing}
                 className="h-auto p-0 hover:bg-transparent"
               >
@@ -143,6 +171,52 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
           )}
         </div>
       </div>
+
+      {/* 공유 확인 다이얼로그 */}
+      <AlertDialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              가족과 공유
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              이 대화를 모든 가족 구성원과 공유하시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-3 px-6">
+            {/* 메시지 미리보기 */}
+            <div className="bg-muted rounded-lg p-3 border border-muted-foreground/20">
+              <p className="text-xs text-muted-foreground mb-1">💬 미리보기:</p>
+              <p className="text-sm text-foreground font-medium break-words">
+                "{messagePreview}"
+              </p>
+            </div>
+
+            {/* 경고 메시지 */}
+            <div className="bg-amber-50 dark:bg-amber-950/20 rounded-lg p-3 border border-amber-200 dark:border-amber-900">
+              <div className="text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>
+                  공유 후에는 모든 가족 구성원이 이 대화를 볼 수 있습니다.
+                  개인적이거나 민감한 내용은 공유하지 않는 것을 권장합니다.
+                </span>
+              </div>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSharing}>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => handleShareToggle(true)}
+              disabled={isSharing}
+              className="bg-primary hover:bg-primary/90"
+            >
+              {isSharing ? "공유 중..." : "공유하기"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
