@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "cross-env NODE_OPTIONS=--max-old-space-size=8192 jest",
     "test:watch": "cross-env NODE_OPTIONS=--max-old-space-size=8192 jest --watch",
-    "migrate": "dotenv -e ./.env -- npx prisma migrate dev"
+    "migrate": "dotenv -e ./.env -- npx prisma migrate dev",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.44",
@@ -50,6 +51,7 @@
     "embla-carousel-react": "^8.6.0",
     "google-auth-library": "^10.5.0",
     "gpt-tokenizer": "^3.4.0",
+    "helmet": "^8.1.0",
     "lucide-react": "^0.554.0",
     "next": "^16.0.7",
     "next-auth": "^4.24.13",
