@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"; // Import NextResponse
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/shared/lib/prisma";
@@ -11,13 +11,11 @@ import { toKoreanData } from "@/features/ai-chat/formatters";
 import { collectBabyActivityData } from "@/features/ai-chat/services/dataCollector";
 import { calculateMonthAge } from "@/features/ai-chat/services/ageCalculator";
 import { buildGuidelineMessages } from "@/features/ai-chat/services/guidelineBuilder";
-import { withHelmet } from "@/shared/lib/middleware/with-helmet"; // Import withHelmet
 
 // Force dynamic since we use headers/session
 export const dynamic = "force-dynamic";
 
-// Wrap the original POST handler with withHelmet
-export const POST = withHelmet(async function POST(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     // 1. 인증 및 권한 확인
     const session = await getServerSession(authOptions);
@@ -304,4 +302,4 @@ export const POST = withHelmet(async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}); // Closing parenthesis for withHelmet wrapper
+}
