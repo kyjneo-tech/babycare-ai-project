@@ -38,6 +38,7 @@ export function translateEnum(value: string | null | undefined): string {
  */
 export function translateRelation(relation: string | null | undefined): string {
   if (!relation) return "보호자";
+
   const map: Record<string, string> = {
     mother: "엄마",
     father: "아빠",
@@ -49,5 +50,12 @@ export function translateRelation(relation: string | null | undefined): string {
     parent: "보호자",
     other: "보호자",
   };
+
+  // 이미 한글로 저장된 경우 그대로 반환
+  const koreanValues = Object.values(map);
+  if (koreanValues.includes(relation)) {
+    return relation;
+  }
+
   return map[relation] || "보호자";
 }
