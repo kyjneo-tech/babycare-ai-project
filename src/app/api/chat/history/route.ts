@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
           select: {
             name: true,
             FamilyMembers: {
-              where: { Family: { Babies: { some: { id: babyId } } } },
+              where: { familyId: baby.familyId }, // 간단하게: 같은 가족의 멤버 정보만
               select: { relation: true },
               take: 1,
             },
@@ -71,8 +71,18 @@ export async function GET(req: NextRequest) {
       .map((msg) => {
         try {
           const authorName = msg.User.name;
-          const authorRelation = msg.User.FamilyMembers?.[0]?.relation
-            ? translateRelation(msg.User.FamilyMembers[0].relation)
+          const rawRelation = msg.User.FamilyMembers?.[0]?.relation;
+
+          // 디버깅 로그
+          console.log(`[Chat History] Message ${msg.id}:`, {
+            userId: msg.userId,
+            userName: authorName,
+            familyMembersCount: msg.User.FamilyMembers?.length,
+            rawRelation,
+          });
+
+          const authorRelation = rawRelation
+            ? translateRelation(rawRelation)
             : "가족";
 
           return [
