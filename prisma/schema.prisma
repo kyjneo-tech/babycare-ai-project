@@ -117,17 +117,22 @@ model Activity {
 }
 
 model ChatMessage {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   babyId    String
   userId    String
   message   String
   reply     String
   summary   Json?
-  createdAt DateTime @default(now())
-  Baby      Baby     @relation(fields: [babyId], references: [id], onDelete: Cascade)
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isShared  Boolean   @default(false)
+  sharedBy  String?
+  sharedAt  DateTime?
+  createdAt DateTime  @default(now())
+  Baby      Baby      @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([babyId, createdAt(sort: Desc)])
+  @@index([babyId, userId])
+  @@index([babyId, isShared])
 }
 
 model BabyMeasurement {

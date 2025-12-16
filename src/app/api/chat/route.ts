@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server"; // Import NextResponse
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/shared/lib/prisma";
@@ -11,18 +11,20 @@ import { toKoreanData } from "@/features/ai-chat/formatters";
 import { collectBabyActivityData } from "@/features/ai-chat/services/dataCollector";
 import { calculateMonthAge } from "@/features/ai-chat/services/ageCalculator";
 import { buildGuidelineMessages } from "@/features/ai-chat/services/guidelineBuilder";
+import { withHelmet } from "@/shared/lib/middleware/with-helmet"; // Import withHelmet
 
 // Force dynamic since we use headers/session
 export const dynamic = "force-dynamic";
 
-export async function POST(req: NextRequest) {
+// Wrap the original POST handler with withHelmet
+export const POST = withHelmet(async function POST(req: NextRequest) {
   try {
     // 1. 인증 및 권한 확인
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
     if (!userId) {
-      return new Response("Unauthorized", { status: 401 });
+      return NextResponse.json("Unauthorized", { status: 401 }); // Use NextResponse.json
     }
 
     const body = await req.json();
@@ -31,7 +33,7 @@ export async function POST(req: NextRequest) {
     const babyId = bodyBabyId || headerBabyId;
 
     if (!babyId) {
-      return new Response("Unauthorized or Missing BabyID", { status: 401 });
+      return NextResponse.json("Unauthorized or Missing BabyID", { status: 401 }); // Use NextResponse.json
     }
 
     // 2. 아기 및 가족 구성원 정보 조회
@@ -40,7 +42,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!baby) {
-      return new Response("Unauthorized or Baby not found", { status: 403 });
+      return NextResponse.json("Unauthorized or Baby not found", { status: 403 }); // Use NextResponse.json
     }
 
     const familyMember = await prisma.familyMember.findFirst({
@@ -214,7 +216,7 @@ export async function POST(req: NextRequest) {
     // 7. AI 채팅 스트리밍
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
     const chat = model.startChat({
-      history: messages.slice(0, -1).map((msg: any) => ({
+      history: messages.slice(0, -1).map((msg: { role: string; content: string }) => ({ // Specify msg type
         role: msg.role === "user" ? "user" : "model",
         parts: [{ text: msg.content }],
       })),
@@ -275,7 +277,7 @@ export async function POST(req: NextRequest) {
             }
           }
 
-        } catch (error: any) {
+        } catch (error: unknown) { // Remove : any
           console.error("❌ Stream Error:", error);
           const errorMsg =
             "죄송해요, 응답 중 오류가 발생했어요. 다시 시도해주세요.";
@@ -286,20 +288,20 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return new Response(stream, {
+    return new NextResponse(stream, { // Use NextResponse for streaming
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "Transfer-Encoding": "chunked",
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) { // Remove : any
     console.error("Chat API Error Detailed:", error);
-    return new Response(
-      JSON.stringify({
+    return NextResponse.json( // Use NextResponse.json
+      {
         error: "Internal Server Error",
         details: String(error),
-      }),
+      },
       { status: 500 }
     );
   }
-}
+}); // Closing parenthesis for withHelmet wrapper

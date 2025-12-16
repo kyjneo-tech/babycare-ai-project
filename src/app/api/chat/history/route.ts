@@ -33,8 +33,15 @@ export async function GET(req: NextRequest) {
     }
 
     // 최근 대화 20개 조회 (최신순)
+    // Privacy: 본인이 작성한 메시지 OR 가족과 공유된 메시지만 조회
     const messages = await prisma.chatMessage.findMany({
-      where: { babyId },
+      where: {
+        babyId,
+        OR: [
+          { userId: session.user.id },  // 본인의 메시지
+          { isShared: true },            // 가족과 공유된 메시지
+        ],
+      },
       orderBy: { createdAt: "desc" },
       take: 20,
     });
@@ -49,12 +56,22 @@ export async function GET(req: NextRequest) {
               role: "user",
               content: decrypt(msg.message),
               createdAt: msg.createdAt,
+              messageId: msg.id,
+              userId: msg.userId,
+              isShared: msg.isShared,
+              sharedBy: msg.sharedBy,
+              sharedAt: msg.sharedAt,
             },
             {
               id: msg.id + "-ai",
               role: "assistant", // 'model' 대신 클라이언트에서 사용하는 'assistant'로 통일
               content: decrypt(msg.reply),
               createdAt: msg.createdAt,
+              messageId: msg.id,
+              userId: msg.userId,
+              isShared: msg.isShared,
+              sharedBy: msg.sharedBy,
+              sharedAt: msg.sharedAt,
             },
           ];
         } catch (e) {
@@ -62,8 +79,8 @@ export async function GET(req: NextRequest) {
           return [];
         }
       })
-      .reverse() // 최신순 -> 과거순 (DB) -> 다시 렌더링 순서(과거->최신)로 변경 필요? 
-                 // 보통 채팅 UI는 아래가 최신. 
+      .reverse() // 최신순 -> 과거순 (DB) -> 다시 렌더링 순서(과거->최신)로 변경 필요?
+                 // 보통 채팅 UI는 아래가 최신.
                  // map으로 [Array(2), Array(2)] 형태가 됨. flat 필요.
       .flat();
       
