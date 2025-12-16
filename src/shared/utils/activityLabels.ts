@@ -11,6 +11,7 @@ export const activityTypeLabels: Record<ActivityType, string> = {
 export const feedingTypeLabels = {
   breast: "모유",
   formula: "분유",
+  pumped: "유축",
   baby_food: "이유식",
 };
 
@@ -31,7 +32,7 @@ export const breastSideLabels = {
 };
 
 export const stoolConditionLabels = {
-  watery: "묽은변",
+  watery: "물설사",
   loose: "묽은변",
   normal: "정상변",
   hard: "된변",

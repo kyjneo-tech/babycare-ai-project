@@ -20,10 +20,13 @@ export function translateEnum(value: string | null | undefined): string {
     NAP: "낮잠",
     PEE: "소변",
     POOP: "대변",
-    NORMAL: "정상",
-    SOFT: "무름",
-    HARD: "딱딱",
-    WATERY: "설사",
+    URINE: "소변",
+    STOOL: "대변",
+    // 대변 상태 (UI와 완전히 일치)
+    WATERY: "물설사",
+    LOOSE: "묽은변",
+    NORMAL: "정상변",
+    HARD: "된변",
   };
   return map[upperValue] || value;
 }

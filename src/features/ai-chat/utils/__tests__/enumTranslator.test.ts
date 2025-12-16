@@ -25,10 +25,10 @@ describe('translateEnum', () => {
   });
 
   it('should translate stool conditions', () => {
-    expect(translateEnum('NORMAL')).toBe('정상');
-    expect(translateEnum('SOFT')).toBe('무름');
-    expect(translateEnum('HARD')).toBe('딱딱');
-    expect(translateEnum('WATERY')).toBe('설사');
+    expect(translateEnum('NORMAL')).toBe('정상변');
+    expect(translateEnum('LOOSE')).toBe('묽은변');
+    expect(translateEnum('HARD')).toBe('된변');
+    expect(translateEnum('WATERY')).toBe('물설사');
   });
 
   it('should handle case insensitivity', () => {
