@@ -30,6 +30,8 @@ interface ChatMessageBubbleProps {
     isShared?: boolean;
     sharedBy?: string | null;
     sharedAt?: Date | null;
+    authorName?: string;
+    authorRelation?: string;
   };
 }
 
@@ -42,6 +44,10 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
 
   // 본인의 메시지인지 확인
   const isOwnMessage = message.userId === session?.user?.id;
+
+  // 작성자 표시 (가족 관계 우선, 없으면 이름)
+  const authorLabel = message.authorRelation || message.authorName || "가족";
+  const displayName = isOwnMessage ? `${authorLabel} (나)` : authorLabel;
 
   // 메시지 미리보기 (처음 50자)
   const messagePreview = typeof message.content === 'string'
@@ -112,12 +118,32 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
 
       {/* Message Content */}
       <div className={cn("flex-1 max-w-[75%]", isUser && "items-end")}>
+        {/* AI 답변에만 작성자 헤더 표시 */}
+        {!isUser && message.role === "assistant" && (
+          <div className={cn("flex items-center gap-1.5 mb-1 px-2", isOwnMessage ? "justify-start" : "justify-start")}>
+            <User className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className={cn(
+              TYPOGRAPHY.caption,
+              "font-medium",
+              isOwnMessage ? "text-primary" : "text-muted-foreground"
+            )}>
+              {displayName}
+            </span>
+          </div>
+        )}
+
         <div
           className={cn(
             "rounded-2xl px-4 py-3",
             isUser
               ? "bg-primary text-primary-foreground rounded-tr-sm"
-              : "bg-muted text-muted-foreground rounded-tl-sm"
+              : cn(
+                  "rounded-tl-sm",
+                  // 본인 메시지: 일반 배경, 다른 사람 공유 메시지: 연한 배경
+                  isOwnMessage
+                    ? "bg-muted text-muted-foreground"
+                    : "bg-muted/60 text-muted-foreground border border-muted-foreground/20"
+                )
           )}
         >
           <p className={cn(TYPOGRAPHY.body.default, "whitespace-pre-wrap break-words")}>
@@ -165,7 +191,7 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
               <span className="text-muted-foreground">·</span>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Share2 className="w-3 h-3" />
-                <span>가족 공유</span>
+                <span>{authorLabel}님이 공유</span>
               </div>
             </>
           )}

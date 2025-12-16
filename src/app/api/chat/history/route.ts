@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/shared/lib/prisma";
 import { decrypt } from "@/shared/utils/encryption";
+import { translateRelation } from "@/features/ai-chat/utils/enumTranslator";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,18 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { createdAt: "desc" },
       take: 20,
+      include: {
+        User: {
+          select: {
+            name: true,
+            FamilyMembers: {
+              where: { Family: { Babies: { some: { id: babyId } } } },
+              select: { relation: true },
+              take: 1,
+            },
+          },
+        },
+      },
     });
 
     console.log(`[Chat History] Found ${messages.length} messages`);
@@ -57,6 +70,11 @@ export async function GET(req: NextRequest) {
     const formattedMessages = messages
       .map((msg) => {
         try {
+          const authorName = msg.User.name;
+          const authorRelation = msg.User.FamilyMembers?.[0]?.relation
+            ? translateRelation(msg.User.FamilyMembers[0].relation)
+            : "가족";
+
           return [
             {
               id: msg.id + "-user",
@@ -68,6 +86,8 @@ export async function GET(req: NextRequest) {
               isShared: msg.isShared,
               sharedBy: msg.sharedBy,
               sharedAt: msg.sharedAt,
+              authorName,
+              authorRelation,
             },
             {
               id: msg.id + "-ai",
@@ -79,6 +99,8 @@ export async function GET(req: NextRequest) {
               isShared: msg.isShared,
               sharedBy: msg.sharedBy,
               sharedAt: msg.sharedAt,
+              authorName,
+              authorRelation,
             },
           ];
         } catch (e) {

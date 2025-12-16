@@ -13,4 +13,6 @@ export interface Message {
   isShared?: boolean;      // 가족과 공유 여부
   sharedBy?: string | null;  // 공유한 사람 ID
   sharedAt?: Date | null;    // 공유한 시각
+  authorName?: string;     // 작성자 이름
+  authorRelation?: string; // 작성자 가족 관계 (한글: "엄마", "할머니" 등)
 }
