@@ -17,7 +17,7 @@ import { ActivityTypeFilter } from "@/features/analytics/components/ActivityType
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 import { PeriodSummaryCard } from "@/features/analytics/components/PeriodSummaryCard";
-import { calculatePeriodSummary } from "@/features/analytics/services/summaryCalculator";
+import { getPeriodSummary } from "@/features/analytics/actions/summaryActions";
 import { PeriodSummary } from "@/features/analytics/types/summary";
 
 interface BabyAnalyticsViewProps {
@@ -50,8 +50,12 @@ export function BabyAnalyticsView({ babyId }: BabyAnalyticsViewProps) {
   const loadSummary = useCallback(async (days: number) => {
     setSummaryLoading(true);
     try {
-      const summaryData = await calculatePeriodSummary(babyId, days);
-      setSummary(summaryData);
+      const result = await getPeriodSummary(babyId, days);
+      if (result.success && result.data) {
+        setSummary(result.data);
+      } else {
+        console.error("Failed to load summary:", result.error);
+      }
     } catch (error) {
       console.error("Failed to load summary:", error);
     } finally {

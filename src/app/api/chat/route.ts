@@ -134,14 +134,18 @@ export async function POST(req: NextRequest) {
     const guidelineInfo = buildGuidelineMessages(currentWeight, monthAge);
 
     // ============================================================
-    // [Phase 3: Context] 이전 대화 요약본 조회 (최근 3개)
+    // [Phase 3: Context] 이전 대화 요약본 조회 (최신 3개: 본인 + 공유)
     // ============================================================
     // *주의*: 암호화된 summary를 가져와서 복호화해야 함
     const { decrypt } = await import("@/shared/utils/encryption");
     const previousContexts = await prisma.chatMessage.findMany({
-      where: { 
+      where: {
         babyId,
-        NOT: { summary: { equals: Prisma.DbNull } } // summary가 있는 것만
+        NOT: { summary: { equals: Prisma.DbNull } }, // summary가 있는 것만
+        OR: [
+          { userId: userId },      // 본인이 작성한 메시지
+          { isShared: true }       // 가족이 공유한 메시지
+        ]
       },
       orderBy: { createdAt: "desc" },
       take: 3,
