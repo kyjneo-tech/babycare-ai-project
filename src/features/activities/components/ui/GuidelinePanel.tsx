@@ -146,8 +146,8 @@ export function GuidelinePanel({ type, value, weight, ageInMonths, medicineName,
             <div className="flex items-center gap-2">
               <span className="text-lg">⚠️</span>
               <div className="text-sm text-orange-800">
-                <p className="font-medium">시럽 농도를 입력해주세요</p>
-                <p className="text-xs mt-1">정확한 용량 계산을 위해 제품의 mg/mL 농도가 필요합니다.</p>
+                <p className="font-medium">약통 농도 정보를 입력해주세요</p>
+                <p className="text-xs mt-1">권장 용량을 계산하려면 약통 라벨에 적힌 총 mg과 총 mL을 입력해야 합니다.</p>
               </div>
             </div>
           </div>
@@ -157,31 +157,47 @@ export function GuidelinePanel({ type, value, weight, ageInMonths, medicineName,
       const guide = getIbuprofenGuideline(weight, syrupConc);
       const amount = value;
       const isInRange = !isNaN(amount) && amount > 0 && amount <= guide.maxSingleMl;
+      const isTooMuch = !isNaN(amount) && amount > guide.maxSingleMl;
+      const howMuchOver = isTooMuch ? ((amount / guide.singleDoseMl) * 100).toFixed(0) : 0;
 
       return (
         <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">💊</span>
-            <span className="text-xs font-medium text-blue-800">
-              권장 이부프로펜 용량 (체중 {weight}kg, {syrupConc}mg/mL 기준)
-            </span>
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm text-blue-700">
-              <p className="font-medium">1회 권장: {guide.singleDoseMl}mL (10mg/kg)</p>
-              <p className="text-xs mt-1">1회 최대: {guide.maxSingleMl}mL</p>
-              <p className="text-xs">1일 최대: {guide.maxDailyMg}mg (4회 분할)</p>
-              <p className="text-xs mt-2 text-blue-600">{guide.disclaimer}</p>
+          <div className="space-y-3">
+            {/* 권장 용량 */}
+            <div>
+              <p className="text-sm font-semibold text-blue-900 mb-1">✅ 권장 용량</p>
+              <p className="text-sm text-blue-800">
+                체중 <strong>{weight}kg</strong> 아기에게 <strong className="text-lg">{guide.singleDoseMl}mL</strong> 정도 먹이면 좋아요
+              </p>
+              <p className="text-xs text-blue-700 mt-1">
+                (최대 {guide.maxSingleMl}mL까지 안전해요)
+              </p>
             </div>
 
+            {/* 입력값 평가 */}
             {!isNaN(amount) && amount > 0 && (
-              <p className="text-xs text-center mt-2 font-medium">
-                {isInRange
-                  ? '✅ 안전한 용량입니다'
-                  : '⚠️ 1회 최대량을 초과합니다'
-                }
-              </p>
+              <div className={`p-2 rounded ${isTooMuch ? 'bg-red-100 border border-red-300' : 'bg-green-100 border border-green-300'}`}>
+                {isInRange ? (
+                  <p className="text-sm text-green-800 font-medium">
+                    ✅ 지금 <strong>{amount}mL</strong>는 안전한 용량이에요!
+                  </p>
+                ) : (
+                  <div>
+                    <p className="text-sm text-red-800 font-bold">
+                      ⚠️ 지금 <strong>{amount}mL</strong>는 너무 많아요!
+                    </p>
+                    <p className="text-xs text-red-700 mt-1">
+                      권장량의 약 {howMuchOver}%예요. 줄여주세요.
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
+
+            {/* 간단한 안내 */}
+            <p className="text-xs text-blue-600">
+              💡 의사 처방량이 다르다면 처방대로 따라주세요.
+            </p>
           </div>
         </div>
       );
@@ -200,8 +216,8 @@ export function GuidelinePanel({ type, value, weight, ageInMonths, medicineName,
             <div className="flex items-center gap-2">
               <span className="text-lg">⚠️</span>
               <div className="text-sm text-orange-800">
-                <p className="font-medium">시럽 농도를 입력해주세요</p>
-                <p className="text-xs mt-1">정확한 용량 계산을 위해 제품의 mg/mL 농도가 필요합니다.</p>
+                <p className="font-medium">약통 농도 정보를 입력해주세요</p>
+                <p className="text-xs mt-1">권장 용량을 계산하려면 약통 라벨에 적힌 총 mg과 총 mL을 입력해야 합니다.</p>
               </div>
             </div>
           </div>
@@ -211,31 +227,47 @@ export function GuidelinePanel({ type, value, weight, ageInMonths, medicineName,
       const guide = getAcetaminophenGuideline(weight, syrupConc);
       const amount = value;
       const isInRange = !isNaN(amount) && amount > 0 && amount <= guide.maxSingleMl;
+      const isTooMuch = !isNaN(amount) && amount > guide.maxSingleMl;
+      const howMuchOver = isTooMuch ? ((amount / guide.singleDoseMl) * 100).toFixed(0) : 0;
 
       return (
         <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">💊</span>
-            <span className="text-xs font-medium text-red-800">
-              권장 아세트아미노펜 용량 (체중 {weight}kg, {syrupConc}mg/mL 기준)
-            </span>
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm text-red-700">
-              <p className="font-medium">1회 권장: {guide.singleDoseMl}mL (12.5mg/kg)</p>
-              <p className="text-xs mt-1">1회 최대: {guide.maxSingleMl}mL</p>
-              <p className="text-xs">1일 최대: {guide.maxDailyMg}mg (4회 분할)</p>
-              <p className="text-xs mt-2 text-red-600">{guide.disclaimer}</p>
+          <div className="space-y-3">
+            {/* 권장 용량 */}
+            <div>
+              <p className="text-sm font-semibold text-red-900 mb-1">✅ 권장 용량</p>
+              <p className="text-sm text-red-800">
+                체중 <strong>{weight}kg</strong> 아기에게 <strong className="text-lg">{guide.singleDoseMl}mL</strong> 정도 먹이면 좋아요
+              </p>
+              <p className="text-xs text-red-700 mt-1">
+                (최대 {guide.maxSingleMl}mL까지 안전해요)
+              </p>
             </div>
 
+            {/* 입력값 평가 */}
             {!isNaN(amount) && amount > 0 && (
-              <p className="text-xs text-center mt-2 font-medium">
-                {isInRange
-                  ? '✅ 안전한 용량입니다'
-                  : '⚠️ 1회 최대량을 초과합니다'
-                }
-              </p>
+              <div className={`p-2 rounded ${isTooMuch ? 'bg-red-100 border border-red-300' : 'bg-green-100 border border-green-300'}`}>
+                {isInRange ? (
+                  <p className="text-sm text-green-800 font-medium">
+                    ✅ 지금 <strong>{amount}mL</strong>는 안전한 용량이에요!
+                  </p>
+                ) : (
+                  <div>
+                    <p className="text-sm text-red-800 font-bold">
+                      ⚠️ 지금 <strong>{amount}mL</strong>는 너무 많아요!
+                    </p>
+                    <p className="text-xs text-red-700 mt-1">
+                      권장량의 약 {howMuchOver}%예요. 줄여주세요.
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
+
+            {/* 간단한 안내 */}
+            <p className="text-xs text-red-600">
+              💡 의사 처방량이 다르다면 처방대로 따라주세요.
+            </p>
           </div>
         </div>
       );
@@ -251,31 +283,47 @@ export function GuidelinePanel({ type, value, weight, ageInMonths, medicineName,
       const amount = value;
       const [minDose, maxDose] = guide.dose.split('~').map(d => parseFloat(d));
       const isInRange = !isNaN(amount) && amount >= minDose && amount <= maxDose;
+      const isTooLittle = !isNaN(amount) && amount > 0 && amount < minDose;
+      const isTooMuch = !isNaN(amount) && amount > maxDose;
 
       return (
         <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">💊</span>
-            <span className="text-xs font-medium text-purple-800">
-              권장 덱시부프로펜 용량 (체중 {weight}kg 기준)
-            </span>
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm text-purple-700">
-              <p className="font-medium">{guide.dose}</p>
-              <p className="text-xs mt-1 text-purple-600">{guide.disclaimer}</p>
+          <div className="space-y-3">
+            {/* 권장 용량 */}
+            <div>
+              <p className="text-sm font-semibold text-purple-900 mb-1">✅ 권장 용량</p>
+              <p className="text-sm text-purple-800">
+                체중 <strong>{weight}kg</strong> 아기에게 <strong className="text-lg">{minDose}~{maxDose}mL</strong> 정도 먹이면 좋아요
+              </p>
             </div>
 
+            {/* 입력값 평가 */}
             {!isNaN(amount) && amount > 0 && (
-              <p className="text-xs text-center mt-2 font-medium">
-                {isInRange
-                  ? '✅ 적정 용량입니다'
-                  : amount < minDose
-                  ? '⚠️ 권장량보다 적습니다'
-                  : '⚠️ 권장량보다 많습니다'
-                }
-              </p>
+              <div className={`p-2 rounded ${
+                isInRange ? 'bg-green-100 border border-green-300' :
+                isTooLittle ? 'bg-yellow-100 border border-yellow-300' :
+                'bg-red-100 border border-red-300'
+              }`}>
+                {isInRange ? (
+                  <p className="text-sm text-green-800 font-medium">
+                    ✅ 지금 <strong>{amount}mL</strong>는 적정 용량이에요!
+                  </p>
+                ) : isTooLittle ? (
+                  <p className="text-sm text-yellow-800 font-medium">
+                    ⚠️ 지금 <strong>{amount}mL</strong>는 조금 적어요. {minDose}mL 이상 권장해요.
+                  </p>
+                ) : (
+                  <p className="text-sm text-red-800 font-bold">
+                    ⚠️ 지금 <strong>{amount}mL</strong>는 너무 많아요! {maxDose}mL 이하로 줄여주세요.
+                  </p>
+                )}
+              </div>
             )}
+
+            {/* 간단한 안내 */}
+            <p className="text-xs text-purple-600">
+              💡 의사 처방량이 다르다면 처방대로 따라주세요.
+            </p>
           </div>
         </div>
       );

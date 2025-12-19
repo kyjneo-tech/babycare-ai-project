@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +47,29 @@ export function MedicineFormSection({
   // ✨ Zustand Store에서 실시간 체중 가져오기
   const [latestWeight, setLatestWeight] = useState<number | null>(initialWeight);
 
+  // 농도 자동 계산을 위한 state
+  const [totalMg, setTotalMg] = useState<string>("");
+  const [totalMl, setTotalMl] = useState<string>("");
+
+  // 농도 자동 계산 함수
+  const calculateConcentration = (mg: string, ml: string) => {
+    const mgNum = parseFloat(mg);
+    const mlNum = parseFloat(ml);
+
+    if (!isNaN(mgNum) && !isNaN(mlNum) && mlNum > 0) {
+      const concentration = (mgNum / mlNum).toFixed(1);
+      setSyrupConc(concentration);
+
+      // medicineUnit 자동 업데이트 (농도 정보 포함)
+      if (medicineUnit) {
+        const baseUnit = medicineUnit.split(' ')[0] || medicineUnit; // "ml" 또는 "mg" 등 추출
+        setMedicineUnit(`${baseUnit} (${mg}mg/${ml}ml)`);
+      }
+    } else {
+      setSyrupConc("");
+    }
+  };
+
   useEffect(() => {
     const { useMeasurementStore } = require('@/stores');
     
@@ -75,7 +98,18 @@ export function MedicineFormSection({
     medicineName.includes('아세트아미노펜') ||
     medicineName.includes('타이레놀') ||
     medicineName.includes('챔프 빨강') ||
-    medicineName.includes('세토펜');
+    medicineName.includes('세토펜') ||
+    medicineName.includes('덱시부프로펜') ||
+    medicineName.includes('맥시') ||
+    medicineName.includes('애니펜');
+
+  // 해열제는 자동으로 ml 단위 설정
+  React.useEffect(() => {
+    if (needsSyrupConc && medicineUnit !== 'ml') {
+      setMedicineUnit('ml');
+    }
+  }, [needsSyrupConc, medicineUnit, setMedicineUnit]);
+
   return (
     <div className={SPACING.space.md}>
       <div className={SPACING.space.sm}>
@@ -147,11 +181,16 @@ export function MedicineFormSection({
           )}
         </div>
         <div className={SPACING.space.sm}>
-          <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>단위</Label>
+          <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>
+            단위
+            {needsSyrupConc && (
+              <span className={cn(TYPOGRAPHY.caption, "text-muted-foreground ml-2")}>(해열제는 ml 고정)</span>
+            )}
+          </Label>
           <Select
             value={medicineUnit}
             onValueChange={setMedicineUnit}
-            disabled={disabled}
+            disabled={disabled || needsSyrupConc}
           >
             <SelectTrigger>
               <SelectValue placeholder="단위" />
@@ -167,22 +206,66 @@ export function MedicineFormSection({
         </div>
       </div>
 
-      {/* 시럽 농도 입력 (이부프로펜/아세트아미노펜만) */}
+      {/* 시럽 농도 입력 (이부프로펜/아세트아미노펜만) - 자동 계산 */}
       {needsSyrupConc && (
         <div className={SPACING.space.sm}>
-          <Label className={cn(TYPOGRAPHY.body.default, "font-medium mb-2 block")}>
-            시럽 농도 (mg/mL)
-          </Label>
-          <Input
-            type="text"
-            placeholder="예: 20 (부루펜 100mg/5mL)"
-            value={syrupConc}
-            onChange={(e) => setSyrupConc(e.target.value)}
-            disabled={disabled}
-          />
-          <p className={cn(TYPOGRAPHY.caption, "text-muted-foreground mt-1")}>
-            💡 제품 라벨에서 확인: 예) 부루펜 100mg/5mL = 20mg/mL, 챔프 빨강 160mg/5mL = 32mg/mL
-          </p>
+          <div className="border rounded-lg p-4 bg-blue-50">
+            <Label className={cn(TYPOGRAPHY.body.default, "font-semibold mb-3 block")}>
+              💊 약통에 적힌 농도 정보
+            </Label>
+
+            <div className={cn("grid grid-cols-2", SPACING.gap.sm, "mb-3")}>
+              <div>
+                <Label className={cn(TYPOGRAPHY.caption, "text-gray-600 mb-1 block")}>총 mg</Label>
+                <Input
+                  type="number"
+                  placeholder="100"
+                  value={totalMg}
+                  onChange={(e) => {
+                    setTotalMg(e.target.value);
+                    calculateConcentration(e.target.value, totalMl);
+                  }}
+                  disabled={disabled}
+                />
+              </div>
+              <div>
+                <Label className={cn(TYPOGRAPHY.caption, "text-gray-600 mb-1 block")}>총 mL</Label>
+                <Input
+                  type="number"
+                  placeholder="5"
+                  value={totalMl}
+                  onChange={(e) => {
+                    setTotalMl(e.target.value);
+                    calculateConcentration(totalMg, e.target.value);
+                  }}
+                  disabled={disabled}
+                />
+              </div>
+            </div>
+
+            {/* 계산 결과 */}
+            {syrupConc && (
+              <div className="p-3 bg-white rounded border-l-4 border-blue-500">
+                <p className={cn(TYPOGRAPHY.caption, "text-gray-600")}>계산된 농도</p>
+                <p className="text-lg font-bold text-blue-600">
+                  {syrupConc} mg/mL ✅
+                </p>
+              </div>
+            )}
+
+            {/* 예시 */}
+            <div className="mt-3 p-2 bg-amber-50 rounded text-xs">
+              <p className="font-semibold mb-1">💡 약통 라벨 예시:</p>
+              <p className="text-gray-700">
+                "부루펜 시럽 100mg/5mL"
+                <br />→ 총 mg에 <strong>100</strong>, 총 mL에 <strong>5</strong> 입력
+              </p>
+              <p className="text-gray-700 mt-1">
+                "챔프 빨강 160mg/5mL"
+                <br />→ 총 mg에 <strong>160</strong>, 총 mL에 <strong>5</strong> 입력
+              </p>
+            </div>
+          </div>
         </div>
       )}
 

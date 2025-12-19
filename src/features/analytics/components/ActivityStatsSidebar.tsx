@@ -83,9 +83,13 @@ export function ActivityStatsSidebar({ activities, startDate, endDate }: Activit
         sub={stats.feeding.totalAmount > 0 ? `총 ${stats.feeding.totalAmount}ml` : undefined}
         detail={
           stats.feeding.count > 0
-            ? `평균 ${stats.feeding.avgAmount}ml · ` +
-              `모유 ${stats.feeding.byType.breast}회 · ` +
-              `분유 ${stats.feeding.byType.formula}회`
+            ? [
+                stats.feeding.avgAmount > 0 ? `평균 ${stats.feeding.avgAmount}ml` : null,
+                stats.feeding.byType.breast > 0 ? `모유 ${stats.feeding.byType.breast}회` : null,
+                stats.feeding.byType.formula > 0 ? `분유 ${stats.feeding.byType.formula}회` : null,
+                stats.feeding.byType.pumped > 0 ? `유축 ${stats.feeding.byType.pumped}회` : null,
+                stats.feeding.byType.baby_food > 0 ? `이유식 ${stats.feeding.byType.baby_food}회` : null,
+              ].filter(Boolean).join(' · ')
             : '기록 없음'
         }
       />

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { FamilyManagementPage } from "@/features/families/components/FamilyManagementPage";
 
 export const metadata = {
-  title: "가족 관리 | AI-MOM",
+  title: "가족 관리 | BebeKnock",
   description: "공동 양육자들을 관리하고 초대하세요.",
 };
 

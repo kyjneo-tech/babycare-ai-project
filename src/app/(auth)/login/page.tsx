@@ -17,6 +17,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [loadingProvider, setLoadingProvider] = useState<"google" | "kakao" | null>(null);
   const [error, setError] = useState("");
+  const isDeleted = searchParams.get("deleted") === "true";
 
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
@@ -64,9 +65,9 @@ function LoginForm() {
         <CardHeader className="text-center pb-6 pt-8 px-8">
           <div className="flex justify-center mb-6">
              <div className="relative w-24 h-24 rounded-[2rem] overflow-hidden shadow-soft transition-transform duration-500 hover:scale-105 hover:rotate-3">
-                <Image 
-                  src="/logo.jpeg" 
-                  alt="Babycare AI Logo" 
+                <Image
+                  src="/logo.png"
+                  alt="BebeKnock Logo"
                   fill
                   className="object-cover"
                   priority
@@ -82,6 +83,14 @@ function LoginForm() {
         </CardHeader>
         
         <CardContent className="space-y-6 pt-2 px-8 pb-8">
+          {isDeleted && (
+            <Alert className="rounded-2xl shadow-soft border-none bg-green-50 text-green-800">
+              <AlertDescription className="flex items-center gap-2 font-medium">
+                <span className="text-lg">✓</span>
+                <span>회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.</span>
+              </AlertDescription>
+            </Alert>
+          )}
           {error && (
             <Alert variant="destructive" className="rounded-2xl animate-shake shadow-soft border-none bg-destructive/10 text-destructive">
               <AlertDescription className="flex items-center gap-2 font-medium">
@@ -204,9 +213,9 @@ export default function LoginPage() {
             </div>
             
             <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6 tracking-tight text-brand-navy">
-              따뜻한 육아,<br/>
+              사랑의 노크,<br/>
               <span className="text-gradient-coral inline-block">
-                AI-MOM 아이맘
+                BebeKnock
               </span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium max-w-lg">
@@ -255,7 +264,7 @@ export default function LoginPage() {
       {/* Footer */}
       <footer className="absolute bottom-6 w-full text-center text-muted-foreground/60 text-xs font-medium">
         <p className="flex items-center justify-center space-x-2">
-          <span>© 2025 AI-MOM</span>
+          <span>© 2025 BebeKnock</span>
           <span>•</span>
           <span>All rights reserved</span>
         </p>

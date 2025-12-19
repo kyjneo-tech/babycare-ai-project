@@ -9,6 +9,7 @@ export interface ActivityStats {
     byType: {
       breast: number;
       formula: number;
+      pumped: number;
       baby_food: number;
     };
   };
@@ -48,6 +49,7 @@ export function calculateActivityStats(activities: Activity[]): ActivityStats {
   const feedingByType = {
     breast: feedingActivities.filter(a => a.feedingType === 'breast').length,
     formula: feedingActivities.filter(a => a.feedingType === 'formula').length,
+    pumped: feedingActivities.filter(a => a.feedingType === 'pumped').length,
     baby_food: feedingActivities.filter(a => a.feedingType === 'baby_food').length,
   };
   const totalFeedingAmount = feedingActivities.reduce((sum, a) => sum + (a.feedingAmount || 0), 0);

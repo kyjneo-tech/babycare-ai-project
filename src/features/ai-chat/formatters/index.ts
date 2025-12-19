@@ -68,6 +68,14 @@ function formatDailySummary(data: CleanedData, dates: string[]): string {
         const avgAmount = day.formula.count > 0 ? Math.round(day.formula.amount / day.formula.count) : 0;
         result += `\n- 분유: 총 ${day.formula.count}회, ${day.formula.amount}ml (평균 ${avgAmount}ml/회)`;
       }
+      if (day.pumped.count > 0) {
+        const avgAmount = day.pumped.count > 0 ? Math.round(day.pumped.amount / day.pumped.count) : 0;
+        result += `\n- 유축 모유: 총 ${day.pumped.count}회, ${day.pumped.amount}ml (평균 ${avgAmount}ml/회)`;
+      }
+      if (day.babyFood.count > 0) {
+        const avgAmount = day.babyFood.count > 0 ? Math.round(day.babyFood.amount / day.babyFood.count) : 0;
+        result += `\n- 이유식: 총 ${day.babyFood.count}회, ${day.babyFood.amount}ml (평균 ${avgAmount}ml/회)`;
+      }
     });
   }
   
@@ -176,7 +184,7 @@ function formatDetail(data: CleanedData): string {
   dates.forEach(date => {
     // 수유
     const feeding = feedingDetails.get(date);
-    if (feeding && (feeding.breast.length > 0 || feeding.formula.length > 0)) {
+    if (feeding && (feeding.breast.length > 0 || feeding.formula.length > 0 || feeding.pumped.length > 0 || feeding.babyFood.length > 0)) {
       result += `\n\n${date} [수유]`;
       if (feeding.breast.length > 0) {
         const items = feeding.breast.map(b => {
@@ -191,6 +199,20 @@ function formatDetail(data: CleanedData): string {
           return `${f.time}(${f.amount}ml${memo})`;
         });
         result += `\n- 분유: ${items.join(", ")}`;
+      }
+      if (feeding.pumped.length > 0) {
+        const items = feeding.pumped.map(p => {
+          const memo = p.memo ? `, ${p.memo}` : '';
+          return `${p.time}(${p.amount}ml${memo})`;
+        });
+        result += `\n- 유축 모유: ${items.join(", ")}`;
+      }
+      if (feeding.babyFood.length > 0) {
+        const items = feeding.babyFood.map(b => {
+          const memo = b.memo ? `, ${b.memo}` : '';
+          return `${b.time}(${b.amount}ml${memo})`;
+        });
+        result += `\n- 이유식: ${items.join(", ")}`;
       }
     }
     

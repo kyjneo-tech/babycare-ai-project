@@ -7,10 +7,10 @@ export const getApiDocs = async () => {
     definition: {
       openapi: '3.0.0',
       info: {
-        title: 'AI-MOM API',
+        title: 'BebeKnock API',
         version: '1.0',
         description: `
-# AI-MOM API 문서
+# BebeKnock API 문서
 
 ## 인증 방법
 

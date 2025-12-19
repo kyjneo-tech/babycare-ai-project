@@ -28,6 +28,29 @@ export function extractTemperatureDetails(temperatures: TemperatureRecord[]): Ma
 }
 
 /**
+ * 투약 용량을 AI가 이해하기 쉬운 형태로 포맷팅
+ * 예: "mg (50mg/5ml, 7.5ml)" → "7.5ml (10.0mg/mL)"
+ * 예: "mg (80mg/ml, 2ml)" → "2ml (80.0mg/mL)"
+ */
+function formatMedicineDose(amount: string | null, unit: string | null): string {
+  if (!unit) return amount || "";
+
+  // "mg (총mg/총ml, 복용ml)" 형태를 파싱 (대소문자 무시)
+  // 총ml은 생략 가능 (예: "80mg/ml" = "80mg/1ml")
+  const match = unit.match(/mg\s*\((\d+(?:\.\d+)?)mg\/(\d+(?:\.\d+)?)?ml,\s*(\d+(?:\.\d+)?)ml\)/i);
+
+  if (match) {
+    const [_, totalMg, totalMl, doseMl] = match;
+    const mlValue = totalMl ? parseFloat(totalMl) : 1; // 생략 시 1ml
+    const concentration = (parseFloat(totalMg) / mlValue).toFixed(1);
+    return `${doseMl}ml (${concentration}mg/mL)`;
+  }
+
+  // 기존 형태 유지 (예: "1정", "5ml" 등)
+  return [amount, unit].filter(Boolean).join("");
+}
+
+/**
  * 투약 상세 데이터 추출
  */
 export function extractMedicineDetails(medicines: MedicineRecord[]): Map<string, Map<string, Array<{
@@ -40,25 +63,25 @@ export function extractMedicineDetails(medicines: MedicineRecord[]): Map<string,
     amount: string;
     memo?: string;
   }>>>();
-  
+
   medicines.forEach((m) => {
     const date = formatDate(m.startTime);
     const dayData = dailyData.get(date) || new Map();
     const medicineName = m.medicineName || "약품";
     const medicineData = dayData.get(medicineName) || [];
-    
-    const dose = [m.medicineAmount, m.medicineUnit].filter(Boolean).join("");
-    
+
+    const dose = formatMedicineDose(m.medicineAmount, m.medicineUnit);
+
     medicineData.push({
       time: formatTime(m.startTime),
       amount: dose,
       memo: m.memo || undefined,
     });
-    
+
     dayData.set(medicineName, medicineData);
     dailyData.set(date, dayData);
   });
-  
+
   return dailyData;
 }
 

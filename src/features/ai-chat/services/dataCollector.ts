@@ -12,16 +12,20 @@ export async function collectBabyActivityData(
   daysToCollect: number = 7
 ): Promise<CleanedData> {
   const today = new Date();
-  const startDate = new Date();
-  startDate.setDate(today.getDate() - (daysToCollect - 1));
-  startDate.setHours(0, 0, 0, 0);
+  today.setHours(23, 59, 59, 999); // 오늘 끝 시간
+
+  // 더 안전한 날짜 계산: milliseconds 기반
+  const startDate = new Date(today.getTime() - (daysToCollect - 1) * 24 * 60 * 60 * 1000);
+  startDate.setHours(0, 0, 0, 0); // 시작일 00:00:00
+
+  console.log(`[DATA COLLECTOR] 조회 기간: ${startDate.toLocaleDateString('ko-KR')} ~ ${today.toLocaleDateString('ko-KR')} (${daysToCollect}일)`);
 
   const [feedings, sleeps, diapers, temperatures, medicines, weights] =
     await Promise.all([
       prisma.activity.findMany({
         where: {
           babyId,
-          startTime: { gte: startDate },
+          startTime: { gte: startDate, lte: today },
           type: "FEEDING",
         },
         select: {
@@ -37,7 +41,7 @@ export async function collectBabyActivityData(
       prisma.activity.findMany({
         where: {
           babyId,
-          startTime: { gte: startDate },
+          startTime: { gte: startDate, lte: today },
           type: "SLEEP",
         },
         select: {
@@ -51,7 +55,7 @@ export async function collectBabyActivityData(
       prisma.activity.findMany({
         where: {
           babyId,
-          startTime: { gte: startDate },
+          startTime: { gte: startDate, lte: today },
           type: "DIAPER",
         },
         select: {
@@ -65,7 +69,7 @@ export async function collectBabyActivityData(
       prisma.activity.findMany({
         where: {
           babyId,
-          startTime: { gte: startDate },
+          startTime: { gte: startDate, lte: today },
           type: "TEMPERATURE",
         },
         select: {
@@ -78,7 +82,7 @@ export async function collectBabyActivityData(
       prisma.activity.findMany({
         where: {
           babyId,
-          startTime: { gte: startDate },
+          startTime: { gte: startDate, lte: today },
           type: "MEDICINE",
         },
         select: {

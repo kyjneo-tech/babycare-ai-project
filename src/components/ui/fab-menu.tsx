@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { BarChart2, MessageCircle, Users, Plus, Menu, X, PenLine, Calendar } from "lucide-react";
+import { BarChart2, MessageCircle, Users, Plus, Menu, X, PenLine, Calendar, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FABMenuProps {
@@ -82,6 +82,15 @@ export function FABMenu({ isOpen, onOpenChange, pathname, isBottomBar = false }:
         label: "가족 설정",
         icon: Users,
         href: "/family",
+      });
+    }
+
+    // 설정 페이지가 아니면 설정 메뉴 추가
+    if (!pathname.includes("/settings")) {
+      items.push({
+        label: "설정",
+        icon: Settings,
+        href: "/dashboard/settings",
       });
     }
 
