@@ -5,17 +5,25 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Capacitor WebView - JavaScript Interface 보호
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Capacitor Core 보호
+-keep class com.getcapacitor.** { *; }
+-keep @com.getcapacitor.annotation.CapacitorPlugin class * { *; }
+-dontwarn com.getcapacitor.**
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Capacitor Plugins 보호
+-keep class com.codetrixstudio.capacitor.GoogleAuth.** { *; }
+-keep class app.babycare.ai.** { *; }
+
+# 디버깅을 위한 소스 파일 및 라인 번호 정보 유지
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+
+# Crash 리포트를 위한 정보 유지
+-keepattributes *Annotation*
+-keepattributes Signature
+-keepattributes Exceptions

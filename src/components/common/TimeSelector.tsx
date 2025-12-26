@@ -35,8 +35,8 @@ export function TimeSelector({
   if (!value || !mounted) {
     return (
       <div className="flex flex-col gap-3 w-full">
-        <div className="h-5 w-32 bg-gray-100 animate-pulse rounded" />
-        <div className="h-48 w-full bg-gray-50 animate-pulse rounded-2xl border-2 border-primary/5" />
+        <div className="h-5 w-32 bg-white/10 animate-pulse rounded" />
+        <div className="h-48 w-full bg-white/5 animate-pulse rounded-2xl border-2 border-white/10" />
       </div>
     );
   }
@@ -79,7 +79,7 @@ export function TimeSelector({
   return (
     <div className="flex flex-col gap-3 w-full">
       <div className="flex items-center justify-between px-1">
-        <Label className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
+        <Label className="text-sm font-bold text-slate-200 flex items-center gap-1.5">
           <Clock className="w-4 h-4 text-primary" />
           {label}
         </Label>
@@ -95,7 +95,7 @@ export function TimeSelector({
         </Button>
       </div>
       
-      <div className="bg-white border-2 border-primary/5 rounded-2xl p-4 shadow-sm space-y-4">
+      <div className="bg-white/5 backdrop-blur-md border-2 border-white/10 rounded-2xl p-4 shadow-sm space-y-4">
         {/* 날짜 선택 Row */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
           <Button
@@ -159,9 +159,9 @@ export function TimeSelector({
             disabled={disabled}
             className={cn(
               "h-14 w-14 rounded-xl text-sm font-black transition-all border-2 flex-shrink-0",
-              isAM 
-                ? "bg-amber-50 text-amber-600 border-amber-100" 
-                : "bg-indigo-50 text-indigo-600 border-indigo-100"
+              isAM
+                ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                : "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
             )}
           >
             {isAM ? "오전" : "오후"}
@@ -171,12 +171,12 @@ export function TimeSelector({
           <div className="flex items-center gap-2 flex-1 justify-center">
             {/* 시 조절 */}
             <div className="flex flex-col items-center">
-              <Button variant="ghost" size="icon" onClick={() => adjustTime(60)} disabled={disabled} className="h-6 w-6 text-gray-400">
+              <Button variant="ghost" size="icon" onClick={() => adjustTime(60)} disabled={disabled} className="h-6 w-6 text-slate-500">
                 <ChevronUp className="h-4 w-4" />
               </Button>
               <Popover open={hourOpen} onOpenChange={setHourOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="h-14 w-14 text-2xl font-black rounded-xl p-0 shadow-sm border-2">
+                  <Button variant="outline" className="h-14 w-14 text-2xl font-black rounded-xl p-0 shadow-sm border-2 bg-white/5 border-white/10 text-slate-100">
                     {displayHours}
                   </Button>
                 </PopoverTrigger>
@@ -201,21 +201,21 @@ export function TimeSelector({
                   </ScrollArea>
                 </PopoverContent>
               </Popover>
-              <Button variant="ghost" size="icon" onClick={() => adjustTime(-60)} disabled={disabled} className="h-6 w-6 text-gray-400">
+              <Button variant="ghost" size="icon" onClick={() => adjustTime(-60)} disabled={disabled} className="h-6 w-6 text-slate-500">
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </div>
 
-            <span className="text-xl font-bold text-gray-300 mb-1">:</span>
+            <span className="text-xl font-bold text-slate-500 mb-1">:</span>
 
             {/* 분 조절 */}
             <div className="flex flex-col items-center">
-              <Button variant="ghost" size="icon" onClick={() => adjustTime(5)} disabled={disabled} className="h-6 w-6 text-gray-400">
+              <Button variant="ghost" size="icon" onClick={() => adjustTime(5)} disabled={disabled} className="h-6 w-6 text-slate-500">
                 <ChevronUp className="h-4 w-4" />
               </Button>
               <Popover open={minuteOpen} onOpenChange={setMinuteOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="h-14 w-14 text-2xl font-black rounded-xl p-0 shadow-sm border-2">
+                  <Button variant="outline" className="h-14 w-14 text-2xl font-black rounded-xl p-0 shadow-sm border-2 bg-white/5 border-white/10 text-slate-100">
                     {String(minutes).padStart(2, "0")}
                   </Button>
                 </PopoverTrigger>
@@ -239,7 +239,7 @@ export function TimeSelector({
                   </ScrollArea>
                 </PopoverContent>
               </Popover>
-              <Button variant="ghost" size="icon" onClick={() => adjustTime(-5)} disabled={disabled} className="h-6 w-6 text-gray-400">
+              <Button variant="ghost" size="icon" onClick={() => adjustTime(-5)} disabled={disabled} className="h-6 w-6 text-slate-500">
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </div>
@@ -247,7 +247,7 @@ export function TimeSelector({
         </div>
 
         {/* 퀵 프리셋 버튼 - 가로 배치 최적화 */}
-        <div className="flex gap-2 pt-1 border-t border-dashed">
+        <div className="flex gap-2 pt-1 border-t border-dashed border-white/10">
           {[-10, -30, -60].map((offset) => (
             <Button
               key={offset}
@@ -256,7 +256,7 @@ export function TimeSelector({
               variant="secondary"
               size="sm"
               disabled={disabled}
-              className="flex-1 text-[10px] font-bold bg-gray-50 text-gray-500 hover:bg-gray-100 rounded-lg h-8"
+              className="flex-1 text-[10px] font-bold bg-white/5 text-slate-400 hover:bg-white/10 border border-white/10 rounded-lg h-8"
             >
               {Math.abs(offset) >= 60 ? `1시간 전` : `${Math.abs(offset)}분 전`}
             </Button>

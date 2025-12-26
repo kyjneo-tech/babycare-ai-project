@@ -25,7 +25,7 @@ export function EditMyProfileCard({
   currentRelation,
   onSuccess,
 }: EditMyProfileCardProps) {
-  const [selectedRelation, setSelectedRelation] = useState(currentRelation);
+  const [selectedRelation, setSelectedRelation] = useState(currentRelation || 'parent');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -63,20 +63,20 @@ export function EditMyProfileCard({
   return (
     <Card>
       <CardHeader className="pt-6">
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5" />
+        <CardTitle className="flex items-center gap-2 text-slate-100">
+          <User className="h-5 w-5 text-primary" />
           내 프로필
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 py-4">
         {error && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-200">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         {success && (
-          <Alert>
+          <Alert className="bg-green-500/10 border-green-500/20 text-green-200">
             <AlertDescription>
               ✓ 프로필이 업데이트되었습니다!
             </AlertDescription>
@@ -84,14 +84,16 @@ export function EditMyProfileCard({
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="relation">내 역할</Label>
+          <Label htmlFor="relation" className="text-slate-300">내 역할</Label>
           <Select
             value={selectedRelation}
             onValueChange={setSelectedRelation}
             disabled={saving}
           >
             <SelectTrigger id="relation">
-              <SelectValue placeholder="역할을 선택하세요" />
+              <span className="text-slate-100 font-medium">
+                {relationOptions.find(opt => opt.value === selectedRelation)?.label || "보호자"}
+              </span>
             </SelectTrigger>
             <SelectContent>
               {relationOptions.map((option) => (
@@ -102,7 +104,7 @@ export function EditMyProfileCard({
               ))}
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-slate-400">
             아기와의 관계를 선택하세요. 엄마/아빠는 각 1명만 가능합니다.
           </p>
         </div>
@@ -110,7 +112,7 @@ export function EditMyProfileCard({
         <Button
           onClick={handleSave}
           disabled={saving || !hasChanges}
-          className="w-full"
+          className="w-full bg-primary hover:bg-primary/90 text-white"
         >
           {saving ? "저장 중..." : "저장"}
         </Button>

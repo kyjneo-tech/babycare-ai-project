@@ -18,7 +18,7 @@ const GrowthChart = dynamic(
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-gray-500">차트를 불러오는 중...</p>
+          <p className="text-sm text-slate-400">차트를 불러오는 중...</p>
         </div>
       </div>
     ),
@@ -54,9 +54,9 @@ export function MeasurementCard({ babyId }: MeasurementCardProps) {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-2 bg-white rounded-lg border border-gray-200 px-4 py-3">
+      <div className="flex items-center justify-between gap-2 bg-white/5 backdrop-blur-md rounded-lg border border-white/10 px-4 py-3">
         {/* 타이틀 */}
-        <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+        <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-1.5">
           <Scale className="h-4 w-4" />
           성장 기록
         </h3>
@@ -102,9 +102,9 @@ export function MeasurementCard({ babyId }: MeasurementCardProps) {
                 babyId={babyId}
                 onSuccess={handleMeasurementAdded}
               />
-              
+
               {/* 구분선 */}
-              <div className="border-t border-gray-200 my-4"></div>
+              <div className="border-t border-white/10 my-4"></div>
               
               {/* 최근 활동 목록 */}
               <MeasurementHistoryList

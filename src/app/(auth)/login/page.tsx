@@ -1,32 +1,80 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Sparkles, Baby, Bot, TrendingUp } from "lucide-react";
+import { Loader2, Sparkles, Baby, Bot, TrendingUp, ChevronRight, Quote, Moon, Star } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
+import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from 'embla-carousel-autoplay';
+import { NativeFeatures } from "@/shared/lib/native-features";
+
+// --- Onboarding Slide Data ---
+const ONBOARDING_SLIDES = [
+  {
+    id: 1,
+    title: "AI 육아 패턴 분석",
+    desc: "우리 아이의 수면과 수유 흐름,\nAI가 똑똑하게 찾아드려요.",
+    icon: <Baby className="w-10 h-10 text-white" />,
+    gradient: "from-pink-500 to-rose-600",
+    shadow: "shadow-pink-500/30",
+  },
+  {
+    id: 2,
+    title: "24시간 육아 상담",
+    desc: "갑자기 열이 나거나 궁금할 때,\n언제든 물어보세요.",
+    icon: <Bot className="w-10 h-10 text-white" />,
+    gradient: "from-violet-500 to-indigo-600",
+    shadow: "shadow-indigo-500/30",
+  },
+  {
+    id: 3,
+    title: "소중한 성장 기록",
+    desc: "하루가 다르게 크는 아이,\n그 모든 순간을 담아두세요.",
+    icon: <TrendingUp className="w-10 h-10 text-white" />,
+    gradient: "from-amber-400 to-orange-500",
+    shadow: "shadow-orange-500/30",
+  },
+];
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [loadingProvider, setLoadingProvider] = useState<"google" | "kakao" | null>(null);
+  const [loadingProvider, setLoadingProvider] = useState<"google" | null>(null);
   const [error, setError] = useState("");
-  const isDeleted = searchParams.get("deleted") === "true";
+  
+  // Embla Carousel Setup
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 5000 })]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on('select', onSelect);
+    emblaApi.on('reInit', onSelect);
+  }, [emblaApi, onSelect]);
+
+  const isDeleted = searchParams.get("deleted") === "true";
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   async function handleGuestLogin() {
+    await NativeFeatures.haptic();
     setLoading(true);
     router.push("/babies/guest-baby-id?tab=activities");
   }
 
-  async function handleSocialLogin(provider: "google" | "kakao") {
+  async function handleSocialLogin(provider: "google") {
+    await NativeFeatures.haptic();
     setLoading(true);
     setLoadingProvider(provider);
     setError("");
@@ -50,73 +98,115 @@ function LoginForm() {
       }
     } catch (err) {
       console.error("Login failed:", err);
-      setError(`${provider === "google" ? "Google" : "Kakao"} 로그인에 실패했습니다. 다시 시도해주세요.`);
+      setError("로그인에 실패했습니다. 다시 시도해주세요.");
       setLoading(false);
       setLoadingProvider(null);
     }
   }
 
   return (
-    <Card className="relative shadow-soft border-none bg-card/80 backdrop-blur-xl overflow-hidden group p-2 rounded-[var(--radius)]">
-      {/* 카드 테두리 애니메이션 효과 */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
-      
-      <div className="relative">
-        <CardHeader className="text-center pb-6 pt-8 px-8">
-          <div className="flex justify-center mb-6">
-             <div className="relative w-24 h-24 rounded-[2rem] overflow-hidden shadow-soft transition-transform duration-500 hover:scale-105 hover:rotate-3">
-                <Image
-                  src="/logo.png"
-                  alt="BebeKnock Logo"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-             </div>
-          </div>
-          <CardTitle className="text-3xl font-black text-foreground">
-            환영합니다! 👋
-          </CardTitle>
-          <CardDescription className="text-base mt-2 text-muted-foreground">
-            아이와 함께하는 따뜻한 하루를 기록해보세요
-          </CardDescription>
-        </CardHeader>
+    <div className="flex flex-col h-full justify-between relative z-10">
+      {/* 1. Brand & Carousel Section */}
+      <div className="flex-1 flex flex-col items-center justify-center min-h-0 pt-14 pb-8 px-6">
         
-        <CardContent className="space-y-6 pt-2 px-8 pb-8">
-          {isDeleted && (
-            <Alert className="rounded-2xl shadow-soft border-none bg-green-50 text-green-800">
-              <AlertDescription className="flex items-center gap-2 font-medium">
-                <span className="text-lg">✓</span>
-                <span>회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.</span>
-              </AlertDescription>
-            </Alert>
-          )}
-          {error && (
-            <Alert variant="destructive" className="rounded-2xl animate-shake shadow-soft border-none bg-destructive/10 text-destructive">
-              <AlertDescription className="flex items-center gap-2 font-medium">
-                <span className="text-lg">⚠️</span>
-                <span>{error}</span>
-              </AlertDescription>
-            </Alert>
-          )}
+        {/* Brand Identity */}
+        <div className="flex flex-col items-center mb-8 animate-fade-in-down">
+           <div className="flex items-center gap-3 mb-3">
+             <div className="relative w-10 h-10 p-1 bg-white/10 rounded-xl backdrop-blur-md border border-white/10 shadow-lg">
+                <Image src="/logo.png" alt="Logo" fill className="object-contain p-1" />
+             </div>
+             <span className="text-2xl font-black text-white tracking-tight drop-shadow-md">BebeKnock</span>
+           </div>
+           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+             <Star className="w-3 h-3 text-amber-300 fill-amber-300" />
+             <span className="text-xs font-semibold text-slate-300 tracking-wider">SMART PARENTING</span>
+           </div>
+        </div>
 
-          {/* 소셜 로그인 버튼 */}
-          <div className="space-y-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-14 text-base font-bold bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 shadow-sm hover:shadow-soft hover:scale-[1.02] transition-all duration-300 rounded-3xl justify-start px-6 relative overflow-hidden group/btn btn-jelly"
-              onClick={() => handleSocialLogin("google")}
-              disabled={loading}
-            >
-              {loadingProvider === "google" ? (
-                <div className="w-full flex justify-center items-center">
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin text-primary" />
-                  로그인 중...
+        {/* Carousel Area */}
+        <div className="w-full max-w-[340px] relative" ref={emblaRef}>
+          <div className="flex">
+            {ONBOARDING_SLIDES.map((slide) => (
+              <div key={slide.id} className="flex-[0_0_100%] min-w-0 pl-4 pr-4 py-4">
+                {/* Dark Glassmorphism Card */}
+                <div className="relative flex flex-col items-center text-center p-8 rounded-[2.5rem] bg-white/[0.07] backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgb(0,0,0,0.3)] transition-transform duration-500">
+                  
+                  {/* Glowing Icon Container */}
+                  <div className={`relative mb-6 p-5 rounded-2xl bg-gradient-to-br ${slide.gradient} shadow-lg ${slide.shadow} ring-1 ring-white/20`}>
+                    <div className="relative z-10">{slide.icon}</div>
+                    <div className="absolute inset-0 rounded-2xl bg-white/20 blur-sm" />
+                  </div>
+
+                  <h3 className="text-xl font-bold text-white mb-3 tracking-tight">
+                    {slide.title}
+                  </h3>
+                  
+                  <p className="text-slate-300 font-medium leading-relaxed text-[15px] word-keep-all opacity-90">
+                    {slide.desc}
+                  </p>
+
+                  {/* Decorative Elements */}
+                  <div className="absolute top-6 right-6 opacity-10">
+                    <Quote className="w-6 h-6 text-white rotate-12" />
+                  </div>
                 </div>
-              ) : (
-                <>
-                  <svg className="h-6 w-6 absolute left-6" viewBox="0 0 24 24">
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Elegant Pagination */}
+        <div className="flex gap-2 mt-8">
+          {ONBOARDING_SLIDES.map((_, index) => (
+            <button
+              key={index}
+              className={`h-1.5 rounded-full transition-all duration-500 ease-out ${
+                index === selectedIndex 
+                  ? "w-8 bg-white" 
+                  : "w-1.5 bg-white/20 hover:bg-white/40"
+              }`}
+              onClick={() => emblaApi?.scrollTo(index)}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* 2. Action Section (Dark Glass Panel) */}
+      <div className="w-full px-6 pb-[clamp(32px,8vh,48px)] pt-6">
+        {isDeleted && (
+          <Alert className="mb-4 rounded-2xl bg-emerald-500/10 backdrop-blur-md text-emerald-200 border-emerald-500/20">
+            <AlertDescription className="flex items-center gap-2 text-sm font-bold justify-center">
+              <span>✓ 탈퇴가 완료되었습니다</span>
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {error && (
+          <Alert variant="destructive" className="mb-4 rounded-2xl bg-red-500/10 backdrop-blur-md text-red-200 border-red-500/20">
+            <AlertDescription className="flex items-center gap-2 text-sm font-bold justify-center">
+              <span>⚠️ {error}</span>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <div className="space-y-3 max-w-sm mx-auto">
+          {/* Google Login Button */}
+          <Button
+            type="button"
+            className="w-full h-[56px] text-[15px] font-bold bg-white text-slate-900 hover:bg-slate-100 border-none shadow-[0_0_20px_rgba(255,255,255,0.1)] rounded-[20px] relative overflow-hidden group transition-all duration-300 transform active:scale-[0.98]"
+            onClick={() => handleSocialLogin("google")}
+            disabled={loading}
+          >
+            {loadingProvider === "google" ? (
+              <div className="flex items-center justify-center gap-2.5">
+                <Loader2 className="h-5 w-5 animate-spin text-slate-900" />
+                <span>연결 중...</span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center w-full">
+                <div className="absolute left-6">
+                   <svg className="h-5 w-5" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -134,155 +224,56 @@ function LoginForm() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  <span className="w-full text-center">Google로 시작하기</span>
-                </>
-              )}
-            </Button>
-
-            <Button
-              type="button"
-              className="w-full h-14 text-base font-bold bg-[#FEE500] hover:bg-[#FDD835] text-[#3c1e1e] hover:shadow-soft hover:scale-[1.02] transition-all duration-300 border-none rounded-3xl justify-start px-6 relative shadow-sm overflow-hidden group/btn btn-jelly"
-              onClick={() => handleSocialLogin("kakao")}
-              disabled={loading}
-            >
-              {loadingProvider === "kakao" ? (
-                <div className="w-full flex justify-center items-center">
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin text-[#3c1e1e]" />
-                  로그인 중...
                 </div>
-              ) : (
-                <>
-                  <svg className="h-6 w-6 absolute left-6" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 3C6.48 3 2 6.58 2 11c0 2.89 1.86 5.43 4.65 6.88-.2.72-.75 2.65-.87 3.08-.14.52.19.51.39.37.14-.09 2.3-1.57 3.17-2.16.56.08 1.14.12 1.66.12 5.52 0 10-3.58 10-8S17.52 3 12 3z" />
-                  </svg>
-                  <span className="w-full text-center">Kakao로 시작하기</span>
-                </>
-              )}
-            </Button>
-          </div>
+                <span>Google로 시작하기</span>
+              </div>
+            )}
+          </Button>
 
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-muted/50" />
-            </div>
-            <div className="relative flex justify-center text-xs font-medium uppercase">
-              <span className="bg-transparent px-4 text-muted-foreground">
-                또는
-              </span>
-            </div>
-          </div>
-
+          {/* Guest Mode Button */}
           <Button
             type="button"
-            variant="secondary"
-            className="w-full h-14 rounded-3xl font-bold text-secondary-foreground hover:shadow-soft hover:scale-[1.02] transition-all duration-300 bg-secondary/80 hover:bg-secondary btn-jelly"
+            variant="ghost"
+            className="w-full h-12 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all"
             onClick={handleGuestLogin}
             disabled={loading}
           >
-            <Sparkles className="w-5 h-5 mr-2 animate-pulse text-secondary-foreground/70" />
-            게스트로 둘러보기
+            <div className="flex items-center gap-1.5">
+                <span>먼저 둘러보기</span>
+                <ChevronRight className="w-4 h-4 opacity-50" />
+            </div>
           </Button>
-        </CardContent>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden p-4">
-      {/* Luminous Warmth Animated Background */}
-      <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-primary/20 to-transparent blur-3xl animate-blob mix-blend-multiply" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-secondary to-transparent blur-3xl animate-blob animation-delay-2000 mix-blend-multiply" />
-      <div className="absolute top-1/3 left-1/3 w-[50%] h-[50%] rounded-full bg-gradient-to-br from-brand-yellow/10 to-transparent blur-3xl animate-blob animation-delay-4000 mix-blend-multiply" />
-
-      {/* Floating Particles */}
-      <div className="absolute top-20 left-20 w-3 h-3 bg-primary/30 rounded-full animate-float blur-[1px]" />
-      <div className="absolute top-40 right-32 w-4 h-4 bg-secondary-foreground/20 rounded-full animate-float animation-delay-1000 blur-[1px]" />
-      <div className="absolute bottom-32 left-40 w-3 h-3 bg-brand-yellow/40 rounded-full animate-float animation-delay-2000 blur-[1px]" />
-
-      {/* Main Content */}
-      <div className="max-w-6xl w-full grid md:grid-cols-2 gap-12 items-center z-10 relative">
-        {/* Left: Introduction Section */}
-        <div className="space-y-10 animate-fade-in-up">
-          <div>
-            <div className="inline-block px-4 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-white/60 mb-6 shadow-sm">
-                <span className="text-sm font-bold text-gradient-coral">
-                    Better Parenting with AI
-                </span>
-            </div>
-            
-            <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6 tracking-tight text-brand-navy">
-              사랑의 노크,<br/>
-              <span className="text-gradient-coral inline-block">
-                BebeKnock
-              </span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium max-w-lg">
-              초보 엄마아빠를 위한 든든한 AI 육아 동반자.<br />
-              아이의 모든 순간을 더 따뜻하게 더 똑똑하게 기록하세요.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <FeatureItem 
-                icon={<Baby className="w-6 h-6 text-primary" />}
-                title="AI 패턴 분석"
-                desc="수유와 수면 사이클을 자동으로 분석해요"
-                delay="delay-300"
-                color="bg-primary/10"
-            />
-            <FeatureItem 
-                icon={<Bot className="w-6 h-6 text-secondary-foreground" />}
-                title="24시간 육아 상담"
-                desc="궁금한 육아 상식, 언제든 물어보세요"
-                delay="delay-500"
-                color="bg-secondary/20"
-            />
-            <FeatureItem 
-                icon={<TrendingUp className="w-6 h-6 text-brand-yellow" />}
-                title="성장 발달 체크"
-                desc="우리 아이가 잘 자라고 있는지 확인해요"
-                delay="delay-700"
-                color="bg-brand-yellow/10"
-            />
-          </div>
-        </div>
-
-        {/* Right: Login Form */}
-        <div className="animate-fade-in-up animation-delay-200 w-full max-w-md mx-auto">
-          <Suspense fallback={
-            <Card className="shadow-soft border-none bg-white/80 backdrop-blur-xl h-[500px] flex items-center justify-center rounded-[var(--radius)]">
-               <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            </Card>
-          }>
-            <LoginForm />
-          </Suspense>
-        </div>
+    <div className="min-h-[100dvh] bg-[#0F172A] relative overflow-hidden font-sans">
+      {/* Dark & Sophisticated Background */}
+      <div className="absolute inset-0 z-0">
+          {/* Deep Space Gradients */}
+          <div className="absolute top-[-20%] left-[-10%] w-[90%] h-[90%] rounded-full bg-gradient-to-br from-indigo-900/40 via-purple-900/20 to-transparent blur-3xl animate-blob" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[90%] h-[90%] rounded-full bg-gradient-to-tl from-blue-900/30 via-slate-800/40 to-transparent blur-3xl animate-blob animation-delay-2000" />
+          
+          {/* Subtle Stars/Dust */}
+          <div className="absolute inset-0 opacity-[0.15] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+          <div className="absolute top-20 right-10 w-1 h-1 bg-white rounded-full opacity-50 animate-pulse" />
+          <div className="absolute top-40 left-20 w-1 h-1 bg-white rounded-full opacity-30 animate-pulse delay-700" />
       </div>
 
-      {/* Footer */}
-      <footer className="absolute bottom-6 w-full text-center text-muted-foreground/60 text-xs font-medium">
-        <p className="flex items-center justify-center space-x-2">
-          <span>© 2025 BebeKnock</span>
-          <span>•</span>
-          <span>All rights reserved</span>
-        </p>
-      </footer>
+      {/* Main Content */}
+      <div className="relative z-10 h-full">
+        <Suspense fallback={
+            <div className="flex h-[100dvh] items-center justify-center">
+               <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+            </div>
+          }>
+          <LoginForm />
+        </Suspense>
+      </div>
     </div>
   );
-}
-
-function FeatureItem({ icon, title, desc, delay, color }: { icon: React.ReactNode, title: string, desc: string, delay: string, color: string }) {
-    return (
-        <div className={`flex items-center space-x-4 p-4 rounded-[2rem] bg-white/40 backdrop-blur-sm border border-white/40 hover:bg-white/60 transition-colors duration-300 animate-fade-in-up ${delay}`}>
-            <div className={`p-3 rounded-2xl ${color} shadow-sm`}>
-                {icon}
-            </div>
-            <div>
-                <p className="font-bold text-base text-foreground">{title}</p>
-                <p className="text-sm text-muted-foreground">{desc}</p>
-            </div>
-        </div>
-    )
 }

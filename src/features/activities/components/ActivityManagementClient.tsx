@@ -35,13 +35,13 @@ export function ActivityManagementClient({
     <>
       {/* 활동 기록 폼 */}
       <div>
-        <h2 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-4">새 활동 기록</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-4 text-slate-100">새 활동 기록</h2>
         <ActivityForm babyId={babyId} onActivityCreated={handleActivityCreated} />
       </div>
 
       {/* 최근 활동 목록 */}
       <div className="mt-8">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-4">최근 활동</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-4 text-slate-100">최근 활동</h2>
         <ActivityList
           babyId={babyId}
           activities={activities} // ActivityList에 상태 전달

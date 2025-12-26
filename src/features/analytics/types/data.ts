@@ -1,5 +1,6 @@
 /**
- * AI Chat에서 사용하는 정리된 데이터 타입
+ * Analytics에서 사용하는 정리된 데이터 타입
+ * (기존 ai-chat에 의존하던 타입을 내부로 이전)
  */
 export interface CleanedData {
   feedings?: FeedingRecord[];

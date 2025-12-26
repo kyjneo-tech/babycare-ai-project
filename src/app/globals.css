@@ -59,114 +59,90 @@
 /* -------------------------------------------------------------------------- */
 
 :root {
-  /* --- 🎨 Color System: Luminous Warmth --- */
+  /* --- 🌙 Moonlight Lavender Theme (Default) --- */
   
-  /* Main Background: Warm Cream (#FDFBF7) - Matches Apricot vibes */
-  --background: #FDFBF7;
-  --foreground: #1E293B; /* Brand Navy */
+  /* Main Background: Deep Space Navy */
+  --background: #0B1120; /* Darker than Slate 900 */
+  --foreground: #E2E8F0; /* Slate 200 - Softer than white */
 
-  /* Surface: Glass Base (White with Transparency) */
-  --card: rgba(255, 255, 255, 0.9);
-  --card-foreground: #1E293B;
-  --popover: #FFFFFF;
-  --popover-foreground: #1E293B;
-
-  /* Primary: Lovely Pink (#F472B6 - Pink 400) */
-  --primary: #F472B6;
-  --primary-foreground: #FFFFFF;
-
-  /* Secondary: Soft Rose */
-  --secondary: #FCE7F3; /* Pink 100 */
-  --secondary-foreground: #BE185D; /* Pink 700 */
-
-  /* Muted: Gray Tones (#6B7280) */
-  --muted: #F8FAFC; 
-  --muted-foreground: #6B7280;
-
-  /* Accent: Hover states */
-  --accent: #FCE7F3;
-  --accent-foreground: #BE185D;
-
-  /* Destructive */
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
-
-  /* Border & Input */
-  --border: #E2E8F0;
-  --input: #F1F5F9; 
-  --ring: #F9A8D4; /* Pink 300 */
-
-  /* Custom Brand Colors */
-  --brand-yellow: #FFD166;
-  --brand-navy: #1E293B;
-
-  /* Charts */
-  --chart-1: #F472B6; /* Pink */
-  --chart-2: #F59E0B; /* Amber */
-  --chart-3: #6366F1; /* Indigo */
-  --chart-4: #2DD4BF; /* Teal */
-  --chart-5: #8B5CF6; /* Violet */
-
-  /* Sidebar */
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #1E293B;
-  --sidebar-primary: #F472B6;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #FCE7F3;
-  --sidebar-accent-foreground: #BE185D;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #F9A8D4;
-
-  /* --- 📐 Shapes: Deep Rounding --- */
-  --radius: 1.5rem; /* 24px - Squircle / Deep Round */
-}
-
-.dark {
-  /* --- Dark Mode Palette (Muted Deep Tones) --- */
-  --background: #0F172A; /* Slate 900 */
-  --foreground: #F8FAFC; /* Slate 50 */
-
-  --card: rgba(30, 41, 59, 0.9); /* Slate 800 with opacity */
+  /* Surface: Glass Base */
+  --card: rgba(30, 41, 59, 0.6); /* Translucent Slate 800 */
   --card-foreground: #F8FAFC;
   --popover: #1E293B;
   --popover-foreground: #F8FAFC;
 
-  --primary: #F472B6; /* Pink 400 for dark mode too */
+  /* Primary: Soft Lavender (Sophisticated & Calm) */
+  /* 기존 쨍한 핑크(#F472B6) 대신 차분한 라벤더/오키드 컬러 사용 */
+  --primary: #C084FC; /* Purple 400 */
   --primary-foreground: #FFFFFF;
 
-  --secondary: #1E293B;
-  --secondary-foreground: #F8FAFC;
+  /* Secondary: Deep Indigo Glass */
+  --secondary: rgba(99, 102, 241, 0.15); /* Indigo tint */
+  --secondary-foreground: #C7D2FE; /* Indigo 200 */
 
-  --muted: #1E293B;
-  --muted-foreground: #94A3B8;
+  /* Muted: Subtle Gray-Blue */
+  --muted: rgba(148, 163, 184, 0.1); 
+  --muted-foreground: #94A3B8; /* Slate 400 */
 
-  --accent: #1E293B;
-  --accent-foreground: #F8FAFC;
+  /* Accent: Hover highlights */
+  --accent: rgba(255, 255, 255, 0.08);
+  --accent-foreground: #FFFFFF;
 
-  --destructive: #7F1D1D;
-  --destructive-foreground: #F8FAFC;
+  /* Destructive: Muted Rose (Not alarm red) */
+  --destructive: #FB7185; /* Rose 400 */
+  --destructive-foreground: #FFFFFF;
 
-  --border: #334155;
-  --input: #1E293B;
-  --ring: #F472B6;
+  /* Border & Input */
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(0, 0, 0, 0.2); /* Darker input background for depth */
+  --ring: #C084FC; /* Matches Primary */
 
-  --brand-yellow: #F59E0B;
-  --brand-navy: #F8FAFC;
-  
-  --chart-1: #F472B6;
-  --chart-2: #FBBF24;
-  --chart-3: #818CF8;
-  --chart-4: #34D399;
-  --chart-5: #A78BFA;
+  /* Brand Colors (Refined) */
+  --brand-yellow: #FCD34D; /* Amber 300 - Softer gold */
+  --brand-navy: #F8FAFC; /* White in dark mode */
 
-  --sidebar: #0F172A;
-  --sidebar-foreground: #F8FAFC;
-  --sidebar-primary: #F472B6;
+  /* Charts - Pastels for dark mode */
+  --chart-1: #C084FC; /* Purple */
+  --chart-2: #F472B6; /* Pink */
+  --chart-3: #818CF8; /* Indigo */
+  --chart-4: #2DD4BF; /* Teal */
+  --chart-5: #FB7185; /* Rose */
+
+  /* Sidebar */
+  --sidebar: #0B1120;
+  --sidebar-foreground: #E2E8F0;
+  --sidebar-primary: #C084FC;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1E293B;
+  --sidebar-accent: rgba(255, 255, 255, 0.05);
   --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: #334155;
-  --sidebar-ring: #F472B6;
+  --sidebar-border: rgba(255, 255, 255, 0.05);
+  --sidebar-ring: #C084FC;
+
+  /* Shapes */
+  --radius: 1.5rem;
+}
+
+/* Legacy Light Mode (Optional, hidden unless forced) */
+.light {
+  --background: #FDFBF7;
+  --foreground: #1E293B;
+  --card: #FFFFFF;
+  --card-foreground: #1E293B;
+  --popover: #FFFFFF;
+  --popover-foreground: #1E293B;
+  --primary: #E879F9; /* Fuchsia 400 */
+  --primary-foreground: #FFFFFF;
+  --secondary: #F5D0FE; /* Fuchsia 100 */
+  --secondary-foreground: #A21CAF; /* Fuchsia 700 */
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --accent: #F5D0FE;
+  --accent-foreground: #A21CAF;
+  --destructive: #F43F5E;
+  --destructive-foreground: #FFFFFF;
+  --border: #E2E8F0;
+  --input: #FFFFFF;
+  --ring: #E879F9;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -262,7 +238,135 @@
   animation: fade-in-up 0.6s ease-out forwards;
 }
 
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
+}
+
+@keyframes fade-in-down {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-down {
+  animation: fade-in-down 0.5s ease-out forwards;
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.5s ease-out forwards;
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out forwards;
+}
+
 /* Stagger utilities */
 .stagger-1 { animation-delay: 100ms; }
 .stagger-2 { animation-delay: 200ms; }
 .stagger-3 { animation-delay: 300ms; }
+
+/* -------------------------------------------------------------------------- */
+/*                           TYPOGRAPHY UTILITIES                             */
+/* -------------------------------------------------------------------------- */
+
+/* --- 📝 Heading Hierarchy --- */
+.heading-primary {
+  @apply text-2xl sm:text-3xl font-black text-white tracking-tight;
+}
+.heading-secondary {
+  @apply text-xl font-bold text-slate-100 tracking-tight;
+}
+.heading-tertiary {
+  @apply text-lg font-semibold text-slate-200;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                           SELECT COMPONENT FIX                             */
+/* -------------------------------------------------------------------------- */
+
+/*
+  Radix UI Select는 내부적으로 <button> 요소를 사용합니다.
+  브라우저 기본 버튼 스타일(buttontext)이 우선 적용되는 문제를 해결합니다.
+*/
+
+/* SelectTrigger는 button 요소이므로 button으로 직접 스타일링 */
+button[data-slot="select-trigger"] {
+  color: #f1f5f9; /* slate-100 */
+}
+
+/* SelectValue와 내부 모든 요소 */
+button[data-slot="select-trigger"] span {
+  color: inherit;
+}
+
+/* SelectItem - 드롭다운 옵션들 */
+[data-slot="select-item"] {
+  color: #e2e8f0; /* slate-200 */
+}
+
+/* --- 📄 Body Text --- */
+.body-default {
+  @apply text-base text-slate-300;
+}
+.body-muted {
+  @apply text-sm text-slate-400;
+}
+.body-caption {
+  @apply text-xs text-slate-500;
+}
+
+/* --- 🎨 Emphasis --- */
+.text-emphasis {
+  @apply text-white font-semibold;
+}
+.text-subtle {
+  @apply text-slate-500;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                        INTERACTION ENHANCEMENTS                            */
+/* -------------------------------------------------------------------------- */
+
+/* --- ✨ Smooth Transitions --- */
+.transition-smooth {
+  @apply transition-all duration-300 ease-out;
+}
+
+/* --- 🎯 Interactive States --- */
+.interactive-card {
+  @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98];
+}
+
+.interactive-button {
+  @apply transition-all duration-200 hover:brightness-110 active:scale-95;
+}
+
+/* --- 💫 Glow Effects --- */
+.glow-primary {
+  @apply shadow-[0_0_20px_rgba(192,132,252,0.3)];
+}
+.glow-hover:hover {
+  @apply shadow-[0_0_25px_rgba(192,132,252,0.5)];
+}
+
+/* --- 🌊 Ripple Effect Base --- */
+.ripple-effect {
+  @apply relative overflow-hidden;
+}
+.ripple-effect::before {
+  content: '';
+  @apply absolute inset-0 bg-white/10 opacity-0 transition-opacity duration-300;
+}
+.ripple-effect:active::before {
+  @apply opacity-100;
+}

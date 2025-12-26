@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">babycareai</string>
-    <string name="title_activity_main">babycareai</string>
+    <string name="app_name">BebeKnock</string>
+    <string name="title_activity_main">BebeKnock</string>
     <string name="package_name">app.babycare.ai</string>
     <string name="custom_url_scheme">app.babycare.ai</string>
 </resources>

@@ -209,14 +209,14 @@ export function MedicineFormSection({
       {/* 시럽 농도 입력 (이부프로펜/아세트아미노펜만) - 자동 계산 */}
       {needsSyrupConc && (
         <div className={SPACING.space.sm}>
-          <div className="border rounded-lg p-4 bg-blue-50">
+          <div className="border rounded-lg p-4 bg-blue-500/10 backdrop-blur-sm border-white/10">
             <Label className={cn(TYPOGRAPHY.body.default, "font-semibold mb-3 block")}>
               💊 약통에 적힌 농도 정보
             </Label>
 
             <div className={cn("grid grid-cols-2", SPACING.gap.sm, "mb-3")}>
               <div>
-                <Label className={cn(TYPOGRAPHY.caption, "text-gray-600 mb-1 block")}>총 mg</Label>
+                <Label className={cn(TYPOGRAPHY.caption, "text-slate-400 mb-1 block")}>총 mg</Label>
                 <Input
                   type="number"
                   placeholder="100"
@@ -229,7 +229,7 @@ export function MedicineFormSection({
                 />
               </div>
               <div>
-                <Label className={cn(TYPOGRAPHY.caption, "text-gray-600 mb-1 block")}>총 mL</Label>
+                <Label className={cn(TYPOGRAPHY.caption, "text-slate-400 mb-1 block")}>총 mL</Label>
                 <Input
                   type="number"
                   placeholder="5"
@@ -245,22 +245,22 @@ export function MedicineFormSection({
 
             {/* 계산 결과 */}
             {syrupConc && (
-              <div className="p-3 bg-white rounded border-l-4 border-blue-500">
-                <p className={cn(TYPOGRAPHY.caption, "text-gray-600")}>계산된 농도</p>
-                <p className="text-lg font-bold text-blue-600">
+              <div className="p-3 bg-white/5 backdrop-blur-sm rounded border-l-4 border-blue-400">
+                <p className={cn(TYPOGRAPHY.caption, "text-slate-400")}>계산된 농도</p>
+                <p className="text-lg font-bold text-blue-400">
                   {syrupConc} mg/mL ✅
                 </p>
               </div>
             )}
 
             {/* 예시 */}
-            <div className="mt-3 p-2 bg-amber-50 rounded text-xs">
+            <div className="mt-3 p-2 bg-amber-500/10 rounded text-xs">
               <p className="font-semibold mb-1">💡 약통 라벨 예시:</p>
-              <p className="text-gray-700">
+              <p className="text-slate-300">
                 "부루펜 시럽 100mg/5mL"
                 <br />→ 총 mg에 <strong>100</strong>, 총 mL에 <strong>5</strong> 입력
               </p>
-              <p className="text-gray-700 mt-1">
+              <p className="text-slate-300 mt-1">
                 "챔프 빨강 160mg/5mL"
                 <br />→ 총 mg에 <strong>160</strong>, 총 mL에 <strong>5</strong> 입력
               </p>
@@ -281,10 +281,10 @@ export function MedicineFormSection({
               syrupConc={syrupConc ? parseFloat(syrupConc) : undefined}
             />
           ) : !latestWeight ? (
-            <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div className="mt-3 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20 backdrop-blur-sm">
               <div className="flex items-center gap-2">
                 <span className="text-lg">⚠️</span>
-                <div className="text-sm text-yellow-800">
+                <div className="text-sm text-yellow-300">
                   <p className="font-medium">권장 용량을 표시하려면 체중 기록이 필요합니다.</p>
                   <p className="text-xs mt-1">
                     상단의 &apos;성장 기록&apos; 카드에서 체중을 먼저 입력해주세요.

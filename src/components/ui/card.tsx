@@ -9,7 +9,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-3xl border bg-card text-card-foreground shadow-soft",
+      "rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl text-card-foreground shadow-lg shadow-black/5",
       className
     )}
     {...props}
@@ -33,7 +33,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("leading-none font-semibold", className)}
+      className={cn("leading-none font-semibold text-slate-100", className)}
       {...props}
     />
   )
@@ -43,7 +43,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn("text-slate-400 text-sm", className)}
       {...props}
     />
   )

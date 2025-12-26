@@ -21,30 +21,16 @@ const BabyAnalyticsView = dynamic(
   () => import("@/features/babies/components/BabyAnalyticsView").then(mod => ({ default: mod.BabyAnalyticsView })),
   {
     loading: () => (
-      <Card>
+      <Card className="bg-white/5 backdrop-blur-md border-white/10">
         <CardContent className="p-6">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-sm text-gray-500">통계를 불러오는 중...</p>
+              <p className="text-sm text-slate-400">통계를 불러오는 중...</p>
             </div>
           </div>
         </CardContent>
       </Card>
-    ),
-  }
-);
-
-const AIChatView = dynamic(
-  () => import("@/features/ai-chat/components/AIChatView").then(mod => ({ default: mod.AIChatView })),
-  {
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-gray-500">AI 채팅을 불러오는 중...</p>
-        </div>
-      </div>
     ),
   }
 );
@@ -56,7 +42,7 @@ const InteractiveScheduleTimeline = dynamic(
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-gray-500">일정을 불러오는 중...</p>
+          <p className="text-sm text-slate-400">일정을 불러오는 중...</p>
         </div>
       </div>
     ),
@@ -67,7 +53,7 @@ const InteractiveScheduleTimeline = dynamic(
 // 페이지 캐시 설정: 3초마다 재검증 (ISR)
 export const revalidate = 3;
 
-type TabType = "activities" | "analytics" | "ai-chat" | "timeline";
+type TabType = "activities" | "analytics" | "timeline";
 
 const guestBaby: Baby = {
   id: "guest-baby-id",
@@ -108,7 +94,7 @@ export default async function BabyDetailPage({
 
 
   // 유효한 탭 값 검증
-  const validTabs: TabType[] = ["activities", "analytics", "ai-chat", "timeline"];
+  const validTabs: TabType[] = ["activities", "analytics", "timeline"];
   const currentTab: TabType =
     searchParams.tab && validTabs.includes(searchParams.tab as TabType)
       ? (searchParams.tab as TabType)
@@ -210,13 +196,13 @@ export default async function BabyDetailPage({
 
       {/* 게스트 모드 안내 배너 */}
       {isGuestMode && (
-        <Alert className="bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 border-purple-200">
-          <AlertTitle className="font-bold text-purple-800">
+        <Alert className="bg-gradient-to-r from-purple-900/20 via-indigo-900/20 to-blue-900/20 backdrop-blur-md border-white/10 shadow-lg">
+          <AlertTitle className="font-bold text-purple-300">
             👀 게스트 모드로 체험 중입니다
           </AlertTitle>
-          <AlertDescription className="flex flex-col md:flex-row items-center justify-between gap-4 text-purple-700">
+          <AlertDescription className="flex flex-col md:flex-row items-center justify-between gap-4 text-slate-300">
             <p>로그인하고 내 아기의 성장을 기록해보세요! ✨</p>
-            <Button asChild className="mt-2 md:mt-0">
+            <Button asChild className="mt-2 md:mt-0 bg-primary hover:bg-primary/90 text-white shadow-lg">
               <Link href="/login">로그인 하기 🚀</Link>
             </Button>
           </AlertDescription>
@@ -237,7 +223,7 @@ export default async function BabyDetailPage({
             <MeasurementCard babyId={baby.id} />
 
             {/* 최근 활동 - 메인 콘텐츠 */}
-            <Card>
+            <Card className="bg-white/5 backdrop-blur-md border-white/10">
               <CardContent className="p-6">
                 <ActivityManagementClient
                   babyId={baby.id}
@@ -250,18 +236,12 @@ export default async function BabyDetailPage({
 
         {currentTab === "analytics" && <BabyAnalyticsView babyId={babyId} />}
 
-        {currentTab === "ai-chat" && (
-          <Card className="overflow-hidden relative z-0" data-testid="ai-chat-card">
-            <AIChatView babyId={babyId} />
-          </Card>
-        )}
-
         {currentTab === "timeline" && (
-          <Card>
+          <Card className="bg-white/5 backdrop-blur-md border-white/10">
             <CardContent className="p-6">
               <div className="mb-4">
-                <h2 className="text-xl font-bold text-gray-900">전체 일정</h2>
-                <p className="text-sm text-gray-500 mt-1">
+                <h2 className="text-xl font-bold text-slate-100">전체 일정</h2>
+                <p className="text-sm text-slate-400 mt-1">
                   예방접종, 건강검진, 발달 이정표 등 모든 일정을 확인하고 관리하세요
                 </p>
               </div>

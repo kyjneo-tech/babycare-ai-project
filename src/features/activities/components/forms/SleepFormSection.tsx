@@ -80,9 +80,9 @@ export function SleepFormSection({
       {!isSleeping && (
         <div className="relative flex items-center justify-center my-6">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-slate-200" />
+            <span className="w-full border-t border-white/10" />
           </div>
-          <span className="relative bg-white px-4 text-xs text-slate-500 font-medium">
+          <span className="relative bg-background px-4 text-xs text-slate-400 font-medium">
             수면 후 기상한 상태라면?
           </span>
         </div>

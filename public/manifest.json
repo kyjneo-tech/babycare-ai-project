@@ -1,12 +1,16 @@
 {
-  "name": "BebeKnock",
+  "name": "BebeKnock - AI 육아 도우미",
   "short_name": "BebeKnock",
-  "description": "사랑의 노크, 아이와의 첫 번째 대화",
+  "description": "사랑의 노크, 아이와의 첫 번째 대화. AI 기반 육아 일정 관리, 수유/수면/성장 기록, 가족 공유 기능",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#1e3a5f",
   "theme_color": "#1e3a5f",
   "orientation": "portrait",
+  "categories": ["health", "lifestyle", "productivity"],
+  "lang": "ko-KR",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -19,6 +23,44 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "빠른 수유 기록",
+      "short_name": "수유",
+      "description": "수유 기록 바로 추가",
+      "url": "/babies?action=feeding",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "빠른 기저귀 기록",
+      "short_name": "기저귀",
+      "description": "기저귀 교체 기록 바로 추가",
+      "url": "/babies?action=diaper",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "성장 통계",
+      "short_name": "통계",
+      "description": "아이 성장 통계 확인",
+      "url": "/dashboard/analytics",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

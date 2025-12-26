@@ -3,6 +3,8 @@
 import { useState, useMemo } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { regenerateInviteCode } from "@/features/families/actions";
+import { Button } from "@/components/ui/button";
+import { Share, Copy, RefreshCw, QrCode, MessageCircle } from "lucide-react";
 
 interface InviteCodeCardProps {
   familyName: string;
@@ -98,17 +100,17 @@ export function InviteCodeCard({
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
-      return { text: "만료됨", color: "text-red-600" };
+      return { text: "만료됨", color: "text-red-400" };
     } else if (diffDays === 0) {
-      return { text: "오늘 만료", color: "text-orange-600" };
+      return { text: "오늘 만료", color: "text-orange-400" };
     } else if (diffDays === 1) {
-      return { text: "내일 만료", color: "text-orange-600" };
+      return { text: "내일 만료", color: "text-orange-400" };
     } else if (diffDays <= 3) {
-      return { text: `${diffDays}일 후 만료`, color: "text-yellow-600" };
+      return { text: `${diffDays}일 후 만료`, color: "text-yellow-400" };
     } else {
       return {
         text: `${expiryDate.getMonth() + 1}월 ${expiryDate.getDate()}일까지 유효`,
-        color: "text-green-600"
+        color: "text-green-400"
       };
     }
   };
@@ -116,99 +118,103 @@ export function InviteCodeCard({
   const expiryInfo = formatExpiryDate(inviteCodeExpiry);
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 sm:p-6">
-      <div className="mb-4">
+    <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-lg">
+      <div className="mb-6">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600 mb-1">가족 이름</p>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+            <p className="text-sm font-medium text-slate-400 mb-1">가족 이름</p>
+            <h2 className="text-2xl font-bold text-white tracking-tight">
               {familyName}
             </h2>
           </div>
           {expiryInfo && (
-            <div className={`text-xs sm:text-sm font-semibold ${expiryInfo.color}`}>
+            <div className={`px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold ${expiryInfo.color}`}>
               {expiryInfo.text}
             </div>
           )}
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {/* 초대 링크 */}
         <div>
-          <p className="text-sm font-medium text-gray-600 mb-2">초대 링크</p>
+          <p className="text-sm font-medium text-slate-400 mb-2">초대 링크</p>
           <div className="flex items-center space-x-2">
-            <div className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 overflow-hidden">
-              <p className="text-xs sm:text-sm text-gray-900 break-all truncate">
+            <div className="flex-1 bg-black/20 border border-white/5 rounded-xl px-4 py-3 overflow-hidden">
+              <p className="text-xs sm:text-sm text-slate-300 break-all truncate">
                 {inviteUrl}
               </p>
             </div>
-            <button
+            <Button
               onClick={handleCopyUrl}
-              className="flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition flex items-center justify-center"
+              variant="secondary"
+              size="icon"
+              className="h-11 w-11 rounded-xl bg-white/10 hover:bg-white/20 border-0 text-white"
               title="링크 복사"
             >
               {copiedUrl ? (
-                <span className="text-lg">✓</span>
+                <span className="text-lg text-green-400">✓</span>
               ) : (
-                <span className="text-lg">🔗</span>
+                <Copy className="h-5 w-5" />
               )}
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* 초대 코드 */}
         <div>
-          <p className="text-sm font-medium text-gray-600 mb-2">초대 코드</p>
+          <p className="text-sm font-medium text-slate-400 mb-2">초대 코드</p>
           <div className="flex items-center space-x-2">
-            <div className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2">
-              <p className="text-sm sm:text-base font-mono text-gray-900 break-all">
+            <div className="flex-1 bg-black/20 border border-white/5 rounded-xl px-4 py-3">
+              <p className="text-lg font-mono font-bold text-primary tracking-wider text-center">
                 {inviteCode}
               </p>
             </div>
-            <button
+            <Button
               onClick={handleCopyCode}
-              className="flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition flex items-center justify-center"
+              variant="secondary"
+              size="icon"
+              className="h-12 w-12 rounded-xl bg-white/10 hover:bg-white/20 border-0 text-white"
               title="코드 복사"
             >
               {copiedCode ? (
-                <span className="text-lg">✓</span>
+                <span className="text-lg text-green-400">✓</span>
               ) : (
-                <span className="text-lg">📋</span>
+                <Copy className="h-5 w-5" />
               )}
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* 공유 버튼들 */}
-        <div className="grid grid-cols-2 gap-2 pt-2">
-          <button
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          <Button
             onClick={handleShareSMS}
-            className="bg-green-500 hover:bg-green-600 text-white text-sm py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2"
+            className="bg-green-600/20 hover:bg-green-600/30 text-green-300 border border-green-500/30 h-12"
           >
-            <span>💬</span>
-            <span>문자 공유</span>
-          </button>
-          <button
+            <MessageCircle className="mr-2 h-4 w-4" />
+            문자 공유
+          </Button>
+          <Button
             onClick={handleShareWeb}
-            className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2"
+            className="bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 h-12"
           >
-            <span>📤</span>
-            <span>공유하기</span>
-          </button>
-          <button
+            <Share className="mr-2 h-4 w-4" />
+            공유하기
+          </Button>
+          <Button
             onClick={() => setShowQR(!showQR)}
-            className="col-span-2 bg-purple-500 hover:bg-purple-600 text-white text-sm py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2"
+            className="col-span-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 h-12"
           >
-            <span className="text-lg">📲</span>
-            <span>{showQR ? "QR 코드 숨기기" : "QR 코드 보기"}</span>
-          </button>
+            <QrCode className="mr-2 h-4 w-4" />
+            {showQR ? "QR 코드 숨기기" : "QR 코드 보기"}
+          </Button>
         </div>
 
         {/* QR 코드 */}
         {showQR && (
-          <div className="bg-white p-4 rounded-lg border border-purple-200 flex flex-col items-center">
-            <p className="text-sm font-medium text-gray-600 mb-3">QR 코드를 스캔하여 참여하세요</p>
+          <div className="bg-white p-6 rounded-2xl flex flex-col items-center animate-in fade-in zoom-in duration-300">
+            <p className="text-sm font-bold text-slate-900 mb-4">QR 코드를 스캔하여 참여하세요</p>
             <QRCodeSVG
               value={inviteUrl}
               size={200}
@@ -220,18 +226,19 @@ export function InviteCodeCard({
 
         {/* 초대 코드 재생성 버튼 */}
         {canRegenerate && (
-          <button
+          <Button
             onClick={handleRegenerate}
             disabled={regenerating}
-            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white text-sm py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2"
+            variant="ghost"
+            className="w-full text-slate-500 hover:text-orange-400 hover:bg-orange-500/10 h-12 mt-2"
           >
-            <span>🔄</span>
-            <span>{regenerating ? "재생성 중..." : "초대 코드 재생성"}</span>
-          </button>
+            <RefreshCw className={`mr-2 h-4 w-4 ${regenerating ? "animate-spin" : ""}`} />
+            {regenerating ? "재생성 중..." : "초대 코드 재생성"}
+          </Button>
         )}
 
-        <p className="text-xs text-gray-600">
-          💡 링크를 공유하면 클릭 한 번으로 가족에 참여할 수 있습니다. 초대 코드는 7일 후 만료됩니다.
+        <p className="text-xs text-slate-500 text-center mt-2 leading-relaxed">
+          💡 링크를 공유하면 클릭 한 번으로 가족에 참여할 수 있습니다.<br/>초대 코드는 7일 후 만료됩니다.
         </p>
       </div>
     </div>

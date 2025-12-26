@@ -8,9 +8,24 @@ import AppHeader from '@/widgets/app-header/AppHeader';
 import { QuickRecordModal } from '@/features/activities/components/QuickRecordModal';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 import { StoreInitializer } from '@/components/providers/StoreInitializer';
+import { NativeFeatures } from '@/shared/lib/native-features';
 
 import { useBabyStore } from '@/stores';
 
+function NativeInitializer() {
+  useEffect(() => {
+    const init = async () => {
+      await NativeFeatures.initializeStatusBar();
+      NativeFeatures.initializeBackButton();
+      // 약간의 지연 후 스플래시 화면 숨김 (초기 렌더링 확보)
+      setTimeout(() => {
+        NativeFeatures.hideSplashScreen();
+      }, 300);
+    };
+    init();
+  }, []);
+  return null;
+}
 
 function AppShell({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
@@ -103,6 +118,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <StoreInitializer>
+        <NativeInitializer />
         <AppShell>{children}</AppShell>
       </StoreInitializer>
     </SessionProvider>

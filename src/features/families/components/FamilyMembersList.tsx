@@ -39,10 +39,10 @@ const permissionLabels: Record<string, string> = {
 };
 
 const permissionColors: Record<string, string> = {
-  owner: "bg-purple-100 text-purple-800 border-purple-200",
-  admin: "bg-blue-100 text-blue-800 border-blue-200",
-  member: "bg-green-100 text-green-800 border-green-200",
-  viewer: "bg-gray-100 text-gray-800 border-gray-200",
+  owner: "bg-purple-500/20 text-purple-300 border-purple-500/30",
+  admin: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+  member: "bg-green-500/20 text-green-300 border-green-500/30",
+  viewer: "bg-slate-500/20 text-slate-300 border-slate-500/30",
 };
 
 export function FamilyMembersList({
@@ -80,9 +80,9 @@ export function FamilyMembersList({
   const canManageMembers = currentUserPermission === "owner" || currentUserPermission === "admin";
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+    <div className="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-5 shadow-lg">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-gray-900">
+        <h2 className="text-lg font-bold text-white">
           👥 가족원 ({members.length}명)
         </h2>
       </div>
@@ -95,18 +95,18 @@ export function FamilyMembersList({
           return (
             <div
               key={member.userId}
-              className={`flex items-start justify-between p-3 rounded-lg transition ${
+              className={`flex items-start justify-between p-3 rounded-2xl transition border ${
                 isCurrentUser
-                  ? "bg-blue-50 border border-blue-200"
-                  : "bg-gray-50 hover:bg-gray-100"
+                  ? "bg-primary/10 border-primary/30"
+                  : "bg-white/5 border-white/5 hover:bg-white/10"
               }`}
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-2 mb-1 flex-wrap gap-1">
-                  <p className="font-semibold text-gray-900 truncate">
+                  <p className="font-semibold text-slate-100 truncate">
                     {member.name || "이름 없음"}
                     {isCurrentUser && (
-                      <span className="ml-2 text-xs text-blue-600">(나)</span>
+                      <span className="ml-2 text-xs text-primary">(나)</span>
                     )}
                   </p>
                   {/* Permission Badge */}
@@ -118,12 +118,12 @@ export function FamilyMembersList({
                     {permissionLabels[memberPermission] || "구성원"}
                   </span>
                   {/* Role Badge */}
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 flex-shrink-0">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 flex-shrink-0">
                     {member.role ? (roleLabels[member.role] || member.role) : "역할 없음"}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 truncate">{member.email || "이메일 없음"}</p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-slate-400 truncate">{member.email || "이메일 없음"}</p>
+                <p className="text-xs text-slate-500 mt-1">
                   역할: {member.relation ? (relationLabels[member.relation] || member.relation) : "관계 없음"}
                 </p>
 
@@ -132,7 +132,7 @@ export function FamilyMembersList({
                   <div className="mt-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-xs" disabled={changingPermission === member.userId}>
+                        <Button variant="outline" size="sm" className="text-xs h-8 bg-transparent border-white/20 text-slate-300 hover:text-white hover:bg-white/10" disabled={changingPermission === member.userId}>
                           {changingPermission === member.userId ? "변경 중..." : `권한: ${permissionLabels[memberPermission]}`}
                           <ChevronDown className="ml-2 h-3 w-3" />
                         </Button>
@@ -159,7 +159,7 @@ export function FamilyMembersList({
                 memberPermission !== "owner" && (
                   <button
                     onClick={() => onRemoveMember(member.userId)}
-                    className="flex-shrink-0 ml-2 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded transition"
+                    className="flex-shrink-0 ml-2 px-3 py-1.5 text-xs font-medium text-red-400 hover:bg-red-500/10 rounded-lg transition"
                   >
                     제거
                   </button>
@@ -170,7 +170,7 @@ export function FamilyMembersList({
       </div>
 
       {members.length === 0 && (
-        <p className="text-center text-gray-500 py-4">가족원이 없습니다.</p>
+        <p className="text-center text-slate-500 py-4">가족원이 없습니다.</p>
       )}
     </div>
   );

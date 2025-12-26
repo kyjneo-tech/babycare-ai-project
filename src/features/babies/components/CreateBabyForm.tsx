@@ -145,9 +145,9 @@ export function CreateBabyForm() {
             {babyName.length > 0 && (
               <div className={cn(
                 "text-xs",
-                babyName.length >= MAX_NAME_LENGTH ? 'text-red-500' :
-                babyName.length > MAX_NAME_LENGTH * 0.9 ? 'text-orange-500' :
-                'text-gray-500'
+                babyName.length >= MAX_NAME_LENGTH ? 'text-red-400' :
+                babyName.length > MAX_NAME_LENGTH * 0.9 ? 'text-orange-400' :
+                'text-slate-400'
               )}>
                 {babyName.length} / {MAX_NAME_LENGTH}자
                 {babyName.length > MAX_NAME_LENGTH * 0.9 && babyName.length < MAX_NAME_LENGTH && (

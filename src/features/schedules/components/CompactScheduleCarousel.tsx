@@ -27,9 +27,9 @@ function ScheduleCard({ schedule, babyId }: { schedule: ScheduleNote; babyId: st
   const isUrgent = schedule.daysUntil <= 14;
   const isToday = schedule.daysUntil === 0;
 
-  const bgColor = isUrgent ? "bg-red-50" : "bg-blue-50";
-  const borderColor = isUrgent ? "border-red-300" : "border-blue-200";
-  const textColor = isUrgent ? "text-red-600" : "text-blue-600";
+  const bgColor = isUrgent ? "bg-red-500/10" : "bg-blue-500/10";
+  const borderColor = isUrgent ? "border-red-500/30" : "border-blue-500/30";
+  const textColor = isUrgent ? "text-red-400" : "text-blue-400";
 
   const dDayText = isToday ? "D-Day" : `D-${schedule.daysUntil}`;
 
@@ -47,14 +47,14 @@ function ScheduleCard({ schedule, babyId }: { schedule: ScheduleNote; babyId: st
         {/* 아이콘 */}
         <span className="text-base shrink-0">{details.icon}</span>
         {/* 제목 */}
-        <h4 className="font-semibold text-sm text-gray-900 truncate">
+        <h4 className="font-semibold text-sm text-slate-100 truncate">
           {schedule.title}
         </h4>
       </div>
 
       {/* 날짜 */}
       {schedule.dueDate && (
-        <p className="text-xs text-gray-500 pl-0.5">
+        <p className="text-xs text-slate-400 pl-0.5">
           {new Date(schedule.dueDate).toLocaleDateString('ko-KR', {
             month: 'numeric',
             day: 'numeric',
@@ -93,7 +93,7 @@ export function CompactScheduleCarousel({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-3">
+      <div className="bg-white/5 backdrop-blur-md rounded-lg border border-white/10 p-3">
         <div className="flex items-center justify-between mb-2">
           <Skeleton className="h-4 w-28" />
           <Skeleton className="h-4 w-16" />
@@ -107,9 +107,9 @@ export function CompactScheduleCarousel({
 
   if (schedules.length === 0) {
     return (
-      <div className="bg-white rounded-lg border-2 border-dashed border-gray-200 p-4 flex flex-col items-center justify-center text-center">
-        <p className="text-sm text-gray-500 font-medium">등록된 다음 일정이 없습니다.</p>
-        <p className="text-xs text-gray-400 mt-1 mb-3">예방접종, 영유아 검진일을 등록해 보세요.</p>
+      <div className="bg-white/5 backdrop-blur-md rounded-lg border-2 border-dashed border-white/10 p-4 flex flex-col items-center justify-center text-center">
+        <p className="text-sm text-slate-400 font-medium">등록된 다음 일정이 없습니다.</p>
+        <p className="text-xs text-slate-500 mt-1 mb-3">예방접종, 영유아 검진일을 등록해 보세요.</p>
         <Link href={`/babies/${babyId}?tab=timeline`}>
           <Button variant="outline" size="sm">
             + 일정 추가하기
@@ -120,13 +120,13 @@ export function CompactScheduleCarousel({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-3">
+    <div className="bg-white/5 backdrop-blur-md rounded-lg border border-white/10 p-3">
       {/* 헤더: 제목 + 일정 추가 버튼 */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-gray-900">📅 다음 일정</h3>
+          <h3 className="text-sm font-semibold text-slate-100">📅 다음 일정</h3>
           <Link href={`/babies/${babyId}?tab=timeline`}>
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-500/10">
               전체
               <ChevronRight className="w-3 h-3 ml-0.5" />
             </Button>
@@ -180,12 +180,12 @@ export function CompactScheduleCarousel({
         .compact-schedule-carousel .swiper-pagination-bullet {
           width: 5px;
           height: 5px;
-          background: #cbd5e1;
+          background: rgba(255, 255, 255, 0.2);
           opacity: 1;
           margin: 0 3px !important;
         }
         .compact-schedule-carousel .swiper-pagination-bullet-active {
-          background: #3b82f6;
+          background: #60a5fa;
         }
       `}</style>
     </div>

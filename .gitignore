@@ -43,6 +43,13 @@ next-env.d.ts
 
 # misc files (수정된 부분)
 /.claude
-*.xls          
-*.xlsx        
+*.xls
+*.xlsx
 /docs
+
+# Android Release Signing (중요: 절대 커밋 금지!)
+*.jks
+*.keystore
+android/gradle.properties
+android/app/*.jks
+android/app/*.keystore

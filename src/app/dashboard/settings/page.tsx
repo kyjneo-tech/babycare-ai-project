@@ -25,7 +25,8 @@ import {
   Trash2,
   ExternalLink,
   ChevronRight,
-  AlertTriangle
+  AlertTriangle,
+  Sparkles
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -62,8 +63,8 @@ export default function SettingsPage() {
       <div className="space-y-6">
         {/* 헤더 */}
         <div>
-          <h1 className="text-3xl font-black text-foreground mb-2">설정</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-black text-white mb-2">설정</h1>
+          <p className="text-slate-400">
             계정 정보 및 앱 설정을 관리합니다
           </p>
         </div>
@@ -78,13 +79,13 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4 pt-0 pb-6">
             <div className="flex justify-between items-center py-2">
-              <span className="text-sm text-muted-foreground">이름</span>
-              <span className="font-semibold">{session?.user?.name}</span>
+              <span className="text-sm text-slate-400">이름</span>
+              <span className="font-semibold text-slate-100">{session?.user?.name}</span>
             </div>
-            <Separator />
+            <Separator className="bg-white/10" />
             <div className="flex justify-between items-center py-2">
-              <span className="text-sm text-muted-foreground">이메일</span>
-              <span className="font-semibold">{session?.user?.email}</span>
+              <span className="text-sm text-slate-400">이메일</span>
+              <span className="font-semibold text-slate-100">{session?.user?.email}</span>
             </div>
           </CardContent>
         </Card>
@@ -96,7 +97,7 @@ export default function SettingsPage() {
               <Shield className="w-5 h-5" />
               법적 고지
             </CardTitle>
-            <CardDescription className="mt-2">
+            <CardDescription className="mt-2 text-slate-400">
               서비스 이용약관 및 개인정보 처리방침을 확인하세요
             </CardDescription>
           </CardHeader>
@@ -104,26 +105,26 @@ export default function SettingsPage() {
             <Link href="/privacy-policy" target="_blank">
               <Button
                 variant="ghost"
-                className="w-full justify-between hover:bg-muted h-auto py-3 px-4"
+                className="w-full justify-between hover:bg-white/10 h-auto py-3 px-4 text-slate-200"
               >
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-primary" />
                   <span>개인정보처리방침</span>
                 </div>
-                <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                <ExternalLink className="w-4 h-4 text-slate-400" />
               </Button>
             </Link>
 
             <Link href="/terms-of-service" target="_blank">
               <Button
                 variant="ghost"
-                className="w-full justify-between hover:bg-muted h-auto py-3 px-4"
+                className="w-full justify-between hover:bg-white/10 h-auto py-3 px-4 text-slate-200"
               >
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-primary" />
                   <span>이용약관</span>
                 </div>
-                <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                <ExternalLink className="w-4 h-4 text-slate-400" />
               </Button>
             </Link>
           </CardContent>
@@ -141,26 +142,44 @@ export default function SettingsPage() {
             <Link href="/about" target="_blank">
               <Button
                 variant="ghost"
-                className="w-full justify-between hover:bg-muted h-auto py-3 px-4"
+                className="w-full justify-between hover:bg-white/10 h-auto py-3 px-4 text-slate-200"
               >
                 <div className="flex items-center gap-3">
                   <Info className="w-5 h-5 text-primary" />
                   <span>서비스 소개</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </Button>
+            </Link>
+
+            <Link href="/dashboard/settings/ai-guide">
+              <Button
+                variant="ghost"
+                className="w-full justify-between hover:bg-white/10 h-auto py-3 px-4 text-slate-200"
+              >
+                <div className="flex items-center gap-3">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  <div className="text-left">
+                    <div className="font-medium">ChatGPT AI 활용 가이드</div>
+                    <div className="text-xs text-slate-400">
+                      ChatGPT에서 베베노크 사용하는 방법
+                    </div>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </Button>
             </Link>
 
             <Link href="/contact" target="_blank">
               <Button
                 variant="ghost"
-                className="w-full justify-between hover:bg-muted h-auto py-3 px-4"
+                className="w-full justify-between hover:bg-white/10 h-auto py-3 px-4 text-slate-200"
               >
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-primary" />
                   <span>문의하기</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </Button>
             </Link>
           </CardContent>
@@ -173,21 +192,21 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4 pt-0 pb-6">
             <div className="flex justify-between items-center py-2">
-              <span className="text-sm text-muted-foreground">버전</span>
-              <span className="font-semibold">1.0.0</span>
+              <span className="text-sm text-slate-400">버전</span>
+              <span className="font-semibold text-slate-100">1.0.0</span>
             </div>
-            <Separator />
+            <Separator className="bg-white/10" />
             <div className="flex justify-between items-center py-2">
-              <span className="text-sm text-muted-foreground">제작</span>
-              <span className="font-semibold">BebeKnock Team</span>
+              <span className="text-sm text-slate-400">제작</span>
+              <span className="font-semibold text-slate-100">BebeKnock Team</span>
             </div>
           </CardContent>
         </Card>
 
         {/* 회원 탈퇴 */}
-        <Card className="border-destructive/50">
+        <Card className="border-destructive/30 bg-destructive/5">
           <CardHeader className="pt-6 pb-4">
-            <CardDescription className="text-destructive font-medium">
+            <CardDescription className="text-red-400 font-medium">
               ⚠️ 이 작업은 되돌릴 수 없습니다. 신중하게 진행해주세요.
             </CardDescription>
           </CardHeader>

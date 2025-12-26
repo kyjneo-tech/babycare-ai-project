@@ -195,7 +195,7 @@ export function ActivityForm({
 
   if (!mounted) {
     return (
-      <Card className="border-none shadow-sm bg-gray-50/50 animate-pulse">
+      <Card className="border-none shadow-sm bg-white/5 backdrop-blur-md animate-pulse">
         <CardContent className="h-[200px]" />
       </Card>
     );
@@ -203,7 +203,7 @@ export function ActivityForm({
 
   return (
     <div className={SPACING.space.lg}>
-      <Card className="border-none shadow-sm bg-white/50 backdrop-blur-sm">
+      <Card className="border-none shadow-sm bg-white/5 backdrop-blur-md">
         <CardContent className={cn(SPACING.card.medium, SPACING.space.lg)}>
           <TimeSelector
             value={startTime}
@@ -231,9 +231,9 @@ export function ActivityForm({
                     variant={type === item.type ? "default" : "outline"}
                     className={cn(
                       "flex-shrink-0 w-20 h-20 flex flex-col items-center justify-center gap-1 snap-start transition-all",
-                      type === item.type 
-                        ? "ring-2 ring-primary ring-offset-2 bg-primary text-white shadow-lg" 
-                        : "bg-white border-2 border-primary/5 hover:border-primary/20"
+                      type === item.type
+                        ? "ring-2 ring-primary ring-offset-2 bg-primary text-white shadow-lg"
+                        : "bg-white/10 border-2 border-white/10 hover:border-primary/50 hover:bg-white/15"
                     )}
                     onClick={() => {
                       setType(item.type as any);
@@ -251,10 +251,10 @@ export function ActivityForm({
       </Card>
 
       {showDetail && (
-        <Card className="border-primary/20 shadow-md animate-in slide-in-from-bottom-4 duration-300">
-          <CardHeader className={cn(SPACING.card.medium, "border-b bg-primary/5")}>
+        <Card className="border-primary/30 shadow-md animate-in slide-in-from-bottom-4 duration-300 bg-white/5 backdrop-blur-md">
+          <CardHeader className={cn(SPACING.card.medium, "border-b border-white/10 bg-primary/10")}>
             <div className="flex flex-row items-center justify-between w-full">
-              <CardTitle className={cn(TYPOGRAPHY.h3, "flex items-center gap-2")}>
+              <CardTitle className={cn(TYPOGRAPHY.h3, "flex items-center gap-2 text-slate-100")}>
                 <span>
                   {type === "FEEDING" && "🍼 수유 기록"}
                   {type === "SLEEP" && "😴 수면 기록"}

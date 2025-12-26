@@ -3,7 +3,6 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { BabySwitcher } from "@/components/common/BabySwitcher";
@@ -67,7 +66,7 @@ export default function AppHeader() {
       : "/";
 
   return (
-    <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-blue-50">
+    <header className="bg-slate-900/60 backdrop-blur-xl shadow-lg sticky top-0 z-50 border-b border-white/10">
       <nav className="container mx-auto px-[clamp(12px,4vw,24px)]">
         <div className="flex justify-between items-center py-[clamp(8px,2vw,12px)]">
           <div className="flex items-center space-x-[clamp(8px,2vw,16px)]">
@@ -75,20 +74,10 @@ export default function AppHeader() {
               href={homeHref}
               className="group flex items-center gap-2 transition-opacity hover:opacity-80"
             >
-              {/* 로고 이미지 */}
-              <div className="relative w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
-                <Image
-                  src="/logo.jpg"
-                  alt="BebeKnock Logo"
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div>
               {/* 타이틀 텍스트 */}
               <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-1.5 leading-tight">
-                  <h1 className="text-lg sm:text-xl font-black text-brand-navy tracking-tight">BebeKnock</h1>
-                  <span className="text-xs sm:text-sm font-bold text-primary">베베노크</span>
+                  <h1 className="text-lg sm:text-xl font-black text-white tracking-tight drop-shadow-md">BebeKnock</h1>
+                  <span className="text-xs sm:text-sm font-bold text-purple-300">베베노크</span>
               </div>
             </Link>
             
@@ -103,12 +92,12 @@ export default function AppHeader() {
             {isGuestMode ? (
               // 게스트 모드: 로그인/회원가입 버튼
               <>
-                <span className="text-sm text-muted-foreground hidden sm:block">
+                <span className="text-sm text-slate-400 hidden sm:block font-medium">
                   👀 게스트 모드
                 </span>
                 <Link
                   href="/login"
-                  className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-bold rounded-2xl shadow-sm hover:bg-primary/90 transition-all"
+                  className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-bold rounded-2xl shadow-lg hover:bg-primary/90 transition-all active:scale-95"
                 >
                   로그인 하기
                 </Link>
@@ -116,14 +105,14 @@ export default function AppHeader() {
             ) : (
               // 로그인 상태: 사용자 이름 + 설정 + 로그아웃 버튼
               <>
-                <span className="text-foreground font-medium hidden sm:block">
+                <span className="text-slate-200 font-semibold hidden sm:block">
                   {session?.user?.name}님
                 </span>
                 <Link href="/dashboard/settings">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full hover:bg-muted"
+                    className="rounded-full hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
                     aria-label="설정"
                   >
                     <Settings className="w-5 h-5" />

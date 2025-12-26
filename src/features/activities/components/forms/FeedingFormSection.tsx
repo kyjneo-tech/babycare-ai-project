@@ -164,7 +164,7 @@ export function FeedingFormSection({
           </div>
 
           {/* 증감 버튼 UI */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-200">
+          <div className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 backdrop-blur-sm rounded-lg p-3 border border-white/10">
             {/* 상단: ±10 버튼 */}
             <div className="flex items-center justify-center gap-2 mb-2">
               <Button

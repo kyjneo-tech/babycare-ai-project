@@ -23,19 +23,19 @@ export function BabyCard({ baby, canEdit, onEdit, onDelete }: BabyCardProps) {
   const birthDate = typeof baby.birthDate === 'string' ? new Date(baby.birthDate) : baby.birthDate;
   
   return (
-    <Card className={cn("flex items-center p-2 sm:p-3 bg-muted rounded-lg", SPACING.gap.sm)}>
+    <Card className={cn("flex items-center p-3 sm:p-4 bg-white/5 border-white/5 hover:bg-white/10 transition-colors rounded-2xl", SPACING.gap.sm)}>
       <Link
         href={`/babies/${baby.id}`}
         className="flex items-center flex-1 hover:opacity-80 transition-opacity"
       >
-        <span className="text-xl sm:text-2xl mr-2 sm:mr-3">
+        <span className="text-2xl sm:text-3xl mr-3 sm:mr-4 bg-white/10 p-2 rounded-full">
           {baby.gender === "male" ? "👶‍♂️" : "👶‍♀️"}
         </span>
         <div className="flex-1">
-          <p className={cn(TYPOGRAPHY.body.default, "font-semibold")}>
+          <p className={cn(TYPOGRAPHY.body.default, "font-bold text-slate-100")}>
             {baby.name}
           </p>
-          <p className={cn(TYPOGRAPHY.caption, "text-muted-foreground")}>
+          <p className={cn(TYPOGRAPHY.caption, "text-slate-400")}>
             {birthDate.toLocaleDateString("ko-KR")} 출생
           </p>
         </div>
@@ -47,7 +47,7 @@ export function BabyCard({ baby, canEdit, onEdit, onDelete }: BabyCardProps) {
             variant="ghost"
             size="sm"
             onClick={() => onEdit(baby.id)}
-            className="h-8 w-8 p-0"
+            className="h-9 w-9 p-0 text-slate-400 hover:text-white hover:bg-white/10 rounded-full"
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -55,7 +55,7 @@ export function BabyCard({ baby, canEdit, onEdit, onDelete }: BabyCardProps) {
             variant="ghost"
             size="sm"
             onClick={() => onDelete(baby.id)}
-            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+            className="h-9 w-9 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-full"
           >
             <Trash2 className="h-4 w-4" />
           </Button>

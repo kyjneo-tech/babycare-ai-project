@@ -296,7 +296,7 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-10">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -304,7 +304,7 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
   if (schedules.length === 0 && !isGuestMode) {
     return (
       <div className="text-center py-10">
-        <p className="text-gray-500 mb-4">생성된 일정이 없습니다.</p>
+        <p className="text-slate-400 mb-4">생성된 일정이 없습니다.</p>
         <Button onClick={handleAddClick} size="sm">
           <Plus className="h-4 w-4 mr-2" />
           첫 일정 추가하기
@@ -325,16 +325,16 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
   return (
     <div>
       {/* Sticky 헤더: Tabs + 필터 & 검색 & 추가 버튼 */}
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-200 pb-4 mb-6 -mx-4 px-4 pt-2">
+      <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-md border-b border-white/10 pb-4 mb-6 -mx-4 px-4 pt-2 shadow-lg">
         <div className="space-y-3">
           {/* Tabs: 타임라인 ↔ 달력 전환 */}
           <Tabs value={currentView} onValueChange={(v) => handleViewChange(v as 'timeline' | 'calendar')}>
-            <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
-              <TabsTrigger value="timeline" className="flex items-center gap-2">
+            <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto bg-white/5 border border-white/10">
+              <TabsTrigger value="timeline" className="flex items-center gap-2 text-slate-300 data-[state=active]:text-white data-[state=active]:bg-white/10">
                 <List className="w-4 h-4" />
                 <span>타임라인</span>
               </TabsTrigger>
-              <TabsTrigger value="calendar" className="flex items-center gap-2">
+              <TabsTrigger value="calendar" className="flex items-center gap-2 text-slate-300 data-[state=active]:text-white data-[state=active]:bg-white/10">
                 <CalendarDays className="w-4 h-4" />
                 <span>달력</span>
               </TabsTrigger>
@@ -344,7 +344,7 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
           {/* 검색 (타임라인 뷰에만 표시) */}
           {currentView === 'timeline' && (
             <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               placeholder="일정 제목이나 내용 검색..."
               value={searchQuery}
@@ -358,8 +358,10 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
           <div className="flex flex-wrap items-center gap-2">
             {/* 상태별 필터 */}
             <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
-              <SelectTrigger className="w-[100px]">
-                <SelectValue placeholder="상태" />
+              <SelectTrigger className="w-[100px] bg-white/5 border-white/20">
+                <span className="text-slate-100 font-medium">
+                  {statusFilter === "all" ? "전체" : statusFilter === "pending" ? "예정" : "완료"}
+                </span>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전체</SelectItem>
@@ -370,8 +372,17 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
 
             {/* 타입별 필터 */}
             <Select value={typeFilter} onValueChange={(v: any) => setTypeFilter(v)}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="타입" />
+              <SelectTrigger className="w-[120px] bg-white/5 border-white/20">
+                <span className="text-slate-100 font-medium">
+                  {typeFilter === "all" ? "전체" :
+                   typeFilter === "VACCINATION" ? "예방접종" :
+                   typeFilter === "HEALTH_CHECKUP" ? "건강검진" :
+                   typeFilter === "MILESTONE" ? "발달 이정표" :
+                   typeFilter === "WONDER_WEEK" ? "도약기" :
+                   typeFilter === "SLEEP_REGRESSION" ? "수면퇴행" :
+                   typeFilter === "FEEDING_STAGE" ? "이유식" :
+                   "사용자 일정"}
+                </span>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전체</SelectItem>
@@ -387,8 +398,13 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
 
             {/* 기간별 필터 */}
             <Select value={periodFilter} onValueChange={(v: any) => setPeriodFilter(v)}>
-              <SelectTrigger className="w-[110px]">
-                <SelectValue placeholder="기간" />
+              <SelectTrigger className="w-[110px] bg-white/5 border-white/20">
+                <span className="text-slate-100 font-medium">
+                  {periodFilter === "all" ? "전체 기간" :
+                   periodFilter === "week" ? "이번 주" :
+                   periodFilter === "month" ? "이번 달" :
+                   "3개월 내"}
+                </span>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전체 기간</SelectItem>
@@ -416,7 +432,7 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
       ) : (
         /* 타임라인 뷰 */
         displaySchedules.length === 0 ? (
-          <div className="text-center py-10 text-gray-500">
+          <div className="text-center py-10 text-slate-400">
             {searchQuery || statusFilter !== "all" || typeFilter !== "all"
               ? "검색 조건에 맞는 일정이 없습니다."
               : "생성된 일정이 없습니다."}
@@ -433,11 +449,11 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
                     {/* Today 마커 */}
                     {showTodayMarker && (
                       <div ref={todayMarkerRef} className="flex items-center gap-2 my-4">
-                        <div className="h-px bg-blue-500 flex-1"></div>
-                        <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                        <div className="h-px bg-primary flex-1"></div>
+                        <span className="text-xs font-bold text-primary bg-primary/20 px-3 py-1 rounded-full backdrop-blur-sm border border-primary/30">
                           📍 오늘 (Today)
                         </span>
-                        <div className="h-px bg-blue-500 flex-1"></div>
+                        <div className="h-px bg-primary flex-1"></div>
                       </div>
                     )}
 

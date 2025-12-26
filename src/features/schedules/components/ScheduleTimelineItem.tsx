@@ -38,18 +38,18 @@ export function ScheduleTimelineItem({ schedule, babyId, onUpdate, onUpdateLocal
   // D-Day 계산
   const daysUntil = scheduleDate ? differenceInDays(scheduleDate, today) : null;
   let dDayText = "";
-  let dDayColor = "text-blue-600";
+  let dDayColor = "text-blue-400";
 
   if (daysUntil !== null) {
     if (daysUntil === 0) {
       dDayText = "D-Day";
-      dDayColor = "text-purple-600 font-bold";
+      dDayColor = "text-purple-400 font-bold";
     } else if (daysUntil > 0) {
       dDayText = `D-${daysUntil}`;
-      dDayColor = daysUntil <= 14 ? "text-red-600 font-bold" : "text-blue-600";
+      dDayColor = daysUntil <= 14 ? "text-red-400 font-bold" : "text-blue-400";
     } else {
       dDayText = `D+${Math.abs(daysUntil)}`;
-      dDayColor = "text-gray-400";
+      dDayColor = "text-slate-500";
     }
   }
 
@@ -113,7 +113,7 @@ export function ScheduleTimelineItem({ schedule, babyId, onUpdate, onUpdateLocal
       <div className="relative flex gap-4 pb-6">
         {/* 타임라인 라인 */}
         {!isLast && (
-          <div className="absolute left-[18px] top-10 w-px h-full bg-gray-200"></div>
+          <div className="absolute left-[18px] top-10 w-px h-full bg-white/10"></div>
         )}
 
         {/* 아이콘 & 체크박스 */}
@@ -129,23 +129,23 @@ export function ScheduleTimelineItem({ schedule, babyId, onUpdate, onUpdateLocal
           {/* 아이콘 */}
           <div className={`
             w-9 h-9 rounded-full flex items-center justify-center text-lg
-            ${optimisticCompleted || isPast ? 'bg-gray-200' : 'bg-blue-100'}
+            ${optimisticCompleted || isPast ? 'bg-white/10' : 'bg-primary/20'}
           `}>
             {details.icon}
           </div>
         </div>
 
         {/* 콘텐츠 */}
-        <div className="flex-1 bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow group">
+        <div className="flex-1 bg-white/5 border border-white/10 backdrop-blur-md rounded-lg p-4 hover:shadow-xl hover:bg-white/10 transition-all group">
           {/* 주요 콘텐츠 */}
           <div className="mb-3">
             {/* 제목 & D-Day */}
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h3 className={`font-semibold text-base ${optimisticCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+              <h3 className={`font-semibold text-base ${optimisticCompleted ? 'line-through text-slate-500' : 'text-slate-100'}`}>
                 {schedule.title}
               </h3>
               {dDayText && (
-                <span className={`text-xs ${dDayColor} px-2 py-0.5 rounded-full ${daysUntil !== null && daysUntil <= 14 && !optimisticCompleted ? 'bg-red-50' : 'bg-gray-50'}`}>
+                <span className={`text-xs ${dDayColor} px-2 py-0.5 rounded-full ${daysUntil !== null && daysUntil <= 14 && !optimisticCompleted ? 'bg-red-500/20' : 'bg-white/10'}`}>
                   {dDayText}
                 </span>
               )}
@@ -153,7 +153,7 @@ export function ScheduleTimelineItem({ schedule, babyId, onUpdate, onUpdateLocal
 
             {/* 날짜 */}
             {scheduleDate && (
-              <p className="text-sm text-gray-500 mb-2">
+              <p className="text-sm text-slate-400 mb-2">
                 {format(scheduleDate, "yyyy년 M월 d일 (EEE)", { locale: ko })}
               </p>
             )}
@@ -162,30 +162,30 @@ export function ScheduleTimelineItem({ schedule, babyId, onUpdate, onUpdateLocal
             {schedule.type === 'MILESTONE' ? (
               <MilestoneInfoCard note={schedule} />
             ) : schedule.content ? (
-              <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded-md whitespace-pre-wrap">
+              <p className="text-sm text-slate-300 mt-2 bg-white/5 p-3 rounded-md whitespace-pre-wrap">
                 {schedule.content}
               </p>
             ) : null}
           </div>
 
           {/* 액션 버튼들 - 하단 우측 배치 */}
-          <div className="flex items-center justify-end gap-1 pt-2 border-t border-gray-100">
+          <div className="flex items-center justify-end gap-1 pt-2 border-t border-white/10">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleEdit}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 hover:bg-white/10"
             >
-              <Pencil className="h-4 w-4 text-gray-500 hover:text-blue-600" />
+              <Pencil className="h-4 w-4 text-slate-400 hover:text-primary" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 hover:bg-white/10"
             >
-              <Trash2 className="h-4 w-4 text-gray-500 hover:text-red-600" />
+              <Trash2 className="h-4 w-4 text-slate-400 hover:text-red-400" />
             </Button>
           </div>
         </div>
