@@ -50,8 +50,10 @@ const InteractiveScheduleTimeline = dynamic(
 );
 
 
-// 페이지 캐시 설정: 3초마다 재검증 (ISR)
-export const revalidate = 3;
+// 페이지 캐시 설정: 동적 렌더링 (항상 최신 데이터)
+// revalidate를 0으로 설정하여 캐시하지 않고, 클라이언트 사이드에서 필요시 refetch
+// 활동 기록/수정/삭제 시 router.refresh()로 자동 업데이트됨
+export const revalidate = 0;
 
 type TabType = "activities" | "analytics" | "timeline";
 

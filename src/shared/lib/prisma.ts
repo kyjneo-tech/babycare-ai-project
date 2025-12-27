@@ -14,7 +14,9 @@ declare global {
 export const prisma =
   global.prisma ||
   new PrismaClient({
-    log: ['query', 'info', 'warn', 'error'], // 모든 로그를 출력하도록 설정
+    log: process.env.NODE_ENV === 'production'
+      ? ['error'] // 프로덕션: 에러만 로깅 (성능 최적화)
+      : ['warn', 'error'], // 개발: warn, error만 (query 로그 제거로 터미널 깔끔하게)
   });
 
 // 개발 환경에서만 global.prisma에 인스턴스를 할당합니다.
