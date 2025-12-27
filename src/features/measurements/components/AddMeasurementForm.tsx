@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollablePicker } from "./ScrollablePicker";
 import { MeasurementAnalysis } from "./MeasurementAnalysis";
 import { GuestModeDialog } from '@/components/common/GuestModeDialog';
+import { toast } from '@/hooks/use-toast';
 import {
   useMeasurementForm,
   weightOptions,
@@ -15,11 +16,13 @@ import {
 interface AddMeasurementFormProps {
   babyId: string;
   onSuccess: () => void;
+  onCloseDialog?: () => void; // Dialog 닫기 함수 추가
 }
 
 export function AddMeasurementForm({
   babyId,
   onSuccess,
+  onCloseDialog,
 }: AddMeasurementFormProps) {
   const { status } = useSession();
   const isGuestMode = status === 'unauthenticated';
@@ -59,7 +62,21 @@ export function AddMeasurementForm({
         <MeasurementAnalysis
           analysis={formState.analysisResult}
           onClose={() => {
+            // 토스트로 성장 정보 표시
+            toast({
+              title: "✅ 키 & 체중이 기록되었어요!",
+              description: `체중 백분위: ${formState.analysisResult.percentile.label} · 키 백분위: ${formState.analysisResult.heightPercentile.label}`,
+              variant: "success",
+              duration: 4000,
+            });
+
+            // 상태 초기화
             formState.setShowResult(false);
+
+            // Dialog 닫기
+            onCloseDialog?.();
+
+            // 데이터 새로고침
             onSuccess();
           }}
         />

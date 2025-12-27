@@ -141,11 +141,11 @@ export function ScheduleTimelineItem({ schedule, babyId, onUpdate, onUpdateLocal
           <div className="mb-3">
             {/* 제목 & D-Day */}
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h3 className={`font-semibold text-base ${optimisticCompleted ? 'line-through text-slate-500' : 'text-slate-100'}`}>
+              <h3 className={`font-semibold text-lg ${optimisticCompleted ? 'line-through text-slate-500' : 'text-slate-100'}`}>
                 {schedule.title}
               </h3>
               {dDayText && (
-                <span className={`text-xs ${dDayColor} px-2 py-0.5 rounded-full ${daysUntil !== null && daysUntil <= 14 && !optimisticCompleted ? 'bg-red-500/20' : 'bg-white/10'}`}>
+                <span className={`text-sm ${dDayColor} px-2 py-0.5 rounded-full ${daysUntil !== null && daysUntil <= 14 && !optimisticCompleted ? 'bg-red-500/20' : 'bg-white/10'}`}>
                   {dDayText}
                 </span>
               )}
@@ -153,7 +153,7 @@ export function ScheduleTimelineItem({ schedule, babyId, onUpdate, onUpdateLocal
 
             {/* 날짜 */}
             {scheduleDate && (
-              <p className="text-sm text-slate-400 mb-2">
+              <p className="text-base text-slate-400 mb-2">
                 {format(scheduleDate, "yyyy년 M월 d일 (EEE)", { locale: ko })}
               </p>
             )}
@@ -162,7 +162,7 @@ export function ScheduleTimelineItem({ schedule, babyId, onUpdate, onUpdateLocal
             {schedule.type === 'MILESTONE' ? (
               <MilestoneInfoCard note={schedule} />
             ) : schedule.content ? (
-              <p className="text-sm text-slate-300 mt-2 bg-white/5 p-3 rounded-md whitespace-pre-wrap">
+              <p className="text-base text-slate-300 mt-2 bg-white/5 p-3 rounded-md whitespace-pre-wrap">
                 {schedule.content}
               </p>
             ) : null}

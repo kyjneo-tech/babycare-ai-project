@@ -72,37 +72,39 @@ export function ScheduleDetailModal({ schedule, babyId, onClose, onSuccess }: Sc
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="title">일정 제목 *</Label>
+            <Label htmlFor="title" className="text-base font-semibold">일정 제목 *</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="예: 병원 방문"
+              className="text-lg h-12"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dueDate">예정일</Label>
+            <Label htmlFor="dueDate" className="text-base font-semibold">예정일</Label>
             <div className="relative">
               <Input
                 id="dueDate"
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="pl-10"
+                className="pl-10 text-lg h-12"
               />
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="content">상세 내용</Label>
+            <Label htmlFor="content" className="text-base font-semibold">상세 내용</Label>
             <Textarea
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="상세 내용을 입력하세요 (선택사항)"
               rows={4}
+              className="text-base"
             />
           </div>
         </div>

@@ -9,6 +9,7 @@ import { QuickRecordModal } from '@/features/activities/components/QuickRecordMo
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 import { StoreInitializer } from '@/components/providers/StoreInitializer';
 import { NativeFeatures } from '@/shared/lib/native-features';
+import { Toaster } from '@/components/ui/toaster';
 
 import { useBabyStore } from '@/stores';
 
@@ -110,6 +111,8 @@ function AppShell({ children }: { children: React.ReactNode }) {
           window.location.reload();
         }}
       />
+
+      <Toaster />
     </div>
   );
 }

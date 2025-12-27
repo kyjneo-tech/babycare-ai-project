@@ -85,13 +85,13 @@ export function TimeSelector({
         </Label>
         <Button
           type="button"
-          variant="ghost"
           size="sm"
           onClick={setNow}
           disabled={disabled}
-          className="text-xs h-7 text-primary font-bold hover:bg-primary/5 px-2"
+          className="h-8 px-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold shadow-lg hover:shadow-xl transition-all animate-pulse disabled:opacity-50 disabled:animate-none"
         >
-          방금
+          <span className="mr-1">⚡</span>
+          <span className="text-sm">방금</span>
         </Button>
       </div>
       

@@ -101,11 +101,12 @@ export function MeasurementCard({ babyId }: MeasurementCardProps) {
               <AddMeasurementForm
                 babyId={babyId}
                 onSuccess={handleMeasurementAdded}
+                onCloseDialog={() => setShowInputDialog(false)}
               />
 
               {/* 구분선 */}
               <div className="border-t border-white/10 my-4"></div>
-              
+
               {/* 최근 활동 목록 */}
               <MeasurementHistoryList
                 babyId={babyId}

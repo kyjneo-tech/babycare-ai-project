@@ -58,7 +58,7 @@ export function BottomNavBar({ currentBabyId }: BottomNavBarProps) {
       icon: Users,
       label: "가족",
       isActive: isFamilyActive,
-      disabled: false,
+      disabled: isGuestMode, // 게스트 모드에서는 가족 탭 비활성화
     },
   ];
 
