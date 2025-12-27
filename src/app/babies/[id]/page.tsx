@@ -237,17 +237,7 @@ export default async function BabyDetailPage({
         {currentTab === "analytics" && <BabyAnalyticsView babyId={babyId} />}
 
         {currentTab === "timeline" && (
-          <Card className="bg-white/5 backdrop-blur-md border-white/10">
-            <CardContent className="p-6">
-              <div className="mb-4">
-                <h2 className="text-xl font-bold text-slate-100">전체 일정</h2>
-                <p className="text-sm text-slate-400 mt-1">
-                  예방접종, 건강검진, 발달 이정표 등 모든 일정을 확인하고 관리하세요
-                </p>
-              </div>
-              <InteractiveScheduleTimeline babyId={baby.id} />
-            </CardContent>
-          </Card>
+          <InteractiveScheduleTimeline babyId={baby.id} />
         )}
       </div>
     </MobileContainer>

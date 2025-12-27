@@ -325,7 +325,7 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
   return (
     <div>
       {/* Sticky 헤더: Tabs + 필터 & 검색 & 추가 버튼 */}
-      <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-md border-b border-white/10 pb-4 mb-6 -mx-4 px-4 pt-2 shadow-lg">
+      <div className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-white/10 pb-4 mb-6 -mx-4 px-4 pt-2 shadow-lg">
         <div className="space-y-3">
           {/* Tabs: 타임라인 ↔ 달력 전환 */}
           <Tabs value={currentView} onValueChange={(v) => handleViewChange(v as 'timeline' | 'calendar')}>
