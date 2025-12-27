@@ -176,6 +176,38 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // 🔒 보안: 사용자 ID 조회
+    const { prisma } = await import('@/shared/lib/prisma');
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+    const baby = await prisma.baby.findFirst({
+      where: {
+        id: babyId,
+        Family: {
+          FamilyMembers: {
+            some: {
+              userId: user.id,
+            },
+          },
+        },
+      },
+    });
+
+    if (!baby) {
+      return NextResponse.json(
+        { error: 'Baby not found or access denied' },
+        { status: 403 }
+      );
+    }
+
     // 필터링 옵션
     const type = searchParams.get('type') as NoteType | null;
     const completed = searchParams.get('completed');
@@ -254,10 +286,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // 🔒 보안: 사용자 ID 조회
+    const { prisma } = await import('@/shared/lib/prisma');
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     // Rate limiting 적용
     const { noteCreateRateLimit } = await import('@/shared/lib/ratelimit');
-    if (noteCreateRateLimit && session.user.id) {
-      const { success } = await noteCreateRateLimit.limit(session.user.id);
+    if (noteCreateRateLimit) {
+      const { success } = await noteCreateRateLimit.limit(user.id);
       if (!success) {
         return NextResponse.json(
           { error: '너무 많은 노트를 생성하고 있습니다. 잠시 후 다시 시도해주세요.' },
@@ -268,7 +311,6 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json() as {
       babyId: string;
-      userId: string;
       type: string;
       title: string;
       content?: string;
@@ -280,7 +322,6 @@ export async function POST(request: NextRequest) {
     };
     const {
       babyId,
-      userId,
       type,
       title,
       content,
@@ -292,10 +333,31 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // 필수 필드 검증
-    if (!babyId || !userId || !type || !title) {
+    if (!babyId || !type || !title) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
+      );
+    }
+
+    // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+    const baby = await prisma.baby.findFirst({
+      where: {
+        id: babyId,
+        Family: {
+          FamilyMembers: {
+            some: {
+              userId: user.id,
+            },
+          },
+        },
+      },
+    });
+
+    if (!baby) {
+      return NextResponse.json(
+        { error: 'Baby not found or access denied' },
+        { status: 403 }
       );
     }
 
@@ -325,7 +387,7 @@ export async function POST(request: NextRequest) {
     const noteService = new NoteService();
     const note = await noteService.createNote({
       babyId,
-      userId,
+      userId: user.id, // 🔒 보안: 세션에서 가져온 userId 사용
       type: type as NoteType,
       title,
       content,

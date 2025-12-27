@@ -2,16 +2,45 @@
 'use server';
 
 import { prisma } from '@/shared/lib/prisma';
-import { 
-  getSampleDailyStats, 
-  getSample24HourPattern, 
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import {
+  getSampleDailyStats,
+  getSample24HourPattern,
   getSampleWeeklyStats,
-  getSampleActivities 
+  getSampleActivities
 } from './services/getSampleData';
 
 export async function getDailyStats(babyId: string, date: Date) {
   if (babyId === 'guest-baby-id') {
     return { success: true, data: getSampleDailyStats() };
+  }
+
+  // 🔒 보안: 세션 검증
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return { success: false, error: '로그인이 필요합니다.' };
+  }
+
+  // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+  const baby = await prisma.baby.findFirst({
+    where: {
+      id: babyId,
+      Family: {
+        FamilyMembers: {
+          some: {
+            userId: session.user.id,
+          },
+        },
+      },
+    },
+  });
+
+  if (!baby) {
+    return {
+      success: false,
+      error: '해당 아기의 통계를 조회할 권한이 없습니다.'
+    };
   }
 
   try {
@@ -101,6 +130,33 @@ export async function get24HourPattern(babyId: string) {
     return { success: true, data: getSample24HourPattern() };
   }
 
+  // 🔒 보안: 세션 검증
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return { success: false, error: '로그인이 필요합니다.' };
+  }
+
+  // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+  const baby = await prisma.baby.findFirst({
+    where: {
+      id: babyId,
+      Family: {
+        FamilyMembers: {
+          some: {
+            userId: session.user.id,
+          },
+        },
+      },
+    },
+  });
+
+  if (!baby) {
+    return {
+      success: false,
+      error: '해당 아기의 통계를 조회할 권한이 없습니다.'
+    };
+  }
+
   try {
     const oneDayAgo = new Date();
     oneDayAgo.setHours(oneDayAgo.getHours() - 24);
@@ -144,6 +200,33 @@ export async function get24HourPattern(babyId: string) {
 export async function getWeeklyStats(babyId: string) {
   if (babyId === 'guest-baby-id') {
     return { success: true, data: getSampleWeeklyStats() };
+  }
+
+  // 🔒 보안: 세션 검증
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return { success: false, error: '로그인이 필요합니다.' };
+  }
+
+  // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+  const baby = await prisma.baby.findFirst({
+    where: {
+      id: babyId,
+      Family: {
+        FamilyMembers: {
+          some: {
+            userId: session.user.id,
+          },
+        },
+      },
+    },
+  });
+
+  if (!baby) {
+    return {
+      success: false,
+      error: '해당 아기의 통계를 조회할 권한이 없습니다.'
+    };
   }
 
   try {
@@ -209,19 +292,46 @@ export async function getActivitiesByDateRange(babyId: string, startDate: Date, 
     // Generate sample data for the date range
     const activities = [];
     const currentDate = new Date(startDate);
-    
+
     while (currentDate <= endDate) {
       activities.push(...getSampleActivities(new Date(currentDate)));
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    
+
     // Filter to only include activities within the range
     const filtered = activities.filter(a => {
       const activityDate = new Date(a.startTime);
       return activityDate >= startDate && activityDate <= endDate;
     });
-    
+
     return { success: true, data: filtered };
+  }
+
+  // 🔒 보안: 세션 검증
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return { success: false, error: '로그인이 필요합니다.' };
+  }
+
+  // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+  const baby = await prisma.baby.findFirst({
+    where: {
+      id: babyId,
+      Family: {
+        FamilyMembers: {
+          some: {
+            userId: session.user.id,
+          },
+        },
+      },
+    },
+  });
+
+  if (!baby) {
+    return {
+      success: false,
+      error: '해당 아기의 활동을 조회할 권한이 없습니다.'
+    };
   }
 
   try {

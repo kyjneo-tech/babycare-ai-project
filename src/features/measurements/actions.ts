@@ -31,6 +31,28 @@ export async function createMeasurement(
       return { success: false, error: "로그인이 필요합니다" };
     }
 
+    // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+    const { prisma } = await import('@/shared/lib/prisma');
+    const baby = await prisma.baby.findFirst({
+      where: {
+        id: data.babyId,
+        Family: {
+          FamilyMembers: {
+            some: {
+              userId: session.user.id,
+            },
+          },
+        },
+      },
+    });
+
+    if (!baby) {
+      return {
+        success: false,
+        error: "해당 아기의 측정값을 기록할 권한이 없습니다."
+      };
+    }
+
     // measuredAt을 현재 시간으로 자동 설정
     const measurementData: CreateMeasurementData = {
       ...data,
@@ -68,6 +90,28 @@ export async function getLatestMeasurement(
       return { success: false, error: "로그인이 필요합니다" };
     }
 
+    // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+    const { prisma } = await import('@/shared/lib/prisma');
+    const baby = await prisma.baby.findFirst({
+      where: {
+        id: babyId,
+        Family: {
+          FamilyMembers: {
+            some: {
+              userId: session.user.id,
+            },
+          },
+        },
+      },
+    });
+
+    if (!baby) {
+      return {
+        success: false,
+        error: "해당 아기의 측정값을 조회할 권한이 없습니다."
+      };
+    }
+
     const measurement = await getLatestMeasurementService(repository, babyId);
 
     return { success: true, data: measurement };
@@ -90,6 +134,28 @@ export async function getMeasurementHistory(
       return { success: false, error: "로그인이 필요합니다" };
     }
 
+    // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+    const { prisma } = await import('@/shared/lib/prisma');
+    const baby = await prisma.baby.findFirst({
+      where: {
+        id: babyId,
+        Family: {
+          FamilyMembers: {
+            some: {
+              userId: session.user.id,
+            },
+          },
+        },
+      },
+    });
+
+    if (!baby) {
+      return {
+        success: false,
+        error: "해당 아기의 측정값을 조회할 권한이 없습니다."
+      };
+    }
+
     const measurements = await getMeasurementHistoryService(repository, babyId);
 
     return { success: true, data: measurements };
@@ -109,8 +175,25 @@ export async function updateMeasurement(
   }
 
   try {
-    // TODO: 권한 검사 로직 추가 (activity actions 참고)
-    
+    // 🔒 보안: 권한 검사 (기존 측정값이 사용자의 가족에 속하는지 확인)
+    const { prisma } = await import('@/shared/lib/prisma');
+    const measurement = await prisma.babyMeasurement.findUnique({
+      where: { id },
+      include: { Baby: { include: { Family: { include: { FamilyMembers: true } } } } },
+    });
+
+    if (!measurement) {
+      return { success: false, error: "측정 기록을 찾을 수 없습니다." };
+    }
+
+    const isFamilyMember = measurement.Baby.Family.FamilyMembers.some(
+      (member) => member.userId === session.user.id
+    );
+
+    if (!isFamilyMember) {
+      return { success: false, error: "이 측정 기록을 수정할 권한이 없습니다." };
+    }
+
     const updatedMeasurement = await updateMeasurementService(repository, id, data);
     
     // Redis 캐시 무효화
@@ -133,8 +216,25 @@ export async function deleteMeasurement(
   }
 
   try {
-    // TODO: 권한 검사 로직 추가
-    
+    // 🔒 보안: 권한 검사 (기존 측정값이 사용자의 가족에 속하는지 확인)
+    const { prisma } = await import('@/shared/lib/prisma');
+    const measurement = await prisma.babyMeasurement.findUnique({
+      where: { id },
+      include: { Baby: { include: { Family: { include: { FamilyMembers: true } } } } },
+    });
+
+    if (!measurement) {
+      return { success: false, error: "측정 기록을 찾을 수 없습니다." };
+    }
+
+    const isFamilyMember = measurement.Baby.Family.FamilyMembers.some(
+      (member) => member.userId === session.user.id
+    );
+
+    if (!isFamilyMember) {
+      return { success: false, error: "이 측정 기록을 삭제할 권한이 없습니다." };
+    }
+
     const deletedMeasurement = await deleteMeasurementService(repository, id);
     
     // Redis 캐시 무효화

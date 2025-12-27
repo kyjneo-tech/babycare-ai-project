@@ -27,9 +27,39 @@ import { PrismaActivityRepository } from "./repositories/PrismaActivityRepositor
 const repository = new PrismaActivityRepository();
 
 export async function createActivity(
-  input: CreateActivityInput,
-  userId: string // User ID passed from an authenticated context
+  input: CreateActivityInput
 ): Promise<{ success: boolean; data?: Activity; error?: string }> {
+  // 🔒 보안: 세션에서 userId 가져오기
+  const { getServerSession } = await import('next-auth');
+  const { authOptions } = await import('@/app/api/auth/[...nextauth]/route');
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { success: false, error: "로그인이 필요합니다." };
+  }
+  const userId = session.user.id;
+
+  // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+  const baby = await prisma.baby.findFirst({
+    where: {
+      id: input.babyId,
+      Family: {
+        FamilyMembers: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+    },
+  });
+
+  if (!baby) {
+    return {
+      success: false,
+      error: "해당 아기에 대한 활동을 기록할 권한이 없습니다."
+    };
+  }
+
   // Rate limiting 적용
   const { activityCreateRateLimit } = await import('@/shared/lib/ratelimit');
   if (activityCreateRateLimit) {
@@ -94,7 +124,37 @@ export async function getRecentActivities(
 ): Promise<{ success: boolean; data?: Activity[]; error?: string }> {
   if (babyId === 'guest-baby-id') {
     // For now, return today's sample activities. This can be expanded if needed.
-    return { success: true, data: getSampleActivities(new Date()) }; 
+    return { success: true, data: getSampleActivities(new Date()) };
+  }
+
+  // 🔒 보안: 세션 검증
+  const { getServerSession } = await import('next-auth');
+  const { authOptions } = await import('@/app/api/auth/[...nextauth]/route');
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { success: false, error: "로그인이 필요합니다." };
+  }
+
+  // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+  const baby = await prisma.baby.findFirst({
+    where: {
+      id: babyId,
+      Family: {
+        FamilyMembers: {
+          some: {
+            userId: session.user.id,
+          },
+        },
+      },
+    },
+  });
+
+  if (!baby) {
+    return {
+      success: false,
+      error: "해당 아기의 활동을 조회할 권한이 없습니다."
+    };
   }
 
   try {
@@ -108,9 +168,18 @@ export async function getRecentActivities(
 
 export async function updateActivity(
   activityId: string,
-  userId: string,
   data: Partial<CreateActivityInput>
 ): Promise<{ success: boolean; data?: Activity; error?: string }> {
+  // 🔒 보안: 세션에서 userId 가져오기
+  const { getServerSession } = await import('next-auth');
+  const { authOptions } = await import('@/app/api/auth/[...nextauth]/route');
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { success: false, error: "로그인이 필요합니다." };
+  }
+  const userId = session.user.id;
+
   try {
     const activity = await prisma.activity.findUnique({
       where: { id: activityId },
@@ -249,7 +318,17 @@ export async function updateActivity(
   }
 }
 
-export async function deleteActivity(activityId: string, userId: string) {
+export async function deleteActivity(activityId: string) {
+  // 🔒 보안: 세션에서 userId 가져오기
+  const { getServerSession } = await import('next-auth');
+  const { authOptions } = await import('@/app/api/auth/[...nextauth]/route');
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { success: false, error: "로그인이 필요합니다." };
+  }
+  const userId = session.user.id;
+
   try {
     const activity = await prisma.activity.findUnique({
       where: { id: activityId },
@@ -340,6 +419,36 @@ export async function getActivitiesPaginated(
   };
   error?: string;
 }> {
+  // 🔒 보안: 세션 검증
+  const { getServerSession } = await import('next-auth');
+  const { authOptions } = await import('@/app/api/auth/[...nextauth]/route');
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { success: false, error: "로그인이 필요합니다." };
+  }
+
+  // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+  const baby = await prisma.baby.findFirst({
+    where: {
+      id: babyId,
+      Family: {
+        FamilyMembers: {
+          some: {
+            userId: session.user.id,
+          },
+        },
+      },
+    },
+  });
+
+  if (!baby) {
+    return {
+      success: false,
+      error: "해당 아기의 활동을 조회할 권한이 없습니다."
+    };
+  }
+
   try {
     const activities = await prisma.activity.findMany({
       where: { babyId },
@@ -438,7 +547,37 @@ export async function getActivitiesPaginated(
           },
         };
       }
-    
+
+      // 🔒 보안: 세션 검증
+      const { getServerSession } = await import('next-auth');
+      const { authOptions } = await import('@/app/api/auth/[...nextauth]/route');
+      const session = await getServerSession(authOptions);
+
+      if (!session?.user?.id) {
+        return { success: false, error: "로그인이 필요합니다." };
+      }
+
+      // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+      const baby = await prisma.baby.findFirst({
+        where: {
+          id: babyId,
+          Family: {
+            FamilyMembers: {
+              some: {
+                userId: session.user.id,
+              },
+            },
+          },
+        },
+      });
+
+      if (!baby) {
+        return {
+          success: false,
+          error: "해당 아기의 정보를 조회할 권한이 없습니다."
+        };
+      }
+
       try {
         const [lastSleep, lastFeeding] = await prisma.$transaction([
           prisma.activity.findFirst({
@@ -450,7 +589,7 @@ export async function getActivitiesPaginated(
             orderBy: { startTime: 'desc' },
           }),
         ]);
-    
+
         return { success: true, data: { lastSleep, lastFeeding } };
       } catch (error) {
         console.error("아기 빠른 통계 조회 실패:", error);
@@ -461,15 +600,42 @@ export async function getActivitiesPaginated(
 export async function bulkDeleteActivities(
   activityIds: string[]
 ): Promise<{ success: boolean; data?: { count: number }; error?: string }> {
+  // 🔒 보안: 세션에서 userId 가져오기
+  const { getServerSession } = await import('next-auth');
+  const { authOptions } = await import('@/app/api/auth/[...nextauth]/route');
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { success: false, error: "로그인이 필요합니다." };
+  }
+  const userId = session.user.id;
+
   try {
     if (!activityIds.length) {
       return { success: false, error: "삭제할 활동이 선택되지 않았습니다." };
     }
 
-    const firstActivity = await prisma.activity.findUnique({
-      where: { id: activityIds[0] },
-      select: { babyId: true }
+    // 🔒 보안: 모든 활동이 사용자의 가족에 속하는지 검증
+    const activities = await prisma.activity.findMany({
+      where: { id: { in: activityIds } },
+      include: { Baby: { include: { Family: { include: { FamilyMembers: true } } } } },
     });
+
+    // 🔒 보안: 모든 활동에 대한 권한 검증
+    for (const activity of activities) {
+      const isFamilyMember = activity.Baby.Family.FamilyMembers.some(
+        (member) => member.userId === userId
+      );
+
+      if (!isFamilyMember) {
+        return {
+          success: false,
+          error: "삭제할 권한이 없는 활동이 포함되어 있습니다."
+        };
+      }
+    }
+
+    const firstActivity = activities[0];
 
     const result = await prisma.activity.deleteMany({
       where: {
@@ -478,7 +644,12 @@ export async function bulkDeleteActivities(
     });
 
     if (firstActivity) {
+      // Redis 캐시 무효화
+      await redis.del(`baby:${firstActivity.babyId}:recent-activities:7-days`);
+
       revalidatePath(`/babies/${firstActivity.babyId}`);
+      revalidatePath("/");
+      revalidatePath(`/analytics/${firstActivity.babyId}`);
     }
 
     return { success: true, data: { count: result.count } };
@@ -494,6 +665,36 @@ export async function getLastActivity(
 ): Promise<{ success: boolean; data?: Activity | null; error?: string }> {
   if (babyId === 'guest-baby-id') {
     return { success: true, data: null };
+  }
+
+  // 🔒 보안: 세션 검증
+  const { getServerSession } = await import('next-auth');
+  const { authOptions } = await import('@/app/api/auth/[...nextauth]/route');
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { success: false, error: "로그인이 필요합니다." };
+  }
+
+  // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+  const baby = await prisma.baby.findFirst({
+    where: {
+      id: babyId,
+      Family: {
+        FamilyMembers: {
+          some: {
+            userId: session.user.id,
+          },
+        },
+      },
+    },
+  });
+
+  if (!baby) {
+    return {
+      success: false,
+      error: "해당 아기의 활동을 조회할 권한이 없습니다."
+    };
   }
 
   try {
@@ -518,13 +719,32 @@ export async function endSleepActivity(
   activityId: string,
   endTime: Date
 ): Promise<{ success: boolean; data?: Activity; error?: string }> {
+  // 🔒 보안: 세션 검증
+  const { getServerSession } = await import('next-auth');
+  const { authOptions } = await import('@/app/api/auth/[...nextauth]/route');
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { success: false, error: "로그인이 필요합니다." };
+  }
+
   try {
     const activity = await prisma.activity.findUnique({
       where: { id: activityId },
+      include: { Baby: { include: { Family: { include: { FamilyMembers: true } } } } },
     });
 
     if (!activity) {
       return { success: false, error: "활동 기록을 찾을 수 없습니다." };
+    }
+
+    // 🔒 보안: 권한 검증
+    const isFamilyMember = activity.Baby.Family.FamilyMembers.some(
+      (member) => member.userId === session.user.id
+    );
+
+    if (!isFamilyMember) {
+      return { success: false, error: "이 활동을 수정할 권한이 없습니다." };
     }
 
     if (activity.type !== "SLEEP") {
@@ -626,6 +846,36 @@ export async function getOngoingSleep(
 ): Promise<{ success: boolean; data?: Activity | null; error?: string }> {
   if (babyId === 'guest-baby-id') {
     return { success: true, data: null };
+  }
+
+  // 🔒 보안: 세션 검증
+  const { getServerSession } = await import('next-auth');
+  const { authOptions } = await import('@/app/api/auth/[...nextauth]/route');
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { success: false, error: "로그인이 필요합니다." };
+  }
+
+  // 🔒 보안: 아기가 사용자의 가족에 속하는지 검증
+  const baby = await prisma.baby.findFirst({
+    where: {
+      id: babyId,
+      Family: {
+        FamilyMembers: {
+          some: {
+            userId: session.user.id,
+          },
+        },
+      },
+    },
+  });
+
+  if (!baby) {
+    return {
+      success: false,
+      error: "해당 아기의 활동을 조회할 권한이 없습니다."
+    };
   }
 
   try {

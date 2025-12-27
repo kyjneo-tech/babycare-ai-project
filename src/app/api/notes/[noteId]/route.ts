@@ -61,11 +61,46 @@ export async function GET(
     }
 
     const { noteId } = await params;
-    const noteService = new NoteService();
-    const note = await noteService.getNoteById(noteId);
+
+    // 🔒 보안: 사용자 ID 조회
+    const { prisma } = await import('@/shared/lib/prisma');
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // 🔒 보안: 노트 권한 검증 (가족 멤버만 조회 가능)
+    const note = await prisma.note.findUnique({
+      where: { id: noteId },
+      include: {
+        Baby: {
+          include: {
+            Family: {
+              include: {
+                FamilyMembers: {
+                  where: { userId: user.id }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
 
     if (!note) {
       return NextResponse.json({ error: 'Note not found' }, { status: 404 });
+    }
+
+    // 가족 멤버가 아니면 접근 거부
+    if (note.Baby.Family.FamilyMembers.length === 0) {
+      return NextResponse.json(
+        { error: '이 노트를 조회할 권한이 없습니다.' },
+        { status: 403 }
+      );
     }
 
     return NextResponse.json({ note });
