@@ -31,14 +31,13 @@ export default function AppHeader() {
       // 모든 Store 초기화 (다른 사용자 데이터 유출 방지)
       const clearAllStores = async () => {
         try {
-          const { useBabyStore, useActivityStore, useMeasurementStore, useFamilyStore, useNoteStore, useChatStore } = await import('@/stores');
+          const { useBabyStore, useActivityStore, useMeasurementStore, useFamilyStore, useNoteStore } = await import('@/stores');
 
           useBabyStore.getState().clearBabies();
           useActivityStore.getState().clearAll();
           useMeasurementStore.getState().clearAll();
           useFamilyStore.getState().clearFamily();
           useNoteStore.getState().clearNotes();
-          useChatStore.getState().clearMessages();
 
           console.log('[SECURITY] All stores cleared after user session change');
         } catch (error) {

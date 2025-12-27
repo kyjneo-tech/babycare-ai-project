@@ -26,7 +26,6 @@ import {
   ExternalLink,
   ChevronRight,
   AlertTriangle,
-  Sparkles
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -152,24 +151,6 @@ export default function SettingsPage() {
               </Button>
             </Link>
 
-            <Link href="/dashboard/settings/ai-guide">
-              <Button
-                variant="ghost"
-                className="w-full justify-between hover:bg-white/10 h-auto py-3 px-4 text-slate-200"
-              >
-                <div className="flex items-center gap-3">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  <div className="text-left">
-                    <div className="font-medium">ChatGPT AI 활용 가이드</div>
-                    <div className="text-xs text-slate-400">
-                      ChatGPT에서 베베노크 사용하는 방법
-                    </div>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              </Button>
-            </Link>
-
             <Link href="/contact" target="_blank">
               <Button
                 variant="ghost"
@@ -240,7 +221,6 @@ export default function SettingsPage() {
                 <li>가족 정보 (본인이 유일한 멤버인 경우)</li>
                 <li>아기 정보 및 프로필</li>
                 <li>모든 활동 기록 (수유, 수면, 기저귀 등)</li>
-                <li>AI 채팅 기록</li>
                 <li>메모 및 일정</li>
                 <li>성장 발달 기록</li>
               </ul>
