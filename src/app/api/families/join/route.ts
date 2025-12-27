@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
     // 현재 사용자 찾기
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
+      select: { id: true },
     });
 
     if (!user) {

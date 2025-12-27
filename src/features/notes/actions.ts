@@ -38,6 +38,7 @@ export async function createNoteAction(formData: {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
+      select: { id: true },
     });
 
     if (!user) {
@@ -115,6 +116,7 @@ export async function updateNoteAction(
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
+      select: { id: true },
     });
 
     if (!user) {
@@ -191,6 +193,7 @@ export async function deleteNoteAction(
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
+      select: { id: true },
     });
 
     if (!user) {
@@ -250,6 +253,7 @@ export async function toggleNoteCompletionAction(
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
+      select: { id: true },
     });
 
     if (!user) {
@@ -318,6 +322,7 @@ export async function generateSchedulesAction(
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
+      select: { id: true },
     });
 
     if (!user) {
@@ -537,14 +542,13 @@ export async function getAllSchedulesForBaby(
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: {
+      select: {
         FamilyMembers: {
-          include: {
+          select: {
             Family: {
-              include: {
+              select: {
                 Babies: {
                   select: { id: true, name: true },
-                  orderBy: { createdAt: 'asc' },
                 },
               },
             },
@@ -613,14 +617,13 @@ export async function getInitialSchedulesWithToday(
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: {
+      select: {
         FamilyMembers: {
-          include: {
+          select: {
             Family: {
-              include: {
+              select: {
                 Babies: {
                   select: { id: true, name: true },
-                  orderBy: { createdAt: 'asc' },
                 },
               },
             },

@@ -205,6 +205,7 @@ export async function PATCH(
     const { prisma } = await import('@/shared/lib/prisma');
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
+      select: { id: true },
     });
 
     if (!user) {
@@ -362,6 +363,7 @@ export async function DELETE(
     const { prisma } = await import('@/shared/lib/prisma');
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
+      select: { id: true },
     });
 
     if (!user) {

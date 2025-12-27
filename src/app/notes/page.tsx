@@ -21,11 +21,11 @@ export default async function TodosPage() {
   // 첫 번째 아기 가져오기
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    include: {
+    select: {
       FamilyMembers: {
-        include: {
+        select: {
           Family: {
-            include: {
+            select: {
               Babies: true,
             },
           },

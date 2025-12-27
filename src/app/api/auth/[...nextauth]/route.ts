@@ -42,6 +42,7 @@ export const authOptions: AuthOptions = {
           // DB에서 사용자 찾기 또는 생성
           let user = await prisma.user.findUnique({
             where: { email: payload.email },
+            select: { id: true, email: true, name: true },
           });
 
           if (!user) {
@@ -81,6 +82,7 @@ export const authOptions: AuthOptions = {
 
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email },
+            select: { id: true },
           });
 
           if (!existingUser) {
@@ -105,6 +107,7 @@ export const authOptions: AuthOptions = {
       if (user) {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email! },
+          select: { id: true, name: true, email: true },
         });
 
         if (dbUser) {
