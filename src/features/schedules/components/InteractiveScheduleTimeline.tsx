@@ -425,9 +425,11 @@ export function InteractiveScheduleTimeline({ babyId }: InteractiveScheduleTimel
 
       {/* 뷰 컨텐츠 */}
       {currentView === 'calendar' ? (
-        <CalendarView 
-          schedules={displaySchedules} 
-          onDateClick={handleDateClick} 
+        <CalendarView
+          schedules={displaySchedules}
+          onDateClick={handleDateClick}
+          babyId={babyId}
+          onUpdate={() => fetchInitialSchedules(false)}
         />
       ) : (
         /* 타임라인 뷰 */

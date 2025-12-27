@@ -12,9 +12,11 @@ import { ScheduleDateSheet } from "./ScheduleDateSheet";
 interface CalendarViewProps {
   schedules: Note[];
   onDateClick?: (date: Date) => void;
+  babyId: string;
+  onUpdate: () => void;
 }
 
-export function CalendarView({ schedules, onDateClick }: CalendarViewProps) {
+export function CalendarView({ schedules, onDateClick, babyId, onUpdate }: CalendarViewProps) {
   // Sheet 상태 관리
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -183,6 +185,8 @@ export function CalendarView({ schedules, onDateClick }: CalendarViewProps) {
         isOpen={isSheetOpen}
         onOpenChange={setIsSheetOpen}
         onViewInTimeline={handleViewInTimeline}
+        babyId={babyId}
+        onUpdate={onUpdate}
       />
     </div>
   );
